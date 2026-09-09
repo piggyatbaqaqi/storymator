@@ -1,0 +1,254 @@
+#!/bin/bash
+#
+# Back up the parts of storymator that git deliberately does not track,
+# as dated tarballs on skol, keeping the most recent N.
+#
+#   user/    ComfyUI's working state.  Only comfyui.db and anything not
+#            already in git is worth keeping; __manager/cache is 17 MB of
+#            registry snapshots that re-download on demand, the logs
+#            rotate, and the lock file is live.  All excluded.
+#   output/  generated images.  Each PNG carries its own `prompt` and
+#            `workflow` JSON chunks, so a restored image still knows how
+#            it was made.
+#
+# See docs/planning/artifact-tracking.md for why these live outside git
+# and what each disaster case expects of this script.
+#
+# ---------------------------------------------------------------------
+# ROTATION IS BY DISTINCT STATE, NOT BY DAY.
+#
+# A nightly full tarball of an unchanged directory is 30 copies of the
+# same bytes.  This hashes each archive and discards it when it matches
+# the newest one already on the far end, so --keep 30 means "the last 30
+# times something actually changed", which is a far longer window in
+# wall-clock terms and costs nothing when the desk is idle.
+#
+# Determinism is what makes that comparison work: --sort=name, fixed
+# owner/group, and zstd (which, unlike gzip, embeds no timestamp).  Two
+# runs over identical files produce identical bytes.
+# ---------------------------------------------------------------------
+#
+# RESTORE
+#
+#   ssh skol 'ls -1 /backups/puchpuchobs/home/piggy/lab/storymator/*.tar.zst'
+#   scp skol:/backups/.../storymator-20260909-024500.tar.zst /tmp/
+#   sha256sum -c /tmp/storymator-20260909-024500.tar.zst.sha256
+#   tar -C /tmp/restore -xf /tmp/storymator-20260909-024500.tar.zst
+#
+# The archive holds paths relative to the repository root, so it
+# unpacks over a fresh clone.  Restore `user/default/` only if git's
+# copy is not the one you want -- git is the primary for workflows and
+# settings, this is the primary for output/ and for uncommitted work.
+#
+# comfyui.db is copied live and can be captured mid-write.  That is
+# accepted, not overlooked: it is derived state, and D2 in the plan
+# says rebuild rather than restore it.
+#
+# AUTHENTICATION -- the thing that silently breaks unattended backups.
+#
+# cron has no ssh-agent.  ~/.ssh/id_rsa and ~/.ssh/id_ed25519 are both
+# passphrase-protected and are only usable interactively, via the
+# keyring agent at $SSH_AUTH_SOCK.  A job that relies on them works when
+# you test it by hand and fails every night thereafter.
+#
+# So this uses ~/.ssh/id_backups_rsa explicitly -- a passphrase-free key
+# that already exists for exactly this purpose -- with IdentitiesOnly,
+# so it does not silently fall back to an agent that happens to be
+# present while you are testing.  Verified 2026-09-09 to authenticate to
+# skol with an empty environment.
+#
+# (Unrelated but worth fixing: ~/.ssh/config sets `IdentityFile
+# ~/.ssh/id_rsa.pub` in eight places -- the *public* key.  It only works
+# because the agent holds the private half, and it is what produces the
+# "UNPROTECTED PRIVATE KEY FILE" warning on every connection.)
+#
+# INSTALL (piggy's own crontab -- it needs piggy's key, not root)
+#
+#   crontab -e
+#   MAILTO=piggy.yarroll+storymator@gmail.com
+#   45 2 * * * /home/piggy/src/github.com/piggyatbaqaqi/storymator/bin/backup-storymator
+#
+set -euo pipefail
+
+# cron gives you almost no PATH.  Everything below is system-wide on
+# puchpuchobs; conda's bin dir is deliberately not on here, because a
+# conda env that gets rebuilt should never be able to break backups.
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+
+REPO_DEFAULT=$(cd "$(dirname "$0")/.." && pwd)
+REPO=${STORYMATOR_REPO:-$REPO_DEFAULT}
+DEST=${STORYMATOR_BACKUP_DEST:-piggy@skol:/backups/puchpuchobs/home/piggy/lab/storymator}
+KEEP=${STORYMATOR_BACKUP_KEEP:-30}
+SSH_KEY=${STORYMATOR_BACKUP_KEY:-/home/piggy/.ssh/id_backups_rsa}
+LOCK=/tmp/backup-storymator.lock
+DRY_RUN=0
+VERBOSE=0
+CHECK_ONLY=0
+
+usage() {
+    sed -n '2,/^set -euo/p' "$0" | sed 's/^# \{0,1\}//; $d'
+    cat <<USAGE
+
+Usage: $(basename "$0") [options]
+
+  -n, --dry-run   Build and hash the archive, report what would happen,
+                  transfer nothing and delete nothing.
+  -v, --verbose   Narrate each step.
+      --keep N    Keep the N most recent archives (default $KEEP).
+      --dest D    rsync/ssh destination (default $DEST).
+      --repo P    Repository root (default the parent of bin/).
+      --key K     ssh identity (default $SSH_KEY).  Must be
+                  passphrase-free: cron has no agent.
+      --check     Verify the newest remote archive against its recorded
+                  checksum and list it.  Makes no backup.
+  -h, --help      This text.
+USAGE
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -n|--dry-run) DRY_RUN=1 ;;
+        -v|--verbose) VERBOSE=1 ;;
+        --keep) KEEP=$2; shift ;;
+        --dest) DEST=$2; shift ;;
+        --repo) REPO=$2; shift ;;
+        --key) SSH_KEY=$2; shift ;;
+        --check) CHECK_ONLY=1 ;;
+        -h|--help) usage; exit 0 ;;
+        *) echo "$(basename "$0"): unknown option $1" >&2; usage >&2; exit 2 ;;
+    esac
+    shift
+done
+
+case "$KEEP" in
+    ''|*[!0-9]*) echo "--keep needs a non-negative integer, got '$KEEP'" >&2; exit 2 ;;
+esac
+[ "$KEEP" -ge 1 ] || { echo "--keep must be at least 1" >&2; exit 2; }
+
+REMOTE_HOST=${DEST%%:*}
+REMOTE_DIR=${DEST#*:}
+[ "$REMOTE_HOST" != "$DEST" ] || {
+    echo "--dest must be host:/path, got '$DEST'" >&2; exit 2; }
+case "$REMOTE_DIR" in
+    /*) ;;
+    *) echo "--dest path must be absolute, got '$REMOTE_DIR'" >&2; exit 2 ;;
+esac
+
+SSH=(ssh -o BatchMode=yes -o IdentitiesOnly=yes -i "$SSH_KEY"
+     -o ConnectTimeout=30)
+
+log()  { printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"; }
+note() { [ "$VERBOSE" -eq 1 ] && log "$@"; return 0; }
+die()  { log "ERROR: $*" >&2; exit 1; }
+
+# Serialise: a slow transfer must not overlap the next cron tick.
+exec 9>"$LOCK"
+flock -n 9 || { log "another run holds $LOCK; exiting"; exit 0; }
+
+[ -r "$SSH_KEY" ] || die "cannot read ssh key $SSH_KEY"
+ssh-keygen -y -P "" -f "$SSH_KEY" >/dev/null 2>&1 \
+    || die "$SSH_KEY needs a passphrase; cron has no agent to supply one"
+"${SSH[@]}" "$REMOTE_HOST" true \
+    || die "cannot authenticate to $REMOTE_HOST with $SSH_KEY"
+
+remote_archives() {
+    # Newest last.  Names sort chronologically by construction.
+    "${SSH[@]}" "$REMOTE_HOST" \
+        "ls -1 '$REMOTE_DIR'/storymator-*.tar.zst 2>/dev/null || true"
+}
+
+if [ "$CHECK_ONLY" -eq 1 ]; then
+    newest=$(remote_archives | tail -1)
+    [ -n "$newest" ] || die "no archives in $DEST"
+    log "checking $newest"
+    "${SSH[@]}" "$REMOTE_HOST" \
+        "cd '$REMOTE_DIR' && sha256sum -c '$(basename "$newest").sha256'" \
+        || die "checksum FAILED for $newest"
+    "${SSH[@]}" "$REMOTE_HOST" \
+        "zstd -dc '$newest' | tar -tf - | head -20"
+    log "ok"
+    exit 0
+fi
+
+[ -d "$REPO/output" ] || die "no $REPO/output -- is --repo right?"
+[ -d "$REPO/user" ]   || die "no $REPO/user -- is --repo right?"
+
+STAGE=$(mktemp -d -t storymator-backup-XXXXXX)
+trap 'rm -rf "$STAGE"' EXIT
+
+STAMP=$(date '+%Y%m%d-%H%M%S')
+NAME="storymator-$STAMP.tar.zst"
+ARCHIVE="$STAGE/$NAME"
+
+note "building $NAME from $REPO"
+
+# --sort=name and fixed ownership make the archive reproducible, which
+# is what lets the unchanged-state check below work at all.
+tar --create \
+    --directory="$REPO" \
+    --sort=name \
+    --owner=0 --group=0 --numeric-owner \
+    --exclude='user/__manager/cache' \
+    --exclude='user/__manager/cache/*' \
+    --exclude='*.lock' \
+    --exclude='*.log' \
+    --exclude='*~' \
+    --use-compress-program='zstd -6 -T0' \
+    --file="$ARCHIVE" \
+    output user
+
+SIZE=$(stat -c %s "$ARCHIVE")
+SUM=$(sha256sum "$ARCHIVE" | cut -d' ' -f1)
+printf '%s  %s\n' "$SUM" "$NAME" > "$ARCHIVE.sha256"
+log "built $NAME ($(numfmt --to=iec "$SIZE"), sha256 ${SUM:0:12})"
+
+# Has anything actually changed since the newest archive on the far end?
+newest=$(remote_archives | tail -1 || true)
+if [ -n "$newest" ]; then
+    prev=$("${SSH[@]}" "$REMOTE_HOST" \
+        "cut -d' ' -f1 '$newest.sha256' 2>/dev/null || true")
+    if [ "$prev" = "$SUM" ]; then
+        log "unchanged since $(basename "$newest"); nothing to store"
+        exit 0
+    fi
+    note "differs from $(basename "$newest") (${prev:0:12})"
+fi
+
+if [ "$DRY_RUN" -eq 1 ]; then
+    log "[dry-run] would upload $NAME to $DEST"
+    log "[dry-run] would keep the $KEEP most recent, pruning:"
+    remote_archives | head -n -"$((KEEP - 1))" | sed 's/^/    /' || true
+    exit 0
+fi
+
+"${SSH[@]}" "$REMOTE_HOST" "mkdir -p '$REMOTE_DIR'"
+rsync --archive --partial -e "${SSH[*]}" \
+      "$ARCHIVE" "$ARCHIVE.sha256" "$DEST/"
+
+# Verify at the far end before trusting the copy.  A backup that was
+# never read back is a hope, not a backup.
+remote_sum=$("${SSH[@]}" "$REMOTE_HOST" \
+    "sha256sum '$REMOTE_DIR/$NAME' | cut -d' ' -f1")
+[ "$remote_sum" = "$SUM" ] \
+    || die "transfer corrupted: local $SUM, remote $remote_sum"
+log "stored and verified $DEST/$NAME"
+
+# Prune, oldest first, never touching the newest.  The pattern and the
+# directory are both pinned so a mistyped --dest cannot widen this.
+doomed=$(remote_archives | head -n -"$KEEP" || true)
+if [ -n "$doomed" ]; then
+    printf '%s\n' "$doomed" | while IFS= read -r old; do
+        [ -n "$old" ] || continue
+        case "$old" in
+            "$REMOTE_DIR"/storymator-*.tar.zst) ;;
+            *) die "refusing to delete unexpected path: $old" ;;
+        esac
+        note "pruning $(basename "$old")"
+        "${SSH[@]}" "$REMOTE_HOST" \
+            "rm -f '$old' '$old.sha256'"
+    done
+    log "pruned $(printf '%s\n' "$doomed" | grep -c .) archive(s), keeping $KEEP"
+else
+    note "nothing to prune; $(remote_archives | grep -c .) archive(s) held"
+fi
