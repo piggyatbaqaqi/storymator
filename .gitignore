@@ -53,3 +53,30 @@ data/latin_wordlist.txt
 # same per-treatment status and metrics durably (8 631/8 631 docs as of
 # 2026-09-09), and the round file is the record of what was drawn.
 llm_annotate_*.jsonl
+
+# ComfyUI writes into this repo: extra_model_paths.yaml in the ComfyUI
+# checkout points its output and user dirs here.  Tracking artifacts is
+# the point, so this ignores by WHAT WROTE IT, not by directory.
+#
+# Kept (they record a decision you made):
+#   user/default/workflows/      the workflows themselves
+#   user/default/comfy.settings.json
+#
+# Ignored (ComfyUI wrote them; no decision behind the change):
+#   __manager/cache/  17 MB of re-downloadable registry snapshots,
+#                     refreshed on a timer -- 11 MB in one file
+#   comfyui.db        SQLite; binary, rewritten whole, un-diffable
+#   *.lock            a live lock file; git would fight the process
+#   *.log             rotating logs; rotation alone makes huge diffs
+user/*
+!user/default/
+user/default/*
+!user/default/workflows/
+!user/default/comfy.settings.json
+
+# output/ stays out of git's object store: PNGs are precompressed, so
+# every image is a full permanent blob, and history cannot be shrunk
+# later without a force-push that breaks every clone.  Provenance is not
+# lost by this -- ComfyUI embeds the full `prompt` and `workflow` JSON in
+# each PNG's metadata chunks.  See docs/planning/artifact-tracking.md.
+output/
