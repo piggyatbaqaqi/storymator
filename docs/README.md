@@ -43,10 +43,41 @@ User stories that bear directly on work in this repo:
 * *"Make an on-the-fly voice script edit which is rendered into the
   pencil test."*
 
+### Boulos, *The Animator's Toolbox* — unfinished manuscript, c. 2015
+
+Supplied 2026-09-10 as the authority for what makes an inbetween
+unusable. Three files, same Drive folder as the coarse scoping:
+
+| file | what it is |
+|---|---|
+| `WorkingDic7_AnmCOmpEss.pdf` | the compiled manuscript — the most complete of the three, ~117 000 characters |
+| `the7principles_ThisOne_June2015.docx` | earlier draft with the full 14-chapter book structure |
+| `THeANimatorsToolbox_Chapter 3.docx` | Reversal of Curves / Successive Breaking of Joints, standalone |
+
+**The seven principles are the project's local rule set**, distilled by
+Daniel over twenty years of teaching from Fred Moore's fourteen points
+as passed through Thomas and Johnston's *The Illusion of Life* — reduced
+to those observable as motion in nature, which is why it is seven and
+not fourteen. They are enumerated, with the manuscript's vocabulary, in
+the appendix to
+[planning/inbetween-acceptance.md](planning/inbetween-acceptance.md).
+
+Two attributions the manuscript is careful about and so should we be:
+**Reversal of Curves** reached Daniel from Glen Keane, who had it from
+Ollie Johnston; **Successive Breaking of Joints** from Richard Williams,
+who credited Art Babbit.
+
 ## Working notes in this repository
 
-* [planning/inbetweening-scope.md](planning/inbetweening-scope.md) — scoping the
-  automatic-inbetweening subproject. **Note:** its A/B framing predates
-  a careful reading of the coarse-scoping document above, which already
-  names *pencil test* as the output. See the note at the head of that
-  file.
+* [planning/inbetween-acceptance.md](planning/inbetween-acceptance.md) —
+  **current.** What makes an inbetween unusable, and which of the seven
+  principles a machine can check. Written against Daniel's 2026-09-10
+  reply and the manuscript.
+* [planning/inbetweening-scope.md](planning/inbetweening-scope.md) —
+  scoping the automatic-inbetweening subproject. **Superseded in part:**
+  its A/B fork mistakenly bundled fidelity target with representation.
+  Daniel's answer is B's fidelity on A's substrate — pixels, not
+  vectors. See §1 of the acceptance note.
+* [planning/artifact-tracking.md](planning/artifact-tracking.md) — why
+  ComfyUI's outputs and working state are tracked the way they are, and
+  what backs them up.
