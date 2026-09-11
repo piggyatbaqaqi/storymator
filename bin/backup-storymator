@@ -173,6 +173,7 @@ fi
 
 [ -d "$REPO/output" ] || die "no $REPO/output -- is --repo right?"
 [ -d "$REPO/user" ]   || die "no $REPO/user -- is --repo right?"
+[ -d "$REPO/models" ]   || die "no $REPO/models -- is --repo right?"
 
 STAGE=$(mktemp -d -t storymator-backup-XXXXXX)
 trap 'rm -rf "$STAGE"' EXIT
@@ -196,7 +197,7 @@ tar --create \
     --exclude='*~' \
     --use-compress-program='zstd -6 -T0' \
     --file="$ARCHIVE" \
-    output user
+    output user models
 
 SIZE=$(stat -c %s "$ARCHIVE")
 SUM=$(sha256sum "$ARCHIVE" | cut -d' ' -f1)
