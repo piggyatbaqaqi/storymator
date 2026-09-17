@@ -78,6 +78,9 @@ who credited Art Babbit.
   its A/B fork mistakenly bundled fidelity target with representation.
   Daniel's answer is B's fidelity on A's substrate — pixels, not
   vectors. See §1 of the acceptance note.
+* [planning/acme-registration-plugin.md](planning/acme-registration-plugin.md)
+  — design for the capture-and-register stage as a ComfyUI 0.35 plugin.
+  Carries the rig questions that have to be answered before code.
 * [planning/artifact-tracking.md](planning/artifact-tracking.md) — why
   ComfyUI's outputs and working state are tracked the way they are, and
   what backs them up.
