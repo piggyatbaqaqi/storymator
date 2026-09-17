@@ -3,13 +3,29 @@
 # Back up the parts of storymator that git deliberately does not track,
 # as dated tarballs on skol, keeping the most recent N.
 #
-#   user/    ComfyUI's working state.  Only comfyui.db and anything not
-#            already in git is worth keeping; __manager/cache is 17 MB of
+# Sources live in TWO trees, which is why this does not take a single
+# --repo.  ComfyUI/user is a symlink into this repository; output/ and
+# models/ were deliberately moved back under the ComfyUI checkout so its
+# `git pull` stays clean.
+#
+#   user/    ComfyUI's working state, via the symlink, so it is inside
+#            this repository.  Only comfyui.db and anything not already
+#            in git is worth keeping; __manager/cache is 17 MB of
 #            registry snapshots that re-download on demand, the logs
 #            rotate, and the lock file is live.  All excluded.
-#   output/  generated images.  Each PNG carries its own `prompt` and
-#            `workflow` JSON chunks, so a restored image still knows how
-#            it was made.
+#   output/  generated images, under the ComfyUI checkout.  Each PNG
+#            carries its own `prompt` and `workflow` JSON chunks, so a
+#            restored image still knows how it was made.
+#   models/  NOT copied.  27 GB, and every byte of it is a public
+#            download -- SD 1.5, SD2 inpainting, z-image-turbo,
+#            qwen_3_4b, the Flux autoencoder, an LCM LoRA.  Nothing here
+#            was produced locally.  Copying them nightly would spend
+#            27 GB to say what a 2 KB list says better, and the list is
+#            the thing you actually need after losing the machine: it
+#            tells you WHAT TO FETCH.  So the archive carries
+#            models/MANIFEST.tsv instead -- path, size, mtime, sha256.
+#            If a locally-trained model ever lands in models/loras, this
+#            decision must be revisited; see --models-copy.
 #
 # See docs/planning/artifact-tracking.md for why these live outside git
 # and what each disaster case expects of this script.
@@ -35,10 +51,19 @@
 #   sha256sum -c /tmp/storymator-20260909-024500.tar.zst.sha256
 #   tar -C /tmp/restore -xf /tmp/storymator-20260909-024500.tar.zst
 #
-# The archive holds paths relative to the repository root, so it
-# unpacks over a fresh clone.  Restore `user/default/` only if git's
-# copy is not the one you want -- git is the primary for workflows and
-# settings, this is the primary for output/ and for uncommitted work.
+# The archive holds three top-level directories, which came from two
+# different trees and go back to two different places:
+#
+#   user/                 -> the storymator checkout (ComfyUI reaches it
+#                            through the ComfyUI/user symlink)
+#   output/               -> the ComfyUI checkout
+#   models/MANIFEST.tsv   -> not a restore; a shopping list.  Re-fetch
+#                            each model from its upstream and check it
+#                            against the recorded sha256.
+#
+# Restore `user/default/` only if git's copy is not the one you want --
+# git is the primary for workflows and settings, this is the primary for
+# output/ and for uncommitted work.
 #
 # comfyui.db is copied live and can be captured mid-write.  That is
 # accepted, not overlooked: it is derived state, and D2 in the plan
@@ -78,6 +103,11 @@ export PATH
 
 REPO_DEFAULT=$(cd "$(dirname "$0")/.." && pwd)
 REPO=${STORYMATOR_REPO:-$REPO_DEFAULT}
+COMFY=${STORYMATOR_COMFYUI:-/data/piggy/src/github.com/Comfy-Org/ComfyUI}
+# Hash only what changed: carry sha256 forward for files whose size and
+# mtime are unchanged, so 27 GB is hashed once rather than nightly.
+HASH_CACHE=${STORYMATOR_BACKUP_HASH_CACHE:-$HOME/.cache/storymator-backup/models.tsv}
+MODELS_COPY=0
 DEST=${STORYMATOR_BACKUP_DEST:-piggy@skol:/backups/puchpuchobs/home/piggy/lab/storymator}
 KEEP=${STORYMATOR_BACKUP_KEEP:-30}
 SSH_KEY=${STORYMATOR_BACKUP_KEY:-/home/piggy/.ssh/id_backups_rsa}
@@ -97,7 +127,14 @@ Usage: $(basename "$0") [options]
   -v, --verbose   Narrate each step.
       --keep N    Keep the N most recent archives (default $KEEP).
       --dest D    rsync/ssh destination (default $DEST).
-      --repo P    Repository root (default the parent of bin/).
+      --repo P    storymator root, holding user/ (default: parent of bin/).
+      --comfy P   ComfyUI checkout, holding output/ and models/
+                  (default $COMFY).
+      --models-copy
+                  Copy model BYTES into the archive as well as listing
+                  them.  Off by default: 27 GB of public downloads.  Turn
+                  it on only once something locally trained lives there,
+                  and expect to move to restic when you do.
       --key K     ssh identity (default $SSH_KEY).  Must be
                   passphrase-free: cron has no agent.
       --check     Verify the newest remote archive against its recorded
@@ -113,6 +150,8 @@ while [ $# -gt 0 ]; do
         --keep) KEEP=$2; shift ;;
         --dest) DEST=$2; shift ;;
         --repo) REPO=$2; shift ;;
+        --comfy) COMFY=$2; shift ;;
+        --models-copy) MODELS_COPY=1 ;;
         --key) SSH_KEY=$2; shift ;;
         --check) CHECK_ONLY=1 ;;
         -h|--help) usage; exit 0 ;;
@@ -171,9 +210,9 @@ if [ "$CHECK_ONLY" -eq 1 ]; then
     exit 0
 fi
 
-[ -d "$REPO/output" ] || die "no $REPO/output -- is --repo right?"
-[ -d "$REPO/user" ]   || die "no $REPO/user -- is --repo right?"
-[ -d "$REPO/models" ]   || die "no $REPO/models -- is --repo right?"
+[ -d "$REPO/user" ]     || die "no $REPO/user -- is --repo right?"
+[ -d "$COMFY/output" ]  || die "no $COMFY/output -- is --comfy right?"
+[ -d "$COMFY/models" ]  || die "no $COMFY/models -- is --comfy right?"
 
 STAGE=$(mktemp -d -t storymator-backup-XXXXXX)
 trap 'rm -rf "$STAGE"' EXIT
@@ -182,12 +221,59 @@ STAMP=$(date '+%Y%m%d-%H%M%S')
 NAME="storymator-$STAMP.tar.zst"
 ARCHIVE="$STAGE/$NAME"
 
-note "building $NAME from $REPO"
+note "building $NAME from $REPO (user) and $COMFY (output, models)"
+
+# The models manifest: what you had, so you know what to fetch back.
+# Tab-separated, sorted by path, sha256 last so the first three columns
+# stay readable.  Zero-byte ComfyUI placeholders are skipped.
+mkdir -p "$STAGE/models" "$(dirname "$HASH_CACHE")"
+: > "$STAGE/models/MANIFEST.tsv"
+touch "$HASH_CACHE"
+hashed=0; carried=0
+while IFS= read -r model; do
+    rel=${model#"$COMFY/models/"}
+    size=$(stat -c %s "$model")
+    mtime=$(stat -c %Y "$model")
+    # Carry the hash forward when size and mtime both match the cache.
+    prev=$(awk -F'\t' -v r="$rel" -v s="$size" -v m="$mtime" \
+               '$1==r && $2==s && $3==m {print $4; exit}' "$HASH_CACHE")
+    if [ -n "$prev" ]; then
+        sum=$prev; carried=$((carried + 1))
+    else
+        note "hashing $rel ($(numfmt --to=iec "$size"))"
+        sum=$(sha256sum "$model" | cut -d' ' -f1); hashed=$((hashed + 1))
+    fi
+    printf '%s\t%s\t%s\t%s\n' "$rel" "$size" "$mtime" "$sum" \
+        >> "$STAGE/models/MANIFEST.tsv"
+done < <(find "$COMFY/models" -type f -size +0 | sort)
+cp "$STAGE/models/MANIFEST.tsv" "$HASH_CACHE"
+# The manifest is generated fresh every run, so its mtime would differ
+# every run, so the archive would differ every run, so the
+# unchanged-state check would never fire and every night would store a
+# new copy.  Pin it to a fixed epoch: the manifest's CONTENT still
+# changes when the model set changes, which is the only signal wanted.
+touch -d '@0' "$STAGE/models/MANIFEST.tsv" "$STAGE/models"
+model_bytes=$(awk -F'\t' '{s+=$2} END {printf "%d", s+0}' \
+              "$STAGE/models/MANIFEST.tsv")
+log "models: $(wc -l < "$STAGE/models/MANIFEST.tsv") files, \
+$(numfmt --to=iec "$model_bytes"), listed not copied \
+($hashed hashed, $carried carried)"
 
 # --sort=name and fixed ownership make the archive reproducible, which
-# is what lets the unchanged-state check below work at all.
+# is what lets the unchanged-state check below work at all.  Several -C
+# options because the sources live in two trees.  No --dereference: the
+# symlink is ComfyUI/user -> storymator/user, and we read the real
+# directory on the storymator side, so nothing here traverses a link.
+set -- --directory="$REPO" user \
+       --directory="$COMFY" output \
+       --directory="$STAGE" models
+if [ "$MODELS_COPY" -eq 1 ]; then
+    log "WARNING: --models-copy adds $(numfmt --to=iec "$model_bytes") to \
+every archive that changes; consider restic instead"
+    set -- "$@" --directory="$COMFY" models
+fi
+
 tar --create \
-    --directory="$REPO" \
     --sort=name \
     --owner=0 --group=0 --numeric-owner \
     --exclude='user/__manager/cache' \
@@ -197,7 +283,7 @@ tar --create \
     --exclude='*~' \
     --use-compress-program='zstd -6 -T0' \
     --file="$ARCHIVE" \
-    output user models
+    "$@"
 
 SIZE=$(stat -c %s "$ARCHIVE")
 SUM=$(sha256sum "$ARCHIVE" | cut -d' ' -f1)

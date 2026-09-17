@@ -103,6 +103,41 @@ directory of PNGs is not.
 | D4 | The box dies | The git remote holds everything irreplaceable: workflows, settings, code, manifest. Images restore from the backup target. | hours |
 | D5 | An image must be regenerated months later | The workflow is in git *and* embedded in the PNG; the manifest carries model and seed. | minutes |
 | D6 | The repository becomes too large to clone | **Prevented, not recovered** — this is why `output/` stays out. There is no cheap fix after the fact. | n/a |
+| D7 | **The backup fails and nobody notices** | Happened: 2026-09-09 to 09-17, eight nights, zero archives. The script aborted on a guard for a directory that had moved, and cron mailed the failure faithfully — into a mailbox receiving a `redis-cli save` message every five minutes. Fixing the script does not fix this; silencing the redis job, or checking `--check` on a schedule, does. | — |
+
+## The three trees, and what happens to each — 2026-09-17
+
+The layout moved after the ComfyUI 0.28 → 0.35 upgrade.
+`ComfyUI/user` is a symlink into this repository; `output/` and
+`models/` were deliberately moved back under the ComfyUI checkout so
+that its own `git pull` stays clean. So the sources now live in two
+trees, and the rule from the top of this document — *ignore by what
+wrote it* — extends to a third case: **what can simply be fetched
+again.**
+
+| tree | what | disposition |
+|---|---|---|
+| `storymator/user/` | workflows, settings, ComfyUI runtime state | workflows and settings in git; the rest backed up, cache and logs excluded |
+| `ComfyUI/output/` | generated images, 52 MB | backed up; not in git (§ above) |
+| `ComfyUI/models/` | **27 GB** | **listed, not copied** |
+
+**Every byte of the 27 GB is a public download** — SD 1.5, SD 2
+inpainting, z-image-turbo, `qwen_3_4b`, the Flux autoencoder, an LCM
+LoRA. Nothing there was produced locally. Copying them nightly would
+spend 27 GB to say what a 2 KB list says better, and after losing the
+machine the list is the thing you actually need, because it tells you
+**what to fetch**. So each archive carries `models/MANIFEST.tsv` —
+path, size, mtime, sha256 — and the sha256 lets a re-download be
+verified rather than hoped at.
+
+Hashing 27 GB takes about 53 seconds, which would be silly nightly, so
+hashes carry forward for files whose size and mtime are unchanged. At
+steady state the manifest costs 1.5 seconds.
+
+**This decision reverses the moment a locally-trained model appears.**
+A character LoRA trained on the desk's own material is irreplaceable and
+must be copied. `--models-copy` does it — and at 27 GB it also means the
+restic trigger below has been reached, so take both steps together.
 
 **Where the bytes go.** Settled 2026-09-09:
 `piggy@skol:/backups/puchpuchobs/home/piggy/lab/storymator`, written by
