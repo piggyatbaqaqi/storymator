@@ -2,5 +2,9 @@
     "Comfy.InstalledVersion": "1.47.10",
     "Comfy.TutorialCompleted": true,
     "Comfy.RightSidePanel.IsOpen": true,
-    "Comfy.Minimap.Visible": false
+    "Comfy.Minimap.Visible": false,
+    "Comfy.LinkRenderMode": 2,
+    "Comfy.Queue.History.Expanded": false,
+    "Comfy.Queue.QPOV2": false,
+    "Comfy.Queue.ShowRunProgressBar": false
 }
