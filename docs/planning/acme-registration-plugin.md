@@ -1,365 +1,482 @@
 # ACME registration as a ComfyUI plugin — design
 
-*2026-09-17. Design for the capture-and-register stage identified as the
-first milestone in
-[inbetween-acceptance.md](inbetween-acceptance.md) §5.*
+*Rev 2, 2026-09-17, after operator review. Rev 1's two-transform scheme
+is withdrawn: it assumed a fixed camera and a rotating disc, and the rev 0
+rig is the opposite — a movable camera and no disc. The replacement is
+simpler and strictly more general.*
 
-Targets **ComfyUI 0.35.0** and its V3 schema API (`comfy_api.latest`,
+Targets **ComfyUI 0.35.0** and the V3 schema API (`comfy_api.latest`,
 `io.ComfyNode`, `define_schema`/`execute`, `ComfyExtension` +
-`comfy_entrypoint`). The 0.28 dict-style `INPUT_TYPES` API is not used.
+`comfy_entrypoint`).
+
+Implements the first milestone in
+[inbetween-acceptance.md](inbetween-acceptance.md) §5.
 
 ---
 
-## 1. What this has to produce
+## 1. The product
 
-From photographs of drawings on a pegged animation disc:
-
-* every drawing in **one coordinate system**, so frame *n* and frame
-  *n+1* can be compared, onion-skinned, differenced, or fed to anything
-  downstream;
-* **paper removed**, line preserved;
-* the **timing chart** read off the keys;
-* and a **per-frame residual in pixels**, because that is the number the
-  acceptance harness is built on and the number that says whether a
-  frame should be thrown away.
-
-The residual is not a nicety. Every measurement in the acceptance note —
-arc deviation, spacing fraction, joint onset order — is taken across
-registered frames. A silent registration error becomes a fake violation
-of an animation principle. **The plugin must be able to say "I do not
-trust this frame."**
+**The plugin's minimum output is a transformed capture that already
+obeys the registration constraints** — every drawing resampled onto one
+fixed canonical pixel grid in ACME field coordinates, so frame *n* and
+frame *n+1* are directly comparable, differenceable and onion-skinnable
+with no further work. Everything else in this document exists to make
+that output trustworthy or to say when it isn't.
 
 ---
 
-## 2. The central decision: two transforms, calibrated at different rates
+## 2. Geometry: why the pegs alone cannot do it
 
-The instinct in `snippets/dtect_peg_bar_orientation.py` is to find the
-pegs, compute an angle, and rotate. That cannot work, for a reason worth
-stating plainly:
+Rev 1 proposed a fixed desk homography plus a per-frame rigid transform
+from the pegs. With a movable camera that decomposition is invalid, and
+the honest replacement starts from a fact worth stating precisely:
 
-> **Three collinear points do not determine a homography.** A homography
-> needs four points in general position. The three ACME pegs are
-> deliberately, exactly collinear.
+> **Three collinear points cannot determine a homography.** Three points
+> on a line fix a projective frame *on that line*, so the line is fixed
+> pointwise — but the homographies fixing a line pointwise form a
+> **three-parameter family** (planar homologies and elations with that
+> axis). The three ACME pegs are collinear by design. Fitting them
+> leaves three degrees of freedom undetermined.
 
-So per-frame perspective cannot be solved from the pegs. It does not
-need to be. Split the problem by how fast each part changes:
+Physically, the undetermined part is tilt of the paper about the peg-bar
+axis, confounded with foreshortening perpendicular to it. Under a
+near-perpendicular camera you can paper over this by *assuming* the sheet
+is square-on. Under a deliberately keystoned camera — which is what the
+rig wants, §5 — that assumption is exactly what fails.
 
-| transform | what it is | solved from | changes when |
+### The paper supplies the missing degree of freedom
+
+A sheet of ACME-punched bond is a rectangle of known size. **Its four
+corners are four points in general position, which is exactly what a
+homography needs.** No fiducials to buy, nothing extra in frame, and the
+rig already owns it.
+
+That gives a two-part fit with a clean division of authority:
+
+| stage | from | supplies |
+|---|---|---|
+| **outline** | the four paper edges, fitted as lines and intersected | the full homography — perspective, tilt, scale |
+| **datum** | the three peg centroids | a small in-plane correction, because the *pegs* are what the artist's drawings are actually aligned to |
+
+The second stage matters because punch tolerance is real. The drawing
+was made with the sheet on the pegs, so the pegs — not the paper edge —
+are the registration datum. Punch position relative to the trimmed edge
+carries a manufacturing tolerance, and whatever it is, the peg-derived
+correction absorbs it. Fit edges first because they are long and
+therefore well conditioned; correct with pegs because they are true.
+
+**Corners come from intersecting fitted edges, never from finding a
+corner pixel.** Each edge is hundreds of pixels of evidence; the corner
+itself is rounded, and on a punched sheet it may be dog-eared.
+
+---
+
+## 3. What this buys, in pixels
+
+Assuming 4K across a 13-inch frame — **11.6 px/mm, 1 px = 0.086 mm** —
+and 0.3 px landmark localisation, which a 74-px-diameter round peg
+comfortably supports.
+
+| quantity | value |
+|---|---|
+| peg span, rect to rect (8″, operator-confirmed) | 2363 px |
+| rotation precision | 1.8 × 10⁻⁴ rad ≈ **0.6 arcmin** |
+| that, as displacement 200 mm from the bar | **0.42 px** |
+
+So in-plane registration is comfortably sub-pixel with one camera. The
+thing that is *not* sub-pixel is stack height.
+
+### The cost of a stack, and the rule of thumb
+
+A drawing sits one paper-thickness above the one below it, so it is
+imaged at a slightly different magnification. Uncorrected, with the
+camera at 400 mm and 0.1 mm bond:
+
+> **Every sheet of stack costs about half a pixel of registration error
+> at the edge of the drawing.**
+
+| stack | camera at 400 mm | at 600 mm |
+|---|---|---|
+| 2 sheets | 1.2 px | 0.8 px |
+| 20 sheets | 12 px | 8 px |
+| 50 sheets | 29 px | 19 px |
+
+Two sheets is fine. A flip stack is not, and no amount of software
+fixes it from a single perpendicular view — the information is absent.
+
+---
+
+## 4. Do you need a second camera? Not yet — and here is the number
+
+**Rev 0, at one or two sheets, is sub-pixel on one camera.** Buy nothing.
+
+For flip-stack work there are two routes, and the second is more
+interesting than rev 1 realised.
+
+**Two cameras.** Triangulate the paper plane directly. Depth precision
+δz ≈ z²·δd/(f·B):
+
+| baseline | depth σ | in sheets | residual error, *any* stack |
 |---|---|---|---|
-| **H_desk** | camera pixels → desk-plane millimetres. Full homography; removes perspective and lens scale. | a calibration target (checkerboard or ArUco board) laid on the disc | the camera or desk moves — i.e. rarely |
-| **T_frame** | desk plane → canonical field coordinates. **Rigid: rotation + translation, 3 DOF.** | the three peg centroids | every capture, because the artist rotates the disc |
+| 100 mm | 0.10 mm | 1.0 | 0.60 px |
+| 150 mm | 0.07 mm | 0.7 | **0.40 px** |
+| 300 mm | 0.03 mm | 0.3 | 0.20 px |
 
-Composed: `canonical = T_frame ∘ H_desk ∘ pixel`.
+A 150 mm baseline holds sub-pixel for a stack of any depth. Two cameras
+also give paper *tilt* and *curl* for free, which a single view cannot
+see at all.
 
-This is what makes the per-frame problem easy instead of impossible.
-Three points solving three degrees of freedom is over-determined by
-design: the fit is closed-form (2-D Procrustes), needs no iteration and
-no RANSAC, and **the leftover disagreement between the observed peg
-triangle and the known bar is the residual** — the quality signal,
-obtained free.
+**One oblique camera.** A tilted camera sees the cut edge of the stack,
+and its apparent height is the stack thickness times tan(tilt):
 
-### Scale must not be a free parameter
+| stack | 30° tilt | 45° tilt |
+|---|---|---|
+| 2 sheets | 1.3 px | 2.3 px |
+| 10 sheets | 6.7 px | 11.6 px |
+| 50 sheets | 34 px | 58 px |
 
-Solve **rigid**, not similarity. Rotating a disc does not change scale,
-and a free scale parameter would quietly absorb detection error by
-shrinking the drawing — an error that looks like nothing and corrupts
-every spacing measurement downstream. Scale comes from `H_desk` and is
-held fixed.
+**The precision improves exactly as the error it corrects grows.** At
+two sheets the measurement is marginal and the error is negligible; at
+fifty sheets the error is 29 px and the measurement is 58 px of clean
+signal. That is a fortunate shape, and it means a single oblique camera
+may well handle production. It is unproven, so it is a candidate rather
+than a plan — but it is cheap to test with the camera already owned, and
+worth testing before buying.
 
-That makes §3's height question load-bearing rather than pedantic.
-
-### Register to the field, not to frame 1
-
-The canonical target is **ACME field coordinates**, not "whatever frame
-1 happened to look like". Three reasons: a scene stays comparable to
-every other scene; the field guide becomes meaningful, so cropping and
-the chart's expected location are defined; and it is the only thing that
-makes a **camera array** tractable — the desk design calls for one,
-angled to avoid hand obscuration. Each camera gets its own `H_desk` and
-all of them land in the same canonical frame. Registering to a reference
-*frame* would give every camera a different answer.
+**Recommendation: don't buy yet.** Test the oblique-edge measurement on
+rev 0. Keep the software's per-camera pose estimation independent so a
+second camera is additive rather than a rewrite. Buy when moving to flip
+stacks *and* the oblique measurement has disappointed.
 
 ---
 
-## 3. Three physical facts that change the design
+## 5. Keystone: wanted, within limits
 
-### 3.1 The peg tops and the drawing surface are not the same plane
+Heavily keystoned cameras are fine — a homography is precisely the model
+for a plane seen from any angle, so obliquity costs the estimator
+nothing. It is also necessary: two cameras cannot both sit over the sheet
+without colliding, and the desk design already calls for angles that
+avoid hand obscuration.
 
-The pegs protrude *above* the paper. If you register on peg tops you
-have registered a plane that is not the one being drawn on, and the
-offset between them is the stack thickness — which grows as the scene
-does.
+Two real costs bound how far to push it:
 
-The magnitude is not negligible. At a 400 mm working distance, a
-100-sheet stack of about 10 mm is a **2.5 % scale error**, which on a
-2000-pixel-wide field is **50 pixels**. That is catastrophic for a
-process whose whole point is sub-pixel comparison.
+| tilt | sampling on the foreshortened axis | depth range across a 317 mm sheet |
+|---|---|---|
+| 30° | 0.87× | 158 mm |
+| 45° | 0.71× | 224 mm |
+| 60° | 0.50× | 275 mm |
 
-Options, in order of preference:
-
-1. **Shoot one sheet at a time** against the disc, so the drawing plane
-   is constant. The problem disappears entirely. Whether the rig can
-   work this way is a question for Daniel (§7).
-2. **Model it.** Peg height is known and stack thickness is predictable
-   from sheet index; correct the scale analytically.
-3. **Triangulate it.** With the camera array already specified, two
-   calibrated views recover the paper plane directly. This is the
-   payoff of having more than one camera, and it argues for doing the
-   calibration properly rather than per-camera-independently.
-
-This must be settled before any number claims to be sub-pixel.
-
-### 3.2 The under-glass display is in the optical path
-
-The desk specifies a motorized disc "traditionally backed by a frosted
-light" and an under-glass display for the live motion loop. Backlighting
-is a gift for line extraction — paper transmits, graphite blocks, and
-contrast is enormous. But a *display* under the paper is not a uniform
-light source: whatever it is showing, typically the previous drawing,
-will be photographed straight through the sheet.
-
-So capture and display need an interlock: **blank the under-glass
-display, or show a known flat field, for the exposure.** This is a
-hardware/software boundary that neither side will discover on its own,
-and it is much cheaper to design in now than to subtract out later.
-
-### 3.3 The bar is 180°-symmetric
-
-Round centre peg, two oblong side pegs, evenly spaced: rotating the bar
-by 180° maps it onto itself. Peg geometry alone therefore cannot tell
-upright from upside-down, and an artist working on a rotating disc will
-absolutely hand you an upside-down capture.
-
-The disambiguator is the **paper**, which lies entirely on one side of
-the bar. Take the paper mask centroid, compare which side of the peg
-line it falls on, flip if needed. Cheap and reliable.
+The second column is the binding one. A 45° view needs ~224 mm of depth
+of field, which wants a small aperture — and on a small-sensor 4K camera,
+stopping past roughly f/5.6 is diffraction-limited, so the resolution you
+bought is lost anyway. **Keep tilt in the 30–45° band**, light it well
+enough to stop down, and prefer a larger sensor if the choice arises.
 
 ---
 
-## 4. Detection: fit a known object, do not find blobs
+## 6. Calibration, concretely
 
-The peg bar is a rigid body with known landmark geometry. That makes
-this a **fitting** problem, not a detection problem, and the difference
-is what separates a demo from something that can run unattended.
+The rev 0 worry — *"the camera position is easily disrupted"* — stops
+mattering under this design, because nothing that gets disrupted is
+calibrated.
 
-The snippet's approach — Otsu over the whole frame, `RETR_EXTERNAL`,
-keep contours between 100 and 50 000 px, take leftmost and rightmost —
-fails because on a sheet of *artwork* those contours are the drawing.
-A character's eyes, knuckles and hatching all land in that area window,
-and leftmost/rightmost of a contaminated list is noise by construction.
+**Once per camera: lens intrinsics.** Photograph a printed checkerboard
+or ArUco board lying on the desk, a dozen poses, once. This recovers
+focal length, principal point and radial distortion. At 4K with a wide
+lens, uncorrected radial distortion is tens of pixels at the corners, so
+this is not optional for sub-pixel work. It does **not** change when the
+camera is bumped. It *does* change if zoom or focus change — so fix both
+and tape them.
 
-Instead:
+**Every frame: pose.** Solved from the paper outline and pegs in that
+frame. No stored extrinsics, nothing to invalidate. Move the camera
+between shots, mid-session, on purpose. The registration does not care.
 
-1. **Propose.** Blob detection is fine *as a proposal stage*. Over-
-   generate; precision does not matter yet.
-2. **Fit.** For each candidate triple, solve the rigid transform that
-   best maps the known peg model onto it, and score by residual.
-3. **Accept or refuse.** Keep the best fit only if its residual is under
-   threshold. Otherwise emit no pose and flag the frame. A registration
-   tool that refuses is worth more than one that always answers.
+**Nothing needs to be visible outside the paper**, which answers the rev
+0 space constraint: the sheet fills the frame and that is sufficient.
 
-The peg model itself is **calibrated, not hardcoded**. Nominal ACME
-geometry — a round centre peg with oblong pegs either side, on the order
-of four inches centre-to-centre — should be a *default that the operator
-confirms against their own bar*, because the bar in the room is the
-ground truth and bars vary. `AcmePegModelCalibrate` measures it once
-from a reference capture.
+### The one thing a fiducial would buy — and it is your §8 point
 
-### The cheaper alternative, if the rig allows it
+You are right, and the reason is worth naming. With a **fixed** camera
+and a **rotating disc**, the peg-bar angle measured in camera coordinates
+*is* the disc angle, because the camera supplies a world reference. With
+a **moving** camera and no disc, camera rotation and paper rotation are
+indistinguishable — registration removes both, and absolute orientation
+is not merely discarded, it is unrecoverable.
 
-If a fiducial can be fixed to the bar or the disc, ArUco markers give
-sub-pixel corners, unique IDs, and — being four non-collinear corners
-each — a **full homography from a single marker**, which collapses §2's
-two-transform scheme into one and sidesteps the collinearity problem
-altogether. Roughly twenty lines against a detector that needs tuning.
+So moving the camera does *not* subsume the rotating disc. It subsumes
+the registration problem, which is the larger part, and loses exactly one
+scalar: absolute angle. For effects where the rotation is the point —
+where the artist turns the work deliberately rather than for comfort —
+that scalar is content, not nuisance.
 
-This is a rig question, not a software one, and worth asking before
-detector work is paid for. Note it requires `opencv-contrib-python`,
-which matters for §6.
+Recovering it needs one **world-fixed** reference in frame: a small
+fiducial on the desk surface, outside the paper, not on the disc. It need
+not be near the sheet, only visible. Rev 0 cannot frame it and does not
+need it; when there is a disc, one marker restores the datum.
 
 ---
 
-## 5. Node design
+## 7. Detection, rejection, and what the operator sees
 
-ComfyUI style is small composable nodes plus typed edges. Custom types
-carry the structured data that is not a tensor:
+The peg bar is a rigid body of **known** geometry, now confirmed:
 
 ```
-ACME_CALIBRATION   H_desk per camera, peg model, field definition, units
-ACME_POSE          per-frame (θ, tx, ty) + residual + accepted flag
-TIMING_CHART       parsed chart: ordered fractions, frame numbers
+round peg     1/4" diameter          6.35 mm    ~74 px
+rect pegs     1/2" x 1/8"     12.70 x 3.18 mm   ~147 x 37 px
+centres       4" apart              101.6 mm    ~1180 px
+outer span    8" rect to rect       203.2 mm    ~2363 px
 ```
 
-Declared with `io.Custom("ACME_CALIBRATION")` and friends.
+These become the *defaults* of a calibrated peg model, not constants, so
+a different bar is a settings change.
 
-Batches map naturally: a stack of drawings **is** a ComfyUI `IMAGE`
-batch of shape `(B, H, W, C)`, float 0..1. `ACME_POSE` therefore carries
-a list of length B, and every node must preserve batch alignment —
-including the refusal case, which is why refusal is a *flag* rather than
-a dropped element.
+Detection is **fitting, not blob-finding**: propose candidates loosely,
+test triples against the known 4″/4″ spacing, keep the best fit, and
+accept only under a residual threshold. The snippet's approach — Otsu
+over the frame, keep contours in an area window, take leftmost and
+rightmost — fails because on a sheet of artwork those contours are the
+drawing.
 
-### Phase 1 — registration core
+### `residual_px`, defined
+
+**The RMS distance, in canonical-field pixels, between where the fitted
+transform says each landmark should be and where it was actually
+observed.** Landmarks are the three peg centroids and the four paper
+corners; the model is the known bar geometry and the known sheet
+rectangle. It is the disagreement between a rigid-body model and reality.
+
+Report RMS *and* max *and* the per-landmark breakdown — one bad corner
+from a dog-ear looks completely different from a uniformly poor fit, and
+only the breakdown distinguishes them. Rough reading: **under 1 px is
+healthy; over 2 px means something in the scene is wrong, not merely
+noisy.**
+
+### Rejection in the widget
+
+ComfyUI supports exactly what you asked for. `io.NodeOutput` takes a
+`ui=` payload, `ui.PreviewText` renders text on the node, and core
+precedent returns values *and* text together (`nodes_save_3d.py:876`:
+`NodeOutput(mesh, info, ui=UI.PreviewText(info))`).
+
+So a rejection surfaces four ways, deliberately:
+
+1. **On the node** — `ui.PreviewText` with the reason, visible without
+   wiring anything up.
+2. **As a `STRING` output** — composable, so a report node can collect a
+   whole batch.
+3. **Burned into the overlay image** — so an ordinary `PreviewImage`
+   shows it, with the failed fit drawn on the frame.
+4. **As a per-frame flag inside `ACME_POSE`** — so downstream nodes can
+   filter programmatically.
+
+**Never by raising**, and never via `block_execution`: one bad frame in a
+batch of two hundred must not kill the run. Rejection is data.
+
+Reasons are specific and carry their numbers:
+
+```
+accepted            residual 0.41 px (max 0.62, corner NE)
+no_candidates       found 1 peg-like region, need 3
+no_consistent_triple 7 candidates, none matching 4.00"/4.00" +/- 2 mm
+residual_too_high   3.2 px > 1.5 px threshold — check for paper curl
+paper_not_found     no closed quadrilateral; outline supplies the 4th DOF
+ambiguous_orientation paper mass 51/49 either side of the bar line
+out_of_plane        corners inconsistent with a plane by 2.8 mm
+exposure            17% of frame clipped; peg segmentation unreliable
+```
+
+The last four are the useful ones: each names a physical cause the
+operator can act on.
+
+### Bar above or below
+
+An explicit `bar_position` control — `below` (Disney) / `above` / `auto`
+— because the two studio conventions both exist and the bar is
+180°-symmetric, so geometry alone cannot tell them apart. `auto` compares
+paper mass either side of the peg line and is right whenever the sheet is
+visible; the explicit setting exists for when it isn't, and because a
+silent wrong guess flips every drawing in a scene.
+
+---
+
+## 8. Capture hygiene
+
+**Lock everything.** Auto white balance, auto exposure and autofocus must
+all be off. This is not only about consistent colour — §9's pencil
+separation is a linear solve against measured ink colours, and it is
+simply invalid if the white point moves between frames.
+
+**Avoid chroma subsampling.** A 4:2:0 stream samples colour at half
+resolution, which is precisely the wrong trade for thin carmine lines.
+Shoot RAW, or 4:4:4 if RAW is unavailable.
+
+**Flash: yes, and it solves the display problem.** A display under the
+paper contributes only what transmits through the sheet; a flash from
+above can exceed that by one to two orders of magnitude, so its
+contribution becomes a small fixed offset. Subtracting a
+display-showing-black reference frame removes even that.
+
+But flash on graphite has a trap: **graphite is specular.** A direct
+flash puts highlights on exactly the dark strokes you are trying to
+measure, locally inverting contrast. The standard fix for photographing
+pencil artwork is **cross-polarisation** — a polarising filter on the
+light, an analyser on the lens, crossed — which extinguishes the specular
+component and leaves the diffuse. Cheap, and worth doing from the start
+rather than discovering later.
+
+**Blanking interlock**: designed for, not required. The capture node
+takes an optional "display reference" frame and subtracts it when
+present. With no light table this input is simply unused, and the hook
+costs nothing now.
+
+---
+
+## 9. Colour: separate the pencils, don't threshold them
+
+Rev 1's grayscale line extraction is withdrawn. Undercolour for blocking
+and instruction is part of the working method, the colour is the artist's
+choice — non-photo blue historically, then carmine, and Dr. Boulos
+prefers carmine — so **nothing may be hardcoded**.
+
+Thresholding on hue is the wrong instrument. The right one is **linear
+unmixing**. Under fixed illumination and locked white balance, each pixel
+is a mixture of a small number of materials with measured colours:
+
+```
+observed_linear_RGB  =  a·paper + b·graphite + c·undercolour
+```
+
+Three channels, three materials — **exactly determined**, solvable per
+pixel with a non-negative least-squares fit, yielding a *density map* per
+material rather than a mask. Density maps preserve pencil pressure, which
+matters: the acceptance note records that traceback liveliness comes
+precisely from line variation, and binarising at capture throws that away
+before anyone can choose.
+
+The undercolour is not assumed, it is **measured**: the artist scribbles
+a swatch of each pencil on a sheet of the same stock, once, and that
+calibrates a `PENCIL_PALETTE`. Any colour, any artist, no code change.
+
+Prerequisites, all of which are cheap and none of which are optional:
+undo the sRGB transfer curve so the mixing is linear; flat-field to
+remove illumination gradient; keep white balance locked.
+
+### The honest limit
+
+**Three RGB channels cleanly separate paper plus graphite plus *one*
+colour.** Blocking in carmine *and* instructions in a second colour is
+four unknowns from three measurements — solvable only with a sparsity or
+smoothness prior, and less reliably. Two ways out if it becomes real:
+keep blocking and instructions in the same pencil, or capture two frames
+under different illuminants (white and amber flash), which gives six
+channels and restores headroom. Worth knowing before the working method
+hardens around two undercolours.
+
+---
+
+## 10. Node set
+
+```
+ACME_CALIBRATION   lens intrinsics per camera, peg model, sheet size,
+                   field definition, bar_position
+ACME_POSE          per-frame homography + residual + accepted + reason
+PENCIL_PALETTE     measured linear RGB per pencil, from a swatch sheet
+```
+
+**Phase 1 — registration**
 
 | node | in | out |
 |---|---|---|
+| `AcmeCalibrateLens` | `IMAGE` batch of a checkerboard | `ACME_CALIBRATION` |
 | `AcmeCalibrationLoad` / `Save` | file | `ACME_CALIBRATION` |
-| `AcmeCalibrateDeskPlane` | `IMAGE` of a calibration target, camera id | `ACME_CALIBRATION` (H_desk) |
-| `AcmePegModelCalibrate` | `IMAGE`, `ACME_CALIBRATION` | `ACME_CALIBRATION` (+ peg model) |
-| `AcmeDetectPegBar` | `IMAGE`, `ACME_CALIBRATION` | `ACME_POSE`, `IMAGE` (debug overlay), `FLOAT` (residual) |
-| `AcmeRegister` | `IMAGE`, `ACME_POSE`, `ACME_CALIBRATION` | `IMAGE` (canonical field), `MASK` (valid area) |
-| `AcmeRegistrationReport` | `ACME_POSE` | `STRING`, `IMAGE` (residual plot) |
+| `AcmeDetectSheet` | `IMAGE`, `ACME_CALIBRATION` | `ACME_POSE`, `IMAGE` overlay, `STRING` report |
+| `AcmeRegister` | `IMAGE`, `ACME_POSE`, `ACME_CALIBRATION` | `IMAGE` canonical, `MASK` valid |
+| `AcmeRegistrationReport` | `ACME_POSE` | `STRING`, `IMAGE` residual plot |
+| `AcmeFilterByResidual` | `IMAGE`, `ACME_POSE` | accepted / rejected batches |
 
-`AcmeRegistrationReport` is not a convenience. It is where the
-milestone's success criterion — *registration residual in pixels on real
-drawings* — actually gets measured, so it ships in phase 1, not later.
-
-### Phase 2 — line art
-
-| node | in | out |
-|---|---|---|
-| `AcmeFlatField` | `IMAGE`, flat-field `IMAGE` | `IMAGE` |
-| `AcmeExtractLineArt` | `IMAGE`, `MASK` | `IMAGE` (line, paper removed), `MASK` (paper) |
-
-Flat-fielding — divide by a once-captured frame of blank paper under the
-same light — handles light-box non-uniformity and lens vignetting
-together, and is far more robust than any adaptive threshold.
-
-**Output grayscale, not binary.** Pencil pressure carries information
-and the pencil test is judged on the artist's own line. The acceptance
-note records that a *traceback* — the same drawing traced three or four
-times — stays alive on screen precisely because of line variation, and
-that digital paint lost that quality. Binarising at capture throws it
-away before anyone can decide whether they wanted it. Binarisation is a
-separate optional node for consumers that need it.
-
-### Phase 3 — chart and QA
+**Phase 2 — pencils**
 
 | node | purpose |
 |---|---|
-| `AcmeReadTimingChart` | the chart is the specification; reading it is part of capture |
-| `AcmeFieldGuideOverlay` | draw field grid and fitted peg positions over a registered frame |
-| `AcmeFilterByResidual` | split a batch into trusted and rejected |
+| `AcmePencilPaletteCalibrate` | swatch sheet → `PENCIL_PALETTE` |
+| `AcmeFlatField` | divide by a blank-paper reference |
+| `AcmeUnmixPencils` | registered `IMAGE` + palette → one density `IMAGE` per material |
 
-Registration is what makes chart reading tractable at all: in canonical
-field coordinates the chart lands in a predictable place, so the
-recogniser gets a small fixed region instead of a search.
+**Phase 3 — identification and QA**
+
+| node | purpose |
+|---|---|
+| `AcmeReadSheetId` | the identifiers written in the control colour, off the control-colour density map, linking sheets to the externally authored timing chart |
+| `AcmeFieldGuideOverlay` | see below |
+
+`AcmeReadTimingChart` is **withdrawn**. The timing chart is a separate,
+digitally-born artifact — a table, not something read off paper. What
+must be read off paper is only the sheet identifier, and unmixing hands
+that over on a clean channel.
+
+### What `AcmeFieldGuideOverlay` is for
+
+Two things, one of them a production need rather than debug decoration.
+
+*Production:* the field guide is the framing chart. Drawn over a
+registered capture it shows whether the artwork actually falls inside the
+shot — a drawing that strays outside the field will be cropped in the
+final, and the artist wants to know at the desk, not in the edit.
+
+*QA:* it is what you look at when `residual_px` says everything is fine
+and something still feels wrong. A number cannot show you that the fit
+locked onto the wrong three blobs; a picture with the model drawn over
+the observation shows it instantly.
+
+If it earns its place only as a debug aid it can be deferred. I think the
+field-boundary use makes it worth phase 3.
 
 ---
 
-## 6. Packaging, dependencies, and one real constraint
+## 11. Packaging
 
-**OpenCV is not present.** The ComfyUI runtime here is the `storymator`
-conda env — torch 2.13.0+cu130, numpy 2.5.1, scipy 1.18.0, Pillow 12.3.0
-— and OpenCV is not a ComfyUI dependency and is not installed. Two
-honest options:
-
-* **Declare it.** A custom-node pack ships its own `requirements.txt`,
-  which is the normal ComfyUI arrangement. `opencv-contrib-python` if
-  ArUco is wanted, plain `opencv-python` otherwise.
-* **Avoid it.** Blob proposals via `scipy.ndimage.label`, the rigid fit
-  in closed form with numpy, the warp with `torch.nn.functional.
-  grid_sample` on the GPU. Homography *estimation* for calibration is
-  the only genuinely awkward piece, and it runs rarely.
-
-Recommendation: **declare OpenCV.** Re-deriving `findHomography` to
-avoid a dependency is not a good trade, and ArUco is a live option that
-needs it. But note the avoidance path exists, because it is short.
-
-Layout — develop in this repository, install by symlink, which is the
-standard ComfyUI dev pattern and keeps the code under version control
-here rather than inside the ComfyUI checkout:
+OpenCV is **declared** in the pack's own `requirements.txt` —
+`opencv-contrib-python`, since ArUco remains available for the
+world-reference fiducial of §6 even though rev 0 does not use it. It is
+not a ComfyUI dependency and is not currently in the `storymator` env.
 
 ```
 storymator/comfyui/comfyui-acme/
     __init__.py            exports comfy_entrypoint()
-    nodes/…                one module per phase
-    acme/…                 the actual maths, importable and testable
+    nodes/                 thin adapters: tensors in, tensors out
+    acme/                  the arithmetic, importable and tested
                            without ComfyUI running
     requirements.txt
 ```
 
-```sh
-ln -s …/storymator/comfyui/comfyui-acme \
-      …/Comfy-Org/ComfyUI/custom_nodes/comfyui-acme
-```
-
-**Keep the maths out of the node classes.** `acme/` should be plain
-functions over numpy arrays with their own tests; the node classes are a
-thin adapter that converts tensors, calls them, and wraps results in
-`io.NodeOutput`. Otherwise nothing is testable without standing up a
-whole graph, and the acceptance harness needs to call this code
-directly.
-
-Shape of a node, for the record:
-
-```python
-class AcmeDetectPegBar(io.ComfyNode):
-    @classmethod
-    def define_schema(cls) -> io.Schema:
-        return io.Schema(
-            node_id="AcmeDetectPegBar",
-            display_name="ACME Detect Peg Bar",
-            category="storymator/acme",
-            inputs=[
-                io.Image.Input("image"),
-                io.Custom("ACME_CALIBRATION").Input("calibration"),
-                io.Float.Input("max_residual_px", default=1.5,
-                               min=0.1, max=50.0, step=0.1),
-            ],
-            outputs=[
-                io.Custom("ACME_POSE").Output("pose"),
-                io.Image.Output("overlay"),
-                io.Float.Output("residual_px"),
-            ],
-        )
-
-    @classmethod
-    def execute(cls, image, calibration, max_residual_px) -> io.NodeOutput:
-        ...
-```
+Installed by symlink into `ComfyUI/custom_nodes/`. The arithmetic stays
+out of the node classes so the acceptance harness can call it directly —
+and, as noted, so it can be tested without standing up a graph.
 
 ---
 
-## 7. Open questions — rig, not software
+## 12. Rev 0 plan, and what remains open
 
-These change the design rather than the implementation, so they are
-worth asking before code is written.
+**Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
+30–45° tilt, locked exposure and white balance, cross-polarised if a
+flash is used.
 
-1. **One sheet, or the top of a stack?** §3.1. If capture is of a single
-   sheet against the disc, the drawing plane is constant and scale is
-   fixed. If it is the top of a growing stack, scale varies by a few
-   percent and must be modelled or triangulated. This is the single most
-   consequential answer.
+**First slice**: `AcmeCalibrateLens` → `AcmeDetectSheet` →
+`AcmeRegister` → `AcmeRegistrationReport`, over real drawings, with the
+camera **deliberately moved between captures** — which is now a supported
+operating mode rather than a failure to survive.
 
-2. **How many cameras, and are they fixed?** The desk specifies an
-   array angled to avoid hand obscuration. Fixed cameras make `H_desk` a
-   one-time calibration; a movable or handheld camera makes it per-shot
-   and much harder.
+Success is a residual distribution and a demonstration that bad frames —
+curled paper, occluded pegs, inverted sheet, blown exposure — are refused
+with a reason rather than silently mis-registered.
 
-3. **Can a fiducial go on the bar or the disc?** §4. If yes, ArUco
-   collapses the whole transform problem and the peg detector becomes
-   optional.
+**Open:**
 
-4. **Is the under-glass display on during capture?** §3.2. If yes, we
-   need a blanking interlock or a subtraction step.
-
-5. **What is the actual bar?** Measured peg spacing and diameters from
-   the bar in the room, and the paper and field sizes in use. The
-   nominal values become defaults; the measured ones become the
-   calibration.
-
----
-
-## 8. Suggested first slice
-
-Narrow, and it produces the milestone number:
-
-`AcmeCalibrateDeskPlane` → `AcmeDetectPegBar` → `AcmeRegister` →
-`AcmeRegistrationReport`, over a stack of real drawings shot on the
-actual rig, with the disc **deliberately rotated between captures**.
-
-Success is not a pretty picture. It is a residual distribution, and a
-demonstration that deliberately bad frames — out of plane, occluded
-pegs, upside down — are refused rather than silently mis-registered.
-
-Everything after that has somewhere to stand.
+* Canson ACME bond punch tolerance relative to the trimmed edge. No
+  published spec found. It bounds how much correction stage two has to
+  make, and can be *measured* — register twenty sheets, look at the
+  spread of the peg-versus-outline correction. Worth doing early; it is
+  free and it validates the two-stage split.
+* Whether the oblique stack-edge measurement (§4) works in practice.
+* Whether blocking and instruction share one pencil (§9).
