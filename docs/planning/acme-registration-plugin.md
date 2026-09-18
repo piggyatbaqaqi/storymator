@@ -641,6 +641,80 @@ That number is part of the calibration: intrinsics describe the lens
 *at that focus*, and refocusing for a different working distance
 invalidates them. Record it beside the calibration file.
 
+## 11e. The first real calibration set — do not use it, 2026-09-18
+
+Thirteen ChArUco captures, `data/calibration/distortion/`, board found
+in all thirteen with good frame coverage (left 13 %, right 96 %, top
+10 %, bottom 94 %). The calibration is nonetheless **not usable**, for
+two compounding reasons that are both now fixable.
+
+### It is under-determined, and the instability proves it
+
+Same data, reasonable variations of the lens model:
+
+| model | fx | cx | k1 | rms |
+|---|---|---|---|---|
+| all 13 frames | 2520 | 1507 | +0.157 | 2.08 |
+| 8 flattest, unconstrained | **17857** (fy 1361968) | 3743 | −685.7 | 1.83 |
+| 8 flattest, fx = fy | 2542 | 1663 | +0.126 | 1.06 |
+| + no k3 | 3511 | 2512 | +0.067 | 1.36 |
+| + no tangential | 4497 | **3182** | −0.090 | 1.80 |
+
+Focal length swinging from 2542 to 17857 and a principal point landing
+at cx = 3182 in a 3264-pixel-wide frame are not imprecision. They are
+the signature of data that does not constrain the parameters: several
+very different lenses explain these observations about equally well.
+
+For scale, fx ≈ 2500 is at least *plausible* — the 10.5 in sheet spans
+about 1840 px at a working distance of roughly 350 mm — so the rig is
+fine and the capture set is what is wrong.
+
+### Cause one: the board is not flat, and this dominates the residual
+
+Fitting a homography per frame absorbs the entire pose, leaving lens
+distortion (smooth, shared between frames, radial) plus the board not
+being planar (per-frame, arbitrary):
+
+```
+distortion-9  (with glass)   0.88 px      distortion-2   4.52 px, max 14.4
+distortion-13                0.97 px      distortion-6   5.25 px, max 12.4
+distortion-5                 1.34 px      distortion-12  2.73 px, max  9.9
+```
+
+Single corners displaced by 12–14 px. No lens does that. And **the
+frame shot with glass over the target is the best in the set** — which
+is the experiment answering itself.
+
+Print anisotropy was checked and ruled out: sweeping the assumed y/x
+square ratio from 0.94 to 1.06 minimises rms at exactly 1.00.
+
+### Cause two: out-of-plane tilt never varies
+
+Recovered board tilt, every frame: **27.0° to 30.8°**, a spread of
+3.8°. The board lay flat on the desk in all thirteen, so its
+orientation relative to the camera is just the camera's own fixed
+obliquity. Position varied beautifully; orientation did not.
+
+Measured in isolation on synthetic views, constant tilt alone costs
+about 3.6 % on fx and is survivable. It is not survivable *combined*
+with a non-planar target: the degenerate direction has nothing pinning
+it, so corner noise and paper curl run away along it. That is why the
+unconstrained fit on the flattest eight frames diverged to fx = 17857
+rather than merely being a few percent off.
+
+### What to change
+
+Both causes have the same fix, and the materials are now to hand.
+**Mount the print on the foam board** — that removes the dominant
+residual — and then *hold* it, which supplies the out-of-plane tilt
+that lying on a desk cannot. Twelve to fifteen frames, tilt varied
+±20–30° in both axes and genuinely different frame to frame, spread
+across the frame including half off the corners.
+
+The glass stays useful for the other job: flattening a *drawing* for a
+capture, which is how the curl contribution to `training-1`'s 2.28 mm
+outline residual gets separated from the lens contribution.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
