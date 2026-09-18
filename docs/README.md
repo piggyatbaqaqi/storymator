@@ -67,6 +67,13 @@ Two attributions the manuscript is careful about and so should we be:
 Ollie Johnston; **Successive Breaking of Joints** from Richard Williams,
 who credited Art Babbit.
 
+## Bench procedures
+
+* [measuring-punch-tolerance.md](measuring-punch-tolerance.md) — how to
+  measure ACME punch geometry and peg/hole clearance, with a flatbed and
+  a stage micrometer. Produces the three numbers the registration design
+  currently assumes. An afternoon's work.
+
 ## Working notes in this repository
 
 * [planning/inbetween-acceptance.md](planning/inbetween-acceptance.md) —
