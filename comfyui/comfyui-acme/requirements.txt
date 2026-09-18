@@ -1,0 +1,8 @@
+# numpy, scipy and Pillow are already present in a ComfyUI environment.
+#
+# OpenCV is needed only by lens calibration (AcmeCalibrateLens, phase 1b).
+# Every other node runs without it: the homography is a 30-line DLT and
+# the warp is scipy.ndimage.  contrib rather than plain because ArUco is
+# the route to a world-fixed reference if the rig ever grows a disc --
+# see the design document, section 6.
+opencv-contrib-python>=4.10

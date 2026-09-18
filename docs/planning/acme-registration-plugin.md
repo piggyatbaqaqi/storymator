@@ -456,6 +456,60 @@ and, as noted, so it can be tested without standing up a graph.
 
 ---
 
+## 11a. What is implemented — 2026-09-18
+
+Phase 1 is in `comfyui/comfyui-acme/`. Seven nodes load and their
+schemas validate against ComfyUI 0.35.0; 24 tests pass against
+synthetic captures with exact ground truth, covering rotation to ±25°,
+keystone, sensor noise, camera moves between frames, and every refusal
+path. End to end on a four-frame batch including a deliberately bad
+frame: **0.38 px mean residual, 0.42 px max**, the bad frame refused
+with a reason, batch alignment preserved.
+
+**Four things the implementation changed about the design.**
+
+**The outline must be found to sub-pixel, and that is not optional.** A
+thresholded mask's boundary sits half a pixel inside the true edge on
+every side, shrinking the detected sheet by about a pixel in each
+dimension — a 0.13 % scale error, which put 1.8 px of residual on the
+pegs. Stage two cannot absorb it, because that fit is rigid and has no
+scale freedom *by design*. Edges are now located as the centroid of the
+intensity gradient along the surface normal, which is unbiased whatever
+the threshold was.
+
+**Sides must be assigned in the sheet's frame, not the image's.** The
+obvious assignment — nearest image axis — mis-sorts points near the
+corners as soon as the sheet is rotated and collapses entirely past
+about 20°, which is an ordinary camera placement. The mask's principal
+axes fix it.
+
+**Otsu is the wrong threshold here, twice over.** For the sheet against
+its ground, a bimodal histogram with a wide empty gap gives *identical*
+between-class variance for every threshold in that gap, so `argmax` is
+arbitrary. For the pegs, which are ~0.2 % of the sheet's area, there is
+no second mode to find at all — any split-the-modes method is really
+choosing where to cut the paper, and it fails the moment there is
+sensor noise. Replaced by a percentile midpoint and a paper-relative
+threshold respectively. (A genuine bug hid inside this: dividing by a
+zero class weight gives infinity, and `np.nan_to_num` turns infinity
+into a very large finite number, so the implementation returned the
+last bin for every image. Invisible on clean frames.)
+
+**Search pairs, not triples.** The two rectangular pegs are 2 × spacing
+apart with the round peg at their midpoint, so each qualifying pair
+determines where the third must be. That turns an O(n³) scan into
+O(n²), which on a noisy frame is the difference between seconds and
+four minutes — and noisy frames are the ones that generate the most
+candidates.
+
+Also worth knowing operationally: `px_per_mm` sets the output raster,
+and the default 11.63 over a 10.5 × 12.5 in sheet is a 3149 × 3740
+frame, about 12 Mpx. Batch size costs memory accordingly.
+
+Not yet built: `AcmeCalibrateLens`, which is the one node needing
+OpenCV. The pipeline runs without it — lens distortion simply goes
+uncorrected into the residual — so it is deferred rather than blocking.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
