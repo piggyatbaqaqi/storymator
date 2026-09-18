@@ -817,6 +817,85 @@ flatness — it is tilt diversity. A mounted board can now be held at
 genuinely different angles, which is the thing lying on a desk could
 never supply.
 
+## 11h. v4k_01 calibration set two — usable, with one real gap
+
+33 frames, board found in 28. **rms 0.647 px** against 2.08 for the
+first set, fx and fy now agreeing to 0.51 % where they differed by
+3.9 %, and tilt spanning 5–54° where it had spanned 3.8°. Mounting the
+target and holding it fixed both problems at once.
+
+**The calibration is stable, which is what makes it trustworthy.** fx
+across five lens models: 2637.6, 2640.8, 2646.5, 2629.5, 2640.2 — a
+spread of 0.6 %. The first set swung from 2542 to 17857 on the same
+test. So: `fx ≈ 2640, cx ≈ 1660, cy ≈ 1199` for v4k_01 at
+`focus_absolute 134`.
+
+### Where coverage is still weak
+
+Corner counts over an 8 × 6 grid of the frame:
+
+```
+              0    408    816   1224   1632   2040   2448   2856
+  y    0      0      1      2      3     12     19     13      7
+  y  408      0      1      5      9     28     60     46     15
+  y  816      0      0      7     11     34     74     42     20
+  y 1224      0      0      4     12     33     76     62     21
+  y 1632      0      0      2      8     35     78     55     19
+  y 2040      0      0      0      2     21     31     25     13
+```
+
+**The left third of the frame is empty** — 11 of 48 cells have no
+corners at all and every one of them is on the left. Density peaks
+right of centre.
+
+By radius from the principal point, which is what actually pins
+distortion: 80–90 % of maximum radius holds 12 corners, and **90–100 %
+holds none**.
+
+### What the outer gap costs, in pixels
+
+Fitting four lens models to the same data and asking each for the
+radial correction at a given radius. Where they agree the data
+constrains the answer; where they diverge they are extrapolating:
+
+| radius | data | free | fx=fy | no k3 | rational | spread |
+|---|---|---|---|---|---|---|
+| 20 % | yes | −3.53 | −3.11 | −2.98 | −2.87 | 0.66 |
+| 60 % | yes | −41.37 | −38.64 | −37.95 | −38.55 | 3.42 |
+| 80 % | yes | −62.19 | −58.97 | −58.40 | −58.02 | 4.18 |
+| 90 % | none | −68.31 | −64.11 | −59.53 | −70.45 | **10.93** |
+| 100 % | none | −72.64 | −64.73 | −44.07 | −66.49 | **28.56** |
+
+Inside 80 % the models agree within about 4 px. At the frame corner
+they disagree by **28.6 px** on a correction of roughly 70 px. The
+corners are pure extrapolation — and the corners of an ACME sheet are
+exactly what lands there in production.
+
+### Lighting: underexposed, not glare
+
+Measured on the board region rather than the whole frame, the white
+squares peak at **p95 = 151–158 of 255**, and highlight clipping is
+**0.0 %** in every frame. The whites should be reaching 220–240. About
+40 % of the available range is going unused, and contrast is what
+corner localisation is made of.
+
+So the fix is more light, not longer exposure: the five frames where
+the board was not found average a blur metric of 27 against 35 for the
+frames that worked, and lengthening exposure on a hand-held board makes
+that worse. Diffuse it, to avoid trading underexposure for specular
+glare on the print.
+
+### What to add
+
+Roughly ten more frames, pooled with the existing 28 rather than
+replacing them — calibration uses all views together:
+
+* the **left third** of the frame, which has nothing at all;
+* all four **frame corners**, board deliberately half out of frame;
+* more light, whites reading 220–240 without clipping.
+
+Tilt is now good and does not need changing.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
