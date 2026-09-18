@@ -506,9 +506,64 @@ Also worth knowing operationally: `px_per_mm` sets the output raster,
 and the default 11.63 over a 10.5 × 12.5 in sheet is a 3149 × 3740
 frame, about 12 Mpx. Batch size costs memory accordingly.
 
-Not yet built: `AcmeCalibrateLens`, which is the one node needing
-OpenCV. The pipeline runs without it — lens distortion simply goes
-uncorrected into the residual — so it is deferred rather than blocking.
+## 11b. First real capture — 2026-09-18
+
+`AcmeCalibrateLens` is built (OpenCV 5.0.0 installed; the suite passes
+against 4.11 and 5.0). Synthetic checkerboards recover fx to 0.3 %,
+principal point to 4 px and k1 to 0.011, at 0.22 px reprojection rms.
+Landmarks are undistorted rather than the frame — exact, free, and it
+leaves the pixels the warp still has to sample untouched.
+
+**Three things only a real photograph could have taught us.**
+
+*The peg spacing test had to move into millimetres.* On `training-1`
+the two halves of the bar project to **778 px and 564 px** — a 38 %
+difference for two spacings equal to a thousandth of an inch on the
+bar. Any equal-spacing test in image space is testing the camera
+angle. The test now runs after the outline homography, where the
+spacings really are equal. This also broke a circularity: the punched
+edge was identified from the pegs, and the pegs needed the edge. Now
+four orientation hypotheses are enumerated and the bar's own geometry
+picks the winner.
+
+*Registration could mirror the sheet.* The orientation search
+enumerated corner *swaps* — reflections — alongside rotations, and
+`eigh`'s arbitrary eigenvector signs let the corner winding flip
+between frames. Two captures of the same sheet registered to |y|
+agreeing within 0.03 mm and the sign disagreeing. Rotations only now,
+plus an explicit refusal of any fit with negative determinant.
+
+*The pegs are specular metal.* The dark blob is whichever part of each
+peg happens to be shaded, and at a loose threshold it merges with the
+cast shadow; at a tight one the peg fragments. Neither gives the peg's
+centre. Detection nonetheless finds all three correctly — verified
+against the overlay — so this is a centroid-accuracy problem, not a
+detection one.
+
+**Where the error actually is.** With the outline residual now measured
+against sampled edge points rather than the four corners — a homography
+from four corners fits those corners *exactly*, so their residual was
+measuring the peg correction and nothing else:
+
+| term | on `training-1` |
+|---|---|
+| outline, i.e. curl + lens distortion | **2.28 mm** |
+| peg triangle against the bar | 2.00 mm (23.4 px) |
+| punch correction applied | 2.47 mm |
+
+The frame is refused, correctly, against a 1.5 px threshold. 2.3 mm of
+non-planarity on a 267 mm sheet is about 0.9 %, which is the right
+order for an uncalibrated wide webcam lens plus the curl visible in the
+photograph. **Lens calibration is the one term we can remove today**,
+and it is now buildable: shoot a checkerboard with this camera.
+
+Also settled from the photograph: the sheet is **10.5 in along the
+bar**. Solving for the along-bar dimension that makes the peg spacing
+come to 101.6 mm gives 10.63 in — and gives the *same* 10.63
+whatever perpendicular dimension is assumed, because a rectangle's
+aspect cannot be recovered from one perspective view without
+intrinsics. That is a second, independent reason to calibrate the lens.
+
 
 ## 12. Rev 0 plan, and what remains open
 

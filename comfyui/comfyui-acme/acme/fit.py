@@ -8,10 +8,18 @@ aligned to and punch tolerance is real.
 
 The leftover disagreement between the observed peg triangle and the
 known bar is the residual, and it is the reason this module can refuse.
+
+**The peg pattern is tested in millimetres, never in pixels.**  On a
+real keystoned capture the two halves of the bar project to visibly
+different lengths -- 778 px and 564 px on the first rig photograph, a
+38 % difference for two spacings that are equal to a thousandth of an
+inch on the bar itself.  Any equal-spacing test in image space is
+therefore testing the camera angle.  Mapping candidates through the
+outline homography first removes the projection, and then the spacings
+really are equal.
 """
 
 from __future__ import annotations
-
 
 import math
 from dataclasses import dataclass, field
@@ -51,165 +59,175 @@ class Pose:
         return (f"accepted  residual {self.peg_residual_px:.2f} px "
                 f"(max {self.peg_residual_max_px:.2f}), "
                 f"outline {self.outline_residual_px:.2f} px, "
-                f"punch offset {self.punch_offset_mm*1000:.0f} um")
+                f"punch offset {self.punch_offset_mm:.2f} mm")
 
 
-def select_peg_triple(blobs: Sequence[Blob], spacing_px: float,
-                      tolerance_px: float, max_candidates: int = 60
-                      ) -> Tuple[Optional[List[Blob]], str]:
-    """Pick the three blobs that match the bar, or explain the failure.
+def select_peg_triple(blobs: Sequence[Blob], positions_mm: np.ndarray,
+                      spacing_mm: float, tolerance_mm: float,
+                      max_candidates: int = 60
+                      ) -> Tuple[Optional[List[int]], float, str]:
+    """Indices of the three blobs matching the bar, in millimetre space.
 
-    Searches **pairs**, not triples.  The two rectangular pegs are
-    2 x spacing apart with the round peg at their midpoint, so for each
-    pair at the right separation there is exactly one place the third
-    peg can be -- which turns an O(n^3) scan into O(n^2) with a lookup.
-    On a noisy capture that is the difference between seconds and
-    minutes, and noisy captures are the ones that produce the most
-    candidates.
+    Searches **pairs**, not triples.  The rectangular pegs are
+    2 x spacing apart with the round peg at their midpoint, so each
+    qualifying pair leaves exactly one place for the third -- which
+    turns an O(n^3) scan into O(n^2) with a lookup.  On a noisy capture
+    that is the difference between seconds and minutes, and noisy
+    captures produce the most candidates.
 
-    The final check is that the round peg is the middle one.  It is
-    cheap and it removes a whole class of false positive: three equally
-    spaced marks along a drawn line pass the spacing test and fail this.
+    Returns ``(indices, score, reason)`` with lower scores better.
     """
     if len(blobs) < 3:
-        return None, (f"no_candidates  found {len(blobs)} peg-like "
-                      f"region(s), need 3")
+        return None, float("inf"), (
+            f"no_candidates  found {len(blobs)} peg-like region(s), need 3")
 
-    # Pegs are among the largest things inside the area window, so when
-    # a frame produces a crowd, keep the biggest and say so if it fails.
-    pool = sorted(blobs, key=lambda b: -b.area_px)[:max_candidates]
-    centres = np.array([b.centre for b in pool])
-    span = 2.0 * spacing_px
+    order = sorted(range(len(blobs)), key=lambda i: -blobs[i].area_px
+                   )[:max_candidates]
+    pts = positions_mm[order]
+    span = 2.0 * spacing_mm
 
     best, best_score = None, None
-    for i in range(len(pool)):
-        for j in range(i + 1, len(pool)):
-            separation = float(np.linalg.norm(centres[j] - centres[i]))
-            if abs(separation - span) > 2.0 * tolerance_px:
+    for a in range(len(order)):
+        for b in range(a + 1, len(order)):
+            if abs(float(np.linalg.norm(pts[b] - pts[a])) - span) > 2 * tolerance_mm:
                 continue
-            midpoint = (centres[i] + centres[j]) / 2.0
-            distances = np.linalg.norm(centres - midpoint, axis=1)
-            distances[[i, j]] = np.inf
-            k = int(np.argmin(distances))
-            if distances[k] > tolerance_px:
+            midpoint = (pts[a] + pts[b]) / 2.0
+            distance = np.linalg.norm(pts - midpoint, axis=1)
+            distance[[a, b]] = np.inf
+            c = int(np.argmin(distance))
+            if distance[c] > tolerance_mm:
                 continue
-            triple = [pool[i], pool[k], pool[j]]
-            if centres[i][0] > centres[j][0]:
-                triple = [pool[j], pool[k], pool[i]]
-            d1 = float(np.linalg.norm(triple[1].centre - triple[0].centre))
-            d2 = float(np.linalg.norm(triple[2].centre - triple[1].centre))
-            score = (abs(d1 - spacing_px) + abs(d2 - spacing_px)
-                     + point_line_distance(triple[1].centre,
-                                           triple[0].centre,
-                                           triple[2].centre))
+            left, right = (a, b) if pts[a][0] <= pts[b][0] else (b, a)
+            d1 = float(np.linalg.norm(pts[c] - pts[left]))
+            d2 = float(np.linalg.norm(pts[right] - pts[c]))
+            straight = point_line_distance(pts[c], pts[left], pts[right])
+            score = abs(d1 - spacing_mm) + abs(d2 - spacing_mm) + straight
+            # The round peg belongs in the middle.  A preference rather
+            # than a veto: on a real rig the pegs are specular metal and
+            # the dark region is whichever part of each happens to be
+            # shaded, so measured elongation is a lighting artefact as
+            # much as a shape one.
+            elong = [blobs[order[i]].elongation for i in (left, c, right)]
+            if int(np.argmin(elong)) != 1:
+                score += tolerance_mm
             if best_score is None or score < best_score:
-                best, best_score = triple, score
+                best = [order[left], order[c], order[right]]
+                best_score = score
 
     if best is None:
-        return None, (f"no_consistent_triple  {len(blobs)} candidate(s), "
-                      f"none forming a collinear trio spaced "
-                      f"{spacing_px:.0f} px within {tolerance_px:.0f} px")
-
-    elongations = [b.elongation for b in best]
-    if int(np.argmin(elongations)) != 1:
-        return None, (f"peg_pattern_mismatch  the least elongated peg is not "
-                      f"the centre one (elongations "
-                      f"{elongations[0]:.1f}/{elongations[1]:.1f}/"
-                      f"{elongations[2]:.1f}); the round peg should be in "
-                      f"the middle")
-    return best, "ok"
-
-
-def _punched_edge(corners: np.ndarray, peg_centroid: np.ndarray) -> int:
-    """Index of the corner starting the edge nearest the pegs."""
-    distances = [
-        point_line_distance(peg_centroid, corners[i], corners[(i + 1) % 4])
-        for i in range(4)
-    ]
-    return int(np.argmin(distances))
+        return None, float("inf"), (
+            f"no_consistent_triple  {len(blobs)} candidate(s), none forming "
+            f"a collinear trio spaced {spacing_mm:.1f} mm within "
+            f"{tolerance_mm:.1f} mm")
+    return best, best_score, "ok"
 
 
 def _rotation_deg(transform: np.ndarray) -> float:
     return abs(math.degrees(math.atan2(transform[1, 0], transform[0, 0])))
 
 
+def _orientations(corners: np.ndarray) -> List[List[int]]:
+    """The four ways a rectangle's corners can be labelled.
+
+    Which edge is the punched one cannot be decided before the pegs are
+    located, and the pegs cannot be mapped to millimetres before an
+    orientation is chosen.  Rather than break that circle with a guess,
+    enumerate the four starting edges and let the bar's own geometry
+    say which hypothesis is right.
+
+    **Cyclic rotations only.**  Swapping a pair of corners instead
+    produces a *reflection*, and a reflected labelling fits a mirrored
+    sheet -- which cannot happen to paper viewed from one side, but
+    which a homography will cheerfully deliver.  Admitting them once
+    registered two captures of the same sheet into mirror images of
+    each other, agreeing to 0.03 mm on |y| and disagreeing on its sign.
+    """
+    return [[(start + k) % 4 for k in range(4)] for start in range(4)]
+
+
 def fit_pose(gray: np.ndarray, calibration: Calibration,
              max_residual_px: float = 1.5,
              polarity: str = "dark",
-             sheet_threshold: Optional[float] = None) -> Pose:
+             sheet_threshold: Optional[float] = None,
+             peg_contrast: float = 0.6,
+             peg_tolerance_mm: float = 6.0) -> Pose:
     """Register one frame, or say why not."""
     spec = calibration.field_spec
     peg = calibration.peg
-    sheet_model = calibration.sheet
+    model_corners = calibration.sheet.corners()
+    model_pegs = peg.positions()
 
     try:
         mask = find_sheet(gray, sheet_threshold)
-        corners = sheet_corners(mask, gray)
+        corners, edge_samples = sheet_corners(
+            mask, gray, return_samples=True)
     except ValueError as exc:
         return Pose(False, f"paper_not_found  {exc}")
 
-    # A rough pixels-per-mm, from the sheet's own diagonal, so the peg
-    # search window does not depend on the camera being where we think.
-    model_corners = sheet_model.corners()
+    # Straighten the landmarks, not the picture.  Correcting a handful
+    # of points is exact and free; resampling a 4K frame to correct it
+    # is neither, and would blur the pixels the warp still has to
+    # sample.  Skipped entirely when no intrinsics are present, which
+    # keeps OpenCV optional.
+    if calibration.camera_matrix is not None:
+        from .lens import undistort_points
+        corners = undistort_points(corners, calibration.camera_matrix,
+                                   calibration.dist_coeffs)
+
     scale_px_mm = (np.linalg.norm(corners[2] - corners[0])
                    / np.linalg.norm(model_corners[2] - model_corners[0]))
     round_area, rect_area = peg.nominal_area_mm2()
     try:
         blobs = find_peg_candidates(
             gray, mask,
-            min_area_px=0.25 * min(round_area, rect_area) * scale_px_mm ** 2,
-            max_area_px=4.0 * max(round_area, rect_area) * scale_px_mm ** 2,
-            polarity=polarity)
+            min_area_px=0.05 * min(round_area, rect_area) * scale_px_mm ** 2,
+            max_area_px=6.0 * max(round_area, rect_area) * scale_px_mm ** 2,
+            polarity=polarity, contrast=peg_contrast)
     except ValueError as exc:
         return Pose(False, str(exc))
+    if len(blobs) < 3:
+        return Pose(False, f"no_candidates  found {len(blobs)} peg-like "
+                           f"region(s), need 3")
 
-    triple, why = select_peg_triple(
-        blobs, peg.centre_spacing_mm * scale_px_mm,
-        tolerance_px=max(6.0, 0.05 * peg.centre_spacing_mm * scale_px_mm))
-    if triple is None:
-        return Pose(False, why)
+    centres = np.array([b.centre for b in blobs])
+    if calibration.camera_matrix is not None:
+        from .lens import undistort_points
+        centres = undistort_points(centres, calibration.camera_matrix,
+                                   calibration.dist_coeffs)
 
-    pegs_image = np.array([b.centre for b in triple])
-    peg_centroid = pegs_image.mean(axis=0)
-    start = _punched_edge(corners, peg_centroid)
-
-    # The bar is 180-degree symmetric and a nominally centred punch does
-    # not break the tie, so both orderings of the punched edge are
-    # geometrically valid.  Choose the one that rotates the frame least,
-    # which is right whenever the camera is not upside down -- and say
-    # so when the two are too close to call, rather than picking one and
-    # flipping half a scene.
-    candidates = []
-    for flip in (False, True):
-        idx = [(start + k) % 4 for k in range(4)]
-        if flip:
-            idx = [idx[1], idx[0], idx[3], idx[2]]
+    accepted_hypotheses = []
+    last_reason = "no_consistent_triple  no orientation produced a peg trio"
+    for idx in _orientations(corners):
         try:
             h = homography_from_points(corners[idx], model_corners)
         except (ValueError, np.linalg.LinAlgError):
             continue
-        candidates.append((idx, h))
-    if not candidates:
-        return Pose(False, "degenerate_outline  the four corners do not "
-                           "support a homography")
+        # Belt and braces against the mirror above: a fit that reverses
+        # handedness is describing a sheet seen from behind.
+        if np.linalg.det(h[:2, :2]) <= 0:
+            continue
+        triple, score, reason = select_peg_triple(
+            blobs, apply_homography(h, centres),
+            peg.centre_spacing_mm, peg_tolerance_mm)
+        if triple is None:
+            last_reason = reason
+            continue
+        accepted_hypotheses.append((score, idx, h, triple))
 
-    scored = sorted(candidates,
-                    key=lambda c: _rotation_deg(spec.matrix() @ c[1]))
-    idx, h = scored[0]
-    if len(scored) == 2:
-        gap = abs(_rotation_deg(spec.matrix() @ scored[1][1])
-                  - _rotation_deg(spec.matrix() @ scored[0][1]))
-        if gap < 20.0:
-            return Pose(False,
-                        f"ambiguous_orientation  the two sheet orientations "
-                        f"differ by only {gap:.0f} deg of frame rotation; "
-                        f"set bar_position explicitly")
+    if not accepted_hypotheses:
+        return Pose(False, last_reason)
 
-    # Stage two: the pegs are the datum, so bring them onto the model.
+    # Several orientations can fit, because a symmetric bar on a
+    # nominally centred punch looks the same rotated by 180 degrees.
+    # Among those that fit the bar, prefer the one that rotates the
+    # frame least: right whenever the camera is not upside down, and
+    # the explicit bar_position control exists for when it is not.
+    accepted_hypotheses.sort(key=lambda c: (round(c[0], 2),
+                                            _rotation_deg(spec.matrix() @ c[2])))
+    _, idx, h, triple = accepted_hypotheses[0]
+
+    pegs_image = centres[triple]
     pegs_mm = apply_homography(h, pegs_image)
-    model_pegs = peg.positions()
-    if pegs_mm[0, 0] > pegs_mm[2, 0]:
-        model_pegs = model_pegs[::-1]
     correction = rigid_from_points(pegs_mm, model_pegs)
     transform = correction @ h
 
@@ -217,7 +235,21 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
     corner_errors = residuals(transform, corners[idx], model_corners)
     px_mm = spec.px_per_mm
     peg_rms_px = rms(peg_errors) * px_mm
-    punch_offset_mm = float(np.linalg.norm(correction[:2, 2]))
+
+    # Outline residual, measured properly: map every sampled edge point
+    # into millimetres and ask how far it sits from the nearest side of
+    # the model rectangle.  The four corners cannot answer this -- the
+    # homography places them exactly by construction -- so what this
+    # number reports is curl and lens distortion, the two things that
+    # make a sheet not a plane.
+    lo = model_corners.min(axis=0)
+    hi = model_corners.max(axis=0)
+    flat = np.vstack(list(edge_samples.values()))
+    mapped = apply_homography(transform, flat)
+    to_side = np.minimum(
+        np.minimum(np.abs(mapped[:, 0] - lo[0]), np.abs(mapped[:, 0] - hi[0])),
+        np.minimum(np.abs(mapped[:, 1] - lo[1]), np.abs(mapped[:, 1] - hi[1])))
+    outline_rms_px = rms(to_side) * px_mm
 
     pose = Pose(
         accepted=peg_rms_px <= max_residual_px,
@@ -225,8 +257,8 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         transform=transform,
         peg_residual_px=peg_rms_px,
         peg_residual_max_px=float(peg_errors.max()) * px_mm,
-        outline_residual_px=rms(corner_errors) * px_mm,
-        punch_offset_mm=punch_offset_mm,
+        outline_residual_px=outline_rms_px,
+        punch_offset_mm=float(np.linalg.norm(correction[:2, 2])),
         corners_image=corners[idx],
         pegs_image=pegs_image,
         per_landmark_px={

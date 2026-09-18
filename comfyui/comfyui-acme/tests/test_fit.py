@@ -107,3 +107,31 @@ def test_noise_does_not_break_the_fit():
     noisy = render(cal, truth, SIZE, noise=0.02, seed=7)
     pose = fit_pose(noisy, cal)
     assert pose.accepted, pose.reason
+
+
+def test_registration_never_mirrors_the_sheet():
+    """Paper viewed from one side cannot be mirrored, but a homography
+    fitted to a reflected corner labelling will happily deliver one.
+
+    Caught on 2026-09-18: two captures of the same sheet registered to
+    |y| agreeing within 0.03 mm and the *sign* disagreeing, because the
+    orientation search enumerated corner swaps (reflections) alongside
+    rotations, and because eigh's arbitrary eigenvector signs let the
+    corner winding flip between frames.
+    """
+    cal = Calibration()
+    probe = np.array([[40.0, 90.0], [-60.0, 150.0]])
+    landed = []
+    for kwargs in ({"rotation_deg": -10.0},
+                   {"rotation_deg": 14.0, "tilt": (1.2e-4, 0.0),
+                    "scale": 0.93}):
+        h = camera_homography(cal, SIZE, **kwargs)
+        pose = fit_pose(render(cal, h, SIZE), cal)
+        assert pose.accepted, pose.reason
+        assert np.linalg.det(pose.transform[:2, :2]) > 0, \
+            "the fit reversed handedness"
+        landed.append(apply_homography(pose.transform,
+                                       apply_homography(h, probe)))
+    assert np.allclose(np.sign(landed[0]), np.sign(landed[1])), (
+        f"registered coordinates disagree in sign: "
+        f"{landed[0].tolist()} vs {landed[1].tolist()}")

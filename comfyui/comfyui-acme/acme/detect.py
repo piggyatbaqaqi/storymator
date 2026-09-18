@@ -90,6 +90,13 @@ def _principal_angle(mask: np.ndarray) -> float:
     cov = np.cov((pts - pts.mean(axis=0)).T)
     _, evecs = np.linalg.eigh(cov)
     major = evecs[:, -1]
+    # eigh's eigenvector signs are arbitrary.  Left alone, the local
+    # frame flips at random between frames, which reverses the winding
+    # of the corners this function is used to order -- and a reversed
+    # winding is a mirrored sheet, which no homography should ever be
+    # asked to fit.  Pin the major axis to the right half-plane.
+    if major[0] < 0 or (major[0] == 0 and major[1] < 0):
+        major = -major
     return float(np.arctan2(major[1], major[0]))
 
 
@@ -133,8 +140,8 @@ def _refine_edge(gray: np.ndarray, origin: np.ndarray, direction: np.ndarray,
     return along[good][inside] + centre[inside, None] * normal[None, :]
 
 
-def sheet_corners(mask: np.ndarray,
-                  gray: Optional[np.ndarray] = None) -> np.ndarray:
+def sheet_corners(mask: np.ndarray, gray: Optional[np.ndarray] = None,
+                  return_samples: bool = False):
     """Four corners, as the intersections of four fitted edges.
 
     Corners are never located directly.  A punched sheet's corner is
@@ -151,7 +158,13 @@ def sheet_corners(mask: np.ndarray,
     Pass ``gray`` to refine the edges to sub-pixel; see
     :func:`_refine_edge` for why that is required rather than optional.
 
-    Returns (4, 2) image points, in cyclic order.
+    Returns (4, 2) image points, in cyclic order.  With
+    ``return_samples``, also the edge points the fit used -- which are
+    what makes a *meaningful* outline residual possible: a homography
+    from exactly four corners fits those four corners exactly, so their
+    residual is identically zero and measures nothing.  Hundreds of
+    points along the edges over-determine it, and their scatter is
+    paper curl and lens distortion made visible.
     """
     eroded = ndimage.binary_erosion(mask, iterations=1)
     ys, xs = np.nonzero(mask & ~eroded)
@@ -172,6 +185,7 @@ def sheet_corners(mask: np.ndarray,
     }
 
     fits = {}
+    samples = {}
     for name, (selector, axis) in groups.items():
         side = pts[selector]
         side_local = local[selector]
@@ -181,24 +195,30 @@ def sheet_corners(mask: np.ndarray,
         lo, hi = np.percentile(side_local[:, axis], [10, 90])
         keep = (side_local[:, axis] >= lo) & (side_local[:, axis] <= hi)
         origin, direction = fit_line(side[keep])
+        samples[name] = side[keep]
         if gray is not None:
             refined = _refine_edge(gray, origin, direction, extent=(hi - lo))
             if refined is not None:
                 origin, direction = fit_line(refined)
+                samples[name] = refined
         fits[name] = (origin, direction)
 
-    return np.array([
+    corners = np.array([
         line_intersection(*fits["minus_v"], *fits["minus_u"]),
         line_intersection(*fits["minus_v"], *fits["plus_u"]),
         line_intersection(*fits["plus_v"], *fits["plus_u"]),
         line_intersection(*fits["plus_v"], *fits["minus_u"]),
     ])
+    if return_samples:
+        return corners, samples
+    return corners
 
 
 def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
                         min_area_px: float, max_area_px: float,
                         polarity: str = "dark",
-                        threshold: Optional[float] = None) -> List[Blob]:
+                        threshold: Optional[float] = None,
+                        contrast: float = 0.6) -> List[Blob]:
     """Compact regions inside the sheet that could be pegs.
 
     ``polarity`` is a rig property rather than a tuning knob.  A sheet
@@ -230,9 +250,10 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
     if threshold is not None:
         level = threshold
     elif polarity == "dark":
-        level = paper * 0.6
+        level = paper * contrast
     else:
-        level = paper + (float(np.percentile(values, 99.9)) - paper) * 0.5
+        level = paper + (float(np.percentile(values, 99.9)) - paper) \
+            * (1.0 - contrast)
 
     picked = (gray < level) if polarity == "dark" else (gray > level)
     picked &= inside
