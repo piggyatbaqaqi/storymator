@@ -1,0 +1,538 @@
+#!/usr/bin/env python3
+"""Measure ACME punch geometry from flatbed scans of blank punched sheets.
+
+Answers the question left open in
+docs/planning/acme-registration-plugin.md §12: how much does the punch
+pattern move relative to the trimmed sheet edges, sheet to sheet?  That
+number bounds how much work the peg-correction stage of the registration
+fit has to do, and no published spec for Canson ACME bond gives it.
+
+**This is a DIFFERENTIAL measurement, which is why a consumer flatbed is
+adequate.**  A scanner's absolute scale is unreliable -- the scan axis is
+driven by a belt and stepper, and 0.1-0.3 % error over 300 mm is normal,
+which is several times the quantity being measured.  But that error is
+the *same for every sheet placed in the same spot*, so it cancels
+completely in the sheet-to-sheet spread.  Absolute offsets from this
+script are contaminated; the spread is not, and the spread is the answer.
+
+Five quantities are reported per sheet, in a frame built from the sheet's
+own punched edge, so scanner placement does not matter:
+
+    offset_along    centre-hole displacement along the punched edge
+    offset_normal   centre-hole distance from the punched edge
+    skew            angle between the hole line and the punched edge
+    span            rect hole to rect hole  (nominal 8 in = 203.2 mm)
+    centring        centre hole vs the midpoint of the two rect holes
+
+Usage::
+
+    bin/measure-punch-tolerance --dpi 600 scans/*.png
+    bin/measure-punch-tolerance --self-test
+
+SCANNING PROTOCOL
+
+  Platen only -- never the ADF.  Sheet transport adds skew and scale
+  error far larger than the quantity being measured.
+
+  **Black card behind the sheet.**  White paper against a white lid
+  leaves almost no contrast at the holes.  Black card makes the holes
+  read black and sharpens the sheet outline at the same time, which is
+  the whole measurement in one move.
+
+  Lid closed; add a weight if the bond curls.  Any lift changes local
+  magnification.
+
+  Maximum OPTICAL resolution -- check the specification, since
+  advertised "interpolated" figures are meaningless.  600 dpi is ample:
+  the round hole is then 150 px across and centroids to a couple of
+  microns.
+
+  Grayscale, and turn **off** auto-deskew, auto-crop, descreen,
+  sharpening and auto-levels.  Auto-deskew is the dangerous one: it
+  silently rotates each scan and destroys the skew measurement without
+  leaving a trace.
+
+  TIFF or PNG if the scanner offers them.  JPEG is tolerable at maximum
+  quality -- its ringing is near-antisymmetric across an edge, so large
+  centroids and long line fits largely survive it -- but it is a free
+  loss to avoid.
+
+  Put every sheet in roughly the same place and orientation.  A few
+  millimetres is close enough; the point is only that the scanner's
+  positional nonlinearity is then common to every sheet and cancels.
+
+  **Sample across the ream** -- every tenth sheet, not twenty
+  consecutive.  Punching is done in stacks, so adjacent sheets were
+  punched in the same stroke and will agree with each other far better
+  than the ream does.  Twenty to thirty sheets estimates a standard
+  deviation to about +/-15 %.
+
+  **Run the control.**  Scan one sheet ten times, lifting and replacing
+  it between scans.  That spread is the method's own noise floor.  If it
+  is not comfortably smaller than the sheet-to-sheet spread, the
+  sheet-to-sheet number is measuring the scanner, not the paper.
+"""
+
+import argparse
+import math
+import sys
+from pathlib import Path
+from typing import Dict, List, NamedTuple, Optional, Sequence, Tuple
+
+import numpy as np
+from PIL import Image
+from scipy import ndimage
+
+MM_PER_INCH = 25.4
+NOMINAL_SPAN_MM = 8.0 * MM_PER_INCH        # rect peg to rect peg
+NOMINAL_ROUND_DIA_MM = 0.25 * MM_PER_INCH
+NOMINAL_RECT_MM = (0.5 * MM_PER_INCH, 0.125 * MM_PER_INCH)
+
+
+class Sheet(NamedTuple):
+    """One scan's measurements, all in millimetres / degrees."""
+    name: str
+    offset_along: float
+    offset_normal: float
+    skew_deg: float
+    span: float
+    centring: float
+    round_dia: float
+    rect_short: float
+    rect_long: float
+
+
+# ---------------------------------------------------------------------
+# geometry helpers -- deliberately plain numpy so this can migrate into
+# the plugin's acme/ package unchanged.  See the design doc §11.
+# ---------------------------------------------------------------------
+
+def fit_line(points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Total-least-squares line through Nx2 points.
+
+    Returns ``(origin, direction)`` with direction a unit vector.  TLS
+    rather than least squares because a scanned edge is near-vertical or
+    near-horizontal by turns and an ordinary y-on-x fit degenerates.
+    """
+    origin = points.mean(axis=0)
+    _, _, vh = np.linalg.svd(points - origin, full_matrices=False)
+    return origin, vh[0] / np.linalg.norm(vh[0])
+
+
+def cross2(a: np.ndarray, b: np.ndarray) -> float:
+    """2-D cross product. numpy 2 removed the 2-vector case of np.cross."""
+    return float(a[0] * b[1] - a[1] * b[0])
+
+
+def intersect(o1: np.ndarray, d1: np.ndarray,
+              o2: np.ndarray, d2: np.ndarray) -> np.ndarray:
+    """Intersection of two parametric lines."""
+    a = np.array([d1, -d2]).T
+    t = np.linalg.solve(a, o2 - o1)
+    return o1 + t[0] * d1
+
+
+def largest_component(mask: np.ndarray) -> np.ndarray:
+    labels, n = ndimage.label(mask)
+    if n == 0:
+        raise ValueError("no connected component found")
+    sizes = ndimage.sum(mask, labels, range(1, n + 1))
+    return labels == (int(np.argmax(sizes)) + 1)
+
+
+def otsu(gray: np.ndarray) -> float:
+    hist, edges = np.histogram(gray, bins=256, range=(0.0, 1.0))
+    hist = hist.astype(float)
+    omega = np.cumsum(hist)
+    mu = np.cumsum(hist * np.arange(256))
+    total = omega[-1]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        between = (mu[-1] * omega - mu) ** 2 / (omega * (total - omega))
+    between = np.nan_to_num(between)
+    return float(edges[int(np.argmax(between))])
+
+
+def edge_points(mask: np.ndarray) -> np.ndarray:
+    """Boundary pixels of a filled mask, as Nx2 (x, y)."""
+    eroded = ndimage.binary_erosion(mask, iterations=1)
+    ys, xs = np.nonzero(mask & ~eroded)
+    return np.column_stack([xs, ys]).astype(float)
+
+
+def sheet_corners(mask: np.ndarray) -> np.ndarray:
+    """Four corners, from intersecting four fitted edges.
+
+    Corners are never located directly: a punched sheet's corner is
+    rounded and often dog-eared, while each edge is thousands of pixels
+    of evidence.  Boundary points are assigned to a side by which
+    extreme they lie nearest, the middle 80 % of each side is fitted so
+    corner rounding is excluded, and adjacent fits are intersected.
+    """
+    pts = edge_points(mask)
+    centre = pts.mean(axis=0)
+    rel = pts - centre
+    # Assign each boundary point to left/right/top/bottom by the
+    # dominant axis of its offset from the centre.
+    horizontal = np.abs(rel[:, 0]) > np.abs(rel[:, 1])
+    sides = {
+        "left":   pts[horizontal & (rel[:, 0] < 0)],
+        "right":  pts[horizontal & (rel[:, 0] > 0)],
+        "top":    pts[~horizontal & (rel[:, 1] < 0)],
+        "bottom": pts[~horizontal & (rel[:, 1] > 0)],
+    }
+    fits = {}
+    for name, side in sides.items():
+        if len(side) < 50:
+            raise ValueError(f"only {len(side)} boundary points on the "
+                             f"{name} edge; is the sheet fully in frame?")
+        axis = 1 if name in ("left", "right") else 0
+        keep = side[:, axis]
+        lo, hi = np.percentile(keep, [10, 90])
+        trimmed = side[(keep >= lo) & (keep <= hi)]
+        fits[name] = fit_line(trimmed)
+    return np.array([
+        intersect(*fits["top"], *fits["left"]),
+        intersect(*fits["top"], *fits["right"]),
+        intersect(*fits["bottom"], *fits["right"]),
+        intersect(*fits["bottom"], *fits["left"]),
+    ])
+
+
+def find_holes(sheet_mask: np.ndarray,
+               px_per_mm: float) -> List[Dict[str, float]]:
+    """The three punched holes: dark islands enclosed by the sheet."""
+    filled = ndimage.binary_fill_holes(sheet_mask)
+    holes = filled & ~sheet_mask
+    labels, n = ndimage.label(holes)
+    out: List[Dict[str, float]] = []
+    min_area = 0.5 * math.pi * (NOMINAL_ROUND_DIA_MM / 2) ** 2 * px_per_mm ** 2
+    for index in range(1, n + 1):
+        blob = labels == index
+        area = float(blob.sum())
+        if area < min_area:
+            continue
+        ys, xs = np.nonzero(blob)
+        pts = np.column_stack([xs, ys]).astype(float)
+        centre = pts.mean(axis=0)
+        # Principal axes give the rectangle's long/short extent and the
+        # circle's diameter, without assuming orientation.
+        cov = np.cov((pts - centre).T)
+        evals, evecs = np.linalg.eigh(cov)
+        proj = (pts - centre) @ evecs
+        extent = np.ptp(proj, axis=0) / px_per_mm
+        out.append({
+            "x": centre[0], "y": centre[1],
+            "area_mm2": area / px_per_mm ** 2,
+            "short": float(min(extent)), "long": float(max(extent)),
+            "elongation": float(max(extent) / max(min(extent), 1e-9)),
+        })
+    if len(out) != 3:
+        raise ValueError(f"found {len(out)} holes, expected 3")
+    return out
+
+
+def measure(path: Path, dpi: float, invert: bool = False) -> Sheet:
+    img = Image.open(path).convert("L")
+    gray = np.asarray(img, dtype=float) / 255.0
+    if invert:
+        gray = 1.0 - gray
+    px_per_mm = dpi / MM_PER_INCH
+
+    # Black card behind the sheet: paper is bright, everything else dark.
+    sheet = largest_component(gray > otsu(gray))
+    corners = sheet_corners(ndimage.binary_fill_holes(sheet))
+    holes = find_holes(sheet, px_per_mm)
+
+    # The round hole is the one that is not elongated.
+    holes.sort(key=lambda h: h["elongation"])
+    round_hole, rect_a, rect_b = holes[0], holes[1], holes[2]
+    if round_hole["elongation"] > 1.5:
+        raise ValueError("no round hole found; all three look elongated")
+
+    centres = np.array([[h["x"], h["y"]] for h in (rect_a, rect_b)])
+    round_c = np.array([round_hole["x"], round_hole["y"]])
+
+    # Sheet frame: origin at the midpoint of the punched edge, x along
+    # it, y into the sheet.  The punched edge is whichever of the four
+    # is nearest the holes, which is what makes this work for a bar
+    # above or below the artwork without being told which.
+    hole_centroid = np.vstack([centres, round_c]).mean(axis=0)
+    best, best_d = None, None
+    for i in range(4):
+        p, q = corners[i], corners[(i + 1) % 4]
+        d = abs(cross2(q - p, hole_centroid - p)) / np.linalg.norm(q - p)
+        if best_d is None or d < best_d:
+            best, best_d = (p, q), d
+    p, q = best
+    # Derive x FROM y, never the other way round.  Taking x along
+    # (q - p) makes its sign depend on which corner the edge search
+    # happened to call `p`, so two sheets could end up with opposite
+    # conventions and the disagreement would be counted as punch
+    # scatter -- inflating exactly the number this script exists to
+    # measure.  y points into the sheet, which is a physical fact; x is
+    # then fixed by a right-angle rotation of it.
+    edge_dir = (q - p) / np.linalg.norm(q - p)
+    y_axis = np.array([-edge_dir[1], edge_dir[0]])
+    if np.dot(corners.mean(axis=0) - p, y_axis) < 0:
+        y_axis = -y_axis
+    x_axis = np.array([-y_axis[1], y_axis[0]])
+    origin = (p + q) / 2.0
+
+    def to_sheet(pt: np.ndarray) -> np.ndarray:
+        rel = pt - origin
+        return np.array([rel @ x_axis, rel @ y_axis]) / px_per_mm
+
+    round_s = to_sheet(round_c)
+    rect_s = np.array([to_sheet(c) for c in centres])
+    rect_s = rect_s[np.argsort(rect_s[:, 0])]
+
+    hole_dir = rect_s[1] - rect_s[0]
+    span = float(np.linalg.norm(hole_dir))
+    skew = math.degrees(math.atan2(hole_dir[1], hole_dir[0]))
+    midpoint = rect_s.mean(axis=0)
+
+    return Sheet(
+        name=path.name,
+        offset_along=float(round_s[0]),
+        offset_normal=float(round_s[1]),
+        skew_deg=skew,
+        span=span,
+        centring=float(round_s[0] - midpoint[0]),
+        round_dia=float((round_hole["short"] + round_hole["long"]) / 2),
+        rect_short=float((rect_a["short"] + rect_b["short"]) / 2),
+        rect_long=float((rect_a["long"] + rect_b["long"]) / 2),
+    )
+
+
+# ---------------------------------------------------------------------
+# reporting
+# ---------------------------------------------------------------------
+
+def spread(values: Sequence[float]) -> Tuple[float, float, float]:
+    arr = np.asarray(values, dtype=float)
+    return float(arr.mean()), float(arr.std(ddof=1)), float(np.ptp(arr))
+
+
+def report(sheets: List[Sheet], dpi: float) -> str:
+    n = len(sheets)
+    px_mm = dpi / MM_PER_INCH
+    lines = [
+        f"{n} sheets at {dpi:.0f} dpi  "
+        f"({1000/px_mm:.1f} um/px)",
+        "",
+        f"{'quantity':<16}{'mean':>12}{'sigma':>12}{'range':>12}   note",
+        "-" * 70,
+    ]
+
+    def row(label, values, unit, note, scale=1.0):
+        m, s, r = spread([v * scale for v in values])
+        lines.append(f"{label:<16}{m:>12.4f}{s:>12.4f}{r:>12.4f}   "
+                     f"{unit}  {note}")
+
+    row("offset_along", [s.offset_along for s in sheets], "mm",
+        "absolute contaminated by scanner; sigma is the answer")
+    row("offset_normal", [s.offset_normal for s in sheets], "mm",
+        "distance from the punched edge")
+    row("skew", [s.skew_deg * 60 for s in sheets], "arcmin",
+        "hole line vs punched edge")
+    row("span", [s.span for s in sheets], "mm",
+        f"nominal {NOMINAL_SPAN_MM:.1f}; noisiest of the five")
+    row("centring", [s.centring for s in sheets], "mm", "nominal 0")
+    row("round_dia", [s.round_dia for s in sheets], "mm",
+        f"nominal peg {NOMINAL_ROUND_DIA_MM:.3f}")
+    row("rect_short", [s.rect_short for s in sheets], "mm",
+        f"nominal peg {NOMINAL_RECT_MM[1]:.3f}")
+    row("rect_long", [s.rect_long for s in sheets], "mm",
+        f"nominal peg {NOMINAL_RECT_MM[0]:.3f}")
+
+    lines += ["", "What the sigmas mean for registration:"]
+    _, s_along, _ = spread([s.offset_along for s in sheets])
+    _, s_norm, _ = spread([s.offset_normal for s in sheets])
+    _, s_skew, _ = spread([s.skew_deg for s in sheets])
+    worst = math.hypot(s_along, s_norm)
+    # 11.6 px/mm is the capture rig's scale: 4K across a 13 in frame.
+    lines.append(
+        f"  punch-to-edge scatter is {worst*1000:.0f} um "
+        f"= {worst*11.63:.2f} px at the capture rig's 11.6 px/mm.")
+    lines.append(
+        f"  skew scatter {s_skew*60:.2f} arcmin displaces a corner "
+        f"200 mm out by {200*math.radians(s_skew)*11.63:.2f} px.")
+    lines.append("")
+    lines.append("  If those are well under a pixel, fitting the sheet")
+    lines.append("  outline alone would register adequately and the peg")
+    lines.append("  stage is a refinement.  If they are a pixel or more,")
+    lines.append("  the pegs are doing real work and must stay the datum.")
+
+    if n < 12:
+        lines.append("")
+        lines.append(f"  CAUTION: {n} sheets estimates sigma to only about "
+                     f"+/-{100/math.sqrt(2*(n-1)):.0f} %.  20-30 is better.")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------
+# self-test: synthesise sheets with known errors and recover them
+# ---------------------------------------------------------------------
+
+def synthesise(dpi: float, along: float, normal: float, skew_deg: float,
+               span: float) -> np.ndarray:
+    """A sheet with anti-aliased edges, so sub-pixel claims are testable.
+
+    Hard 0/1 edges quantise every feature to the pixel grid and put a
+    truncation error of up to a pixel into the "truth", which makes the
+    self-test measure the synthesiser rather than the measurement.
+    Coverage is computed from a signed distance instead: pixel i covers
+    [i-0.5, i+0.5), so a boundary at distance d contributes
+    clip(0.5 - d, 0, 1).  Exact for straight edges, close enough at the
+    corners, and no supersampling -- a 4x buffer here would be 800
+    megapixels.
+    """
+    px_per_mm = dpi / MM_PER_INCH
+    w_mm, h_mm = 10.5 * MM_PER_INCH, 12.5 * MM_PER_INCH
+    pad = 10.0
+    W = int(round((w_mm + 2 * pad) * px_per_mm))
+    H = int(round((h_mm + 2 * pad) * px_per_mm))
+    x0, y0 = pad * px_per_mm, pad * px_per_mm
+    x1, y1 = x0 + w_mm * px_per_mm, y0 + h_mm * px_per_mm
+    yy, xx = np.mgrid[0:H, 0:W].astype(float)
+
+    def cover(signed_distance: np.ndarray) -> np.ndarray:
+        return np.clip(0.5 - signed_distance, 0.0, 1.0)
+
+    sheet = (cover(x0 - xx) * cover(xx - x1)
+             * cover(y0 - yy) * cover(yy - y1))
+
+    # Punched edge is the bottom; holes sit `normal` mm above it and the
+    # pattern is displaced `along` mm to the right of centre.
+    cx = (x0 + x1) / 2 + along * px_per_mm
+    cy = y1 - normal * px_per_mm
+    radius = NOMINAL_ROUND_DIA_MM / 2 * px_per_mm
+    holes = cover(np.hypot(xx - cx, yy - cy) - radius)
+
+    # Sheet frame has y pointing INTO the sheet, image frame has y
+    # down, so a positive reported skew is a negative image rotation.
+    th = math.radians(-skew_deg)
+    half = span / 2 * px_per_mm
+    lo = NOMINAL_RECT_MM[0] / 2 * px_per_mm
+    sh = NOMINAL_RECT_MM[1] / 2 * px_per_mm
+    for sign in (-1, 1):
+        hx = cx + sign * half * math.cos(th)
+        hy = cy + sign * half * math.sin(th)
+        dx = (xx - hx) * math.cos(th) + (yy - hy) * math.sin(th)
+        dy = -(xx - hx) * math.sin(th) + (yy - hy) * math.cos(th)
+        holes = np.maximum(
+            holes, cover(np.maximum(np.abs(dx) - lo, np.abs(dy) - sh)))
+
+    return sheet * (1.0 - holes)
+
+
+def self_test(dpi: float = 600.0) -> int:
+    """Check the claim the script actually makes: that DIFFERENCES
+    between sheets are recovered accurately.
+
+    Absolute values carry a fixed bias of roughly half a pixel, because
+    a thresholded mask's boundary pixels sit just inside the true edge.
+    That bias is identical for every sheet, so it cancels in the spread
+    -- which is the only quantity this script asks anyone to believe.
+    Testing absolutes would be testing the threshold, not the method.
+    """
+    import tempfile
+    cases = [
+        (0.00, 12.00, 0.00, NOMINAL_SPAN_MM),
+        (0.35, 12.10, 0.05, NOMINAL_SPAN_MM + 0.08),
+        (-0.22, 11.93, -0.04, NOMINAL_SPAN_MM - 0.05),
+    ]
+    print(f"self-test at {dpi:.0f} dpi "
+          f"({MM_PER_INCH/dpi*1000:.1f} um/px)\n")
+    measured = []
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, (along, normal, skew, span) in enumerate(cases):
+            arr = synthesise(dpi, along, normal, skew, span)
+            path = Path(tmp) / f"synthetic_{i}.png"
+            Image.fromarray(
+                np.clip(arr * 255, 0, 255).astype(np.uint8)).save(path)
+            measured.append(measure(path, dpi))
+
+    print("absolute bias (constant, cancels in any spread):")
+    print(f"    along  {measured[0].offset_along - cases[0][0]:+.4f} mm"
+          f"   normal {measured[0].offset_normal - cases[0][1]:+.4f} mm"
+          f"   = {(measured[0].offset_normal - cases[0][1])*dpi/MM_PER_INCH:+.2f} px")
+    print()
+    print("differences from sheet 0 -- what the report's sigmas rest on:")
+    print(f"{'':>8}{'d_along (mm)':>26}{'d_normal (mm)':>26}"
+          f"{'d_skew (deg)':>26}{'d_span (mm)':>26}")
+    print(f"{'':>8}" + "".join(
+        f"{'truth':>8}{'meas':>9}{'err':>9}" for _ in range(4)))
+    ok = True
+    for i in (1, 2):
+        pairs = [
+            (cases[i][0] - cases[0][0],
+             measured[i].offset_along - measured[0].offset_along, 0.010),
+            (cases[i][1] - cases[0][1],
+             measured[i].offset_normal - measured[0].offset_normal, 0.010),
+            (cases[i][2] - cases[0][2],
+             measured[i].skew_deg - measured[0].skew_deg, 0.010),
+            # span is the noisiest of the five: it differences two
+            # centroids across a 203 mm baseline, so both centroid
+            # errors land on it undiluted.
+            (cases[i][3] - cases[0][3],
+             measured[i].span - measured[0].span, 0.050),
+        ]
+        cells = "".join(f"{t:>8.3f}{m:>9.3f}{m-t:>+9.3f}" for t, m, _ in pairs)
+        print(f"sheet {i} {cells}")
+        for truth, meas, tol in pairs:
+            if abs(meas - truth) > tol:
+                ok = False
+    print("\nPASS -- differences recovered" if ok else "\nFAIL")
+    return 0 if ok else 1
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description=__doc__.splitlines()[0],
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__)
+    ap.add_argument("scans", nargs="*", type=Path,
+                    help="scanned sheets, one punched sheet per file")
+    ap.add_argument("--dpi", type=float, default=600.0,
+                    help="OPTICAL scan resolution, not interpolated "
+                         "(default 600)")
+    ap.add_argument("--invert", action="store_true",
+                    help="use if the sheet reads dark and the ground "
+                         "bright (i.e. you scanned on a white lid)")
+    ap.add_argument("--self-test", action="store_true",
+                    help="synthesise sheets with known errors and check "
+                         "they are recovered; needs no scanner")
+    ap.add_argument("--csv", type=Path, default=None,
+                    help="also write per-sheet rows here")
+    args = ap.parse_args()
+
+    if args.self_test:
+        return self_test(args.dpi)
+    if not args.scans:
+        ap.error("give some scans, or --self-test")
+
+    sheets, failed = [], []
+    for path in args.scans:
+        try:
+            sheets.append(measure(path, args.dpi, invert=args.invert))
+        except Exception as exc:                       # noqa: BLE001
+            failed.append((path.name, str(exc)))
+    for name, why in failed:
+        print(f"  skipped {name}: {why}", file=sys.stderr)
+    if not sheets:
+        print("no sheet measured", file=sys.stderr)
+        return 1
+
+    if args.csv:
+        with args.csv.open("w") as fh:
+            fh.write(",".join(Sheet._fields) + "\n")
+            for s in sheets:
+                fh.write(",".join(str(v) for v in s) + "\n")
+        print(f"wrote {args.csv}\n")
+    print(report(sheets, args.dpi))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
