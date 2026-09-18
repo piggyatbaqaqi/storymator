@@ -771,6 +771,52 @@ arithmetic says a glass platen in the production rig would introduce
 its own few-pixel systematic, which has to be calibrated out or
 designed around rather than assumed away.
 
+## 11g. The mounted target passes — 2026-09-18
+
+Two frames of the print mounted on foam board,
+`data/calibration/distortion/v4k_01/check_mount-{1,2}.raw`. (The camera
+now has a name, which is right: intrinsics belong to a camera, and a
+second one is on the cards.)
+
+Whole-board homography residuals are 1.78 and 1.48 px, against 0.88 px
+for the glass reference — which reads like a fail and is not one. **The
+residual is flatness plus lens distortion, and a homography absorbs
+less distortion over a larger patch.** The glass frame covers 20
+corners over 76 × 152 mm; the mounted frames cover all 48 over roughly
+twice the area, so they are being asked to swallow far more of the lens.
+
+Comparing patches of the same size cut from the mounted board:
+
+| | patch | residual |
+|---|---|---|
+| glass reference | 76 × 152 mm, 20 corners | 0.88 px |
+| check_mount-1 | median of 9 same-size patches | **0.69 px** (0.53–1.04) |
+| check_mount-2 | median of 9 same-size patches | **0.63 px** (0.48–0.80) |
+
+That flatters the mount slightly, because distortion grows with
+distance from the frame centre and the glass patch sits further out
+(r = 825 px) than any mount patch reaches (outermost r = 661 and 629,
+giving 0.97 and 0.80 px). Matching radius properly is not possible with
+these two frames.
+
+**So the honest reading is that the mount and the glass are
+indistinguishable at this precision** — both sit at roughly 0.8–1.0 px
+on comparable patches, which is the lens-distortion floor plus noise,
+and the two mount frames of the same physical board disagree by 0.17 px
+between themselves, which sets the measurement's own repeatability.
+
+What is not in doubt is the comparison that matters: loose paper ran to
+5.25 px with single corners 12–14 px out. The mount is nowhere near
+that. **It passes; do not reprint.**
+
+Nor does the 2 mm overhang matter, for the reason in §11f: the board is
+a stiffener, not a datum.
+
+The remaining gap in the calibration set is unchanged and is not about
+flatness — it is tilt diversity. A mounted board can now be held at
+genuinely different angles, which is the thing lying on a desk could
+never supply.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
