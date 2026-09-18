@@ -565,6 +565,38 @@ aspect cannot be recovered from one perspective view without
 intrinsics. That is a second, independent reason to calibrate the lens.
 
 
+## 11c. The calibration boards — 2026-09-18
+
+`AcmeCalibrateLens` now offers **ChArUco** as well as a plain
+checkerboard, and ChArUco is the one to use: every corner carries an
+identity, so a board pushed half out of frame still contributes — and
+those are exactly the views that pin distortion down. Synthetic views
+recover fx to 0.2 %, principal point to 4 px and k1 to 0.002 at 0.43 px
+reprojection rms.
+
+**The boards are 7×9 and 7×5, DICT_6X6_250, 25/18 mm**, exactly as
+their printed legends state. (An earlier note here claimed the legend
+was wrong about both the dictionary and the square count; that was a
+misreading of a third-scale preview, and is withdrawn.)
+
+**One of the two prints is 6.9 % off, and it is measurable from the
+photographs.** Normalising each board's square size against the *sheet
+of paper it is pegged to* — the same paper in both captures, so it
+calibrates out camera distance — gives 97.51 against 91.20 px of square
+per unit of paper. The paper edges themselves agree to within 1 %
+(1838/1841/1863 against 1843/1853/1854 px), so the camera did not move
+between the two shots and the difference is in the printing. The larger
+board is the one that came out small, which is the signature of
+fit-to-page scaling.
+
+**It does not matter for calibrating the lens.** Scaling a board
+uniformly scales the recovered extrinsic translations and leaves focal
+length, principal point and distortion untouched — pinned by a test
+that calibrates the same synthetic views against a board declared
+6.9 % too large and asserts the intrinsics do not move. It matters only
+for absolute measurement, and if two differently-scaled boards are
+mixed in one run while being declared the same size.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,

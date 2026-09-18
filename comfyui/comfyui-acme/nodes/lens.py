@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from comfy_api.latest import io, ui
 
-from ..acme.lens import calibrate
+from ..acme.lens import calibrate, calibrate_charuco, charuco_board
 from ._convert import batch_to_numpy, to_gray
 from .registration import CATEGORY, AcmeCalibrationType
 
@@ -51,28 +51,52 @@ class AcmeCalibrateLens(io.ComfyNode):
                     "calibration",
                     tooltip="Bar and sheet geometry to attach the "
                             "intrinsics to."),
-                io.Int.Input("inner_columns", default=9, min=3, max=40,
-                             tooltip="Inner corners across: the corners "
-                                     "BETWEEN squares, not the squares. "
-                                     "A 10x7 board has 9x6."),
-                io.Int.Input("inner_rows", default=6, min=3, max=40),
-                io.Float.Input("square_mm", default=20.0, min=1.0,
+                io.Combo.Input(
+                    "board_type", options=["charuco", "checkerboard"],
+                    tooltip="Prefer ChArUco. Every corner carries an "
+                            "identity, so a board pushed half out of "
+                            "frame still counts -- and those are the "
+                            "views that pin distortion down."),
+                io.Int.Input("columns", default=7, min=3, max=40,
+                             tooltip="ChArUco: squares across, as the "
+                                     "board's own legend states it. "
+                                     "Checkerboard: INNER corners, which "
+                                     "is one less than the squares."),
+                io.Int.Input("rows", default=9, min=3, max=40),
+                io.Float.Input("square_mm", default=25.0, min=1.0,
                                max=200.0, step=0.01,
-                               tooltip="Measured, not nominal. Printed "
-                                       "boards are rarely exactly the "
-                                       "size claimed."),
+                               tooltip="Only affects the extrinsics: "
+                                       "scaling the board scales the "
+                                       "translations and leaves focal "
+                                       "length, principal point and "
+                                       "distortion untouched. A print "
+                                       "that came out 7 % large still "
+                                       "calibrates the lens correctly."),
+                io.Float.Input("marker_mm", default=18.0, min=0.5,
+                               max=200.0, step=0.01,
+                               tooltip="ChArUco only."),
+                io.String.Input("aruco_dictionary",
+                                default="DICT_6X6_250",
+                                tooltip="ChArUco only. Read it off the "
+                                        "board's printed legend."),
             ],
             outputs=[AcmeCalibrationType.Output("calibration"),
                      io.String.Output("report")],
         )
 
     @classmethod
-    def execute(cls, images, calibration, inner_columns, inner_rows,
-                square_mm) -> io.NodeOutput:
+    def execute(cls, images, calibration, board_type, columns, rows,
+                square_mm, marker_mm, aruco_dictionary) -> io.NodeOutput:
         frames = [to_gray(f) for f in batch_to_numpy(images)]
         try:
-            matrix, dist, rms, used, skipped = calibrate(
-                frames, inner_columns, inner_rows, square_mm)
+            if board_type == "charuco":
+                board = charuco_board(columns, rows, square_mm,
+                                      marker_mm, aruco_dictionary)
+                matrix, dist, rms, used, skipped = calibrate_charuco(
+                    frames, board)
+            else:
+                matrix, dist, rms, used, skipped = calibrate(
+                    frames, columns, rows, square_mm)
         except (ValueError, RuntimeError) as exc:
             text = f"calibration failed: {exc}"
             return io.NodeOutput(calibration, text,

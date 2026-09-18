@@ -77,6 +77,72 @@ def board_points(columns: int, rows: int, square_mm: float) -> np.ndarray:
     return grid * float(square_mm)
 
 
+def charuco_board(columns: int, rows: int, square_mm: float,
+                  marker_mm: float, dictionary: str = "DICT_6X6_250"):
+    """A ChArUco board object, for the detector and for object points."""
+    cv2 = _cv2()
+    if not hasattr(cv2.aruco, dictionary):
+        raise ValueError(f"unknown ArUco dictionary {dictionary!r}")
+    known = cv2.aruco.getPredefinedDictionary(
+        getattr(cv2.aruco, dictionary))
+    return cv2.aruco.CharucoBoard((columns, rows), float(square_mm),
+                                  float(marker_mm), known)
+
+
+def find_charuco(gray: np.ndarray, board):
+    """ChArUco corners and their ids, or ``(None, None)``.
+
+    Preferred over a plain checkerboard whenever the board has markers.
+    Every corner carries an identity, so a partly visible, partly
+    occluded or partly off-frame board still contributes -- which is
+    exactly the board you get when pushing it into the frame corners
+    to pin down distortion.
+    """
+    cv2 = _cv2()
+    eight = np.clip(gray * 255.0, 0, 255).astype(np.uint8)
+    detector = cv2.aruco.CharucoDetector(board)
+    corners, ids, _, _ = detector.detectBoard(eight)
+    if ids is None or len(ids) < 4:
+        return None, None
+    return corners.reshape(-1, 2).astype(np.float64), ids.ravel().astype(int)
+
+
+def calibrate_charuco(frames: Sequence[np.ndarray], board
+                      ) -> Tuple[np.ndarray, np.ndarray, float,
+                                 List[int], List[int]]:
+    """Intrinsics from ChArUco views.
+
+    Object points come from the board's own chessboard corners indexed
+    by the detected ids, then straight into ``calibrateCamera`` -- which
+    works the same on every OpenCV since 4.x, unlike the ChArUco-specific
+    calibration helpers that have moved between releases.
+    """
+    cv2 = _cv2()
+    all_object = board.getChessboardCorners()
+    object_points, image_points, used, skipped = [], [], [], []
+    shape = None
+    for i, frame in enumerate(frames):
+        corners, ids = find_charuco(frame, board)
+        if corners is None or len(ids) < 6:
+            skipped.append(i)
+            continue
+        shape = frame.shape[1], frame.shape[0]
+        object_points.append(all_object[ids].astype(np.float32))
+        image_points.append(corners.astype(np.float32))
+        used.append(i)
+
+    if len(used) < 3:
+        raise ValueError(
+            f"found the board in only {len(used)} of {len(frames)} views; "
+            f"need at least 3, and a dozen well spread is what actually "
+            f"pins distortion down")
+
+    rms, matrix, dist, _, _ = cv2.calibrateCamera(
+        object_points, image_points, shape, None, None)
+    return (np.asarray(matrix, float), np.asarray(dist, float).ravel(),
+            float(rms), used, skipped)
+
+
 def calibrate(frames: Sequence[np.ndarray], columns: int, rows: int,
               square_mm: float
               ) -> Tuple[np.ndarray, np.ndarray, float, List[int], List[int]]:
