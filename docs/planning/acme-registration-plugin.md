@@ -715,6 +715,62 @@ The glass stays useful for the other job: flattening a *drawing* for a
 capture, which is how the curl contribution to `training-1`'s 2.28 mm
 outline residual gets separated from the lens contribution.
 
+## 11f. Flatness budget, and why glass must not go on the target
+
+With the rig's geometry now measured — 380 mm working distance,
+fx ≈ 2500, so **6.55 px/mm on the board and 1 px = 153 µm** — the
+flatness requirement can be stated as a number instead of an
+exhortation. At the rig's ~30° obliquity a point lifted *h* above the
+plane appears displaced by *h*·tan θ:
+
+| lift | displacement | in pixels |
+|---|---|---|
+| 50 µm | 29 µm | 0.19 px |
+| 100 µm | 58 µm | 0.38 px |
+| 200 µm | 115 µm | 0.76 px |
+| 500 µm | 289 µm | 1.89 px |
+
+So the 0.88 px of the best frame in the distortion set corresponds to
+about **134 µm** of non-flatness, and a paper wrinkle of a few hundred
+microns — which is an ordinary wrinkle — costs a pixel. That is the
+standard a mounted target has to meet, and it is checkable from a
+single photograph with the per-frame homography residual.
+
+**What does *not* matter is where the paper sits on the board.** The
+foam board is a stiffener, not a datum. Calibration consumes only the
+ChArUco corners and their assumed grid spacing; the paper's edges, the
+board's edges, and the offset between them are not inputs to anything.
+A 2 mm overhang is irrelevant. Stress from repositioning is not: a
+locally stretched region has the wrong square spacing, and that is a
+real error rather than a cosmetic one.
+
+### Glass belongs on drawings, not on the target
+
+A flat plate displaces whatever is under it, by an amount that grows
+with viewing angle — so across a frame it varies, and it varies
+*smoothly*, which is to say it looks exactly like lens distortion and
+will be absorbed into the distortion coefficients.
+
+| plate | at 5° | at 35° | spread across the field |
+|---|---|---|---|
+| 2 mm | 0.39 px | 3.14 px | **2.8 px** |
+| 3 mm | 0.59 px | 4.71 px | **4.1 px** |
+| 4 mm | 0.78 px | 6.29 px | **5.5 px** |
+
+Several pixels of smoothly varying displacement is larger than the
+flatness error glass was brought in to remove. This also qualifies the
+earlier reading of `distortion-9`: its 0.88 px homography residual was
+the best in the set, but a homography absorbs a uniform shift and most
+of a linear gradient, and that frame covered only part of the field —
+so the test that made glass look good is precisely the test that would
+hide refraction. Glass genuinely fixed the flatness there. It should
+still not be on the calibration target.
+
+It remains the right tool for flattening a *drawing* — but the same
+arithmetic says a glass platen in the production rig would introduce
+its own few-pixel systematic, which has to be calibrated out or
+designed around rather than assumed away.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
