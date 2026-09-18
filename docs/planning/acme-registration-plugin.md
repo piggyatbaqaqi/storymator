@@ -597,6 +597,50 @@ that calibrates the same synthetic views against a board declared
 for absolute measurement, and if two differently-scaled boards are
 mixed in one run while being declared the same size.
 
+## 11d. How to shoot the calibration set — measured, 2026-09-18
+
+The operator asked whether the camera could be moved instead of the
+board, keeping the same height and angle, because the peg bar sits at
+the edge of the desk. Moving the camera is fine — calibration sees only
+the *relative* pose, so moving camera or board is identical. Keeping
+the same height and angle is not fine, and the cost was measured on
+synthetic views with known intrinsics:
+
+| poses | fx error | k1 (true −0.200) | rms |
+|---|---|---|---|
+| camera moved, orientation never changed | **42.8 %** | −0.065 | 0.472 |
+| same, and height varied too | **329.9 %** | −3.655 | 0.480 |
+| tilted, but always central | 0.1 % | −0.254 | 0.462 |
+| tilted **and** spread to the corners | 0.9 % | −0.191 | 0.422 |
+
+**Fronto-parallel views are degenerate**: with the board plane always
+parallel to the sensor, focal length and board distance trade off
+against each other and cannot be separated. Varying the height makes it
+*worse*, not better, because distance is precisely the quantity focal
+length is confounded with.
+
+**And the reprojection error does not warn you.** All four runs report
+an rms between 0.42 and 0.48 px. The one that is 330 % wrong looks
+exactly as healthy as the one that is right. A low rms means the model
+fits the points it was given; it says nothing about whether those
+points constrained the model. Tilt diversity has to be assured by how
+the set is shot, because no number in the output will reveal its
+absence.
+
+**So the board should not be pegged.** It never needed to be: lens
+calibration wants a rigid planar target seen from many poses, and
+nothing about the peg bar helps. Un-pegging removes the desk-space
+constraint entirely. The reason to peg it was presumably flatness — so
+mount the print on stiff card or a clipboard instead, and then it can
+be held anywhere at any angle, which supplies the tilt for free.
+
+**Fixed focus is part of the calibration.** The V4K's controls are
+already set correctly — auto white balance off, exposure manual, and
+`focus_automatic_continuous` off with `focus_absolute` pinned at 134.
+That number is part of the calibration: intrinsics describe the lens
+*at that focus*, and refocusing for a different working distance
+invalidates them. Record it beside the calibration file.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
