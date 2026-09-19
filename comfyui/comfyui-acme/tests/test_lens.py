@@ -119,7 +119,8 @@ def test_undistortion_actually_straightens_a_line():
         # 2-D cross product by hand; numpy 2 dropped the 2-vector case.
         return float(np.abs(d[0] * rel[:, 1] - d[1] * rel[:, 0]).max())
 
-    assert bow(bent) > 10.0, "the test distortion is too mild to prove anything"
+    assert bow(bent) > 10.0, (
+        "the test distortion is too mild to prove anything")
     assert bow(undistort_points(bent, TRUE_K, TRUE_DIST)) < 0.5
 
 

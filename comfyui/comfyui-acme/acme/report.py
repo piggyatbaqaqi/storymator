@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Dict, Sequence
 
 import numpy as np
 
@@ -47,7 +47,7 @@ def batch_report(poses: Sequence[Pose]) -> str:
             "that range",
             "  means the outline or the pegs are being mis-detected.",
         ]
-        worst = {}
+        worst: Dict[str, float] = {}
         for pose in accepted:
             for name, value in pose.per_landmark_px.items():
                 worst[name] = max(worst.get(name, 0.0), value)

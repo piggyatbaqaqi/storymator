@@ -77,7 +77,7 @@ import argparse
 import math
 import sys
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Sequence, Tuple
+from typing import Dict, List, NamedTuple, Sequence, Tuple
 
 import numpy as np
 from PIL import Image
@@ -257,13 +257,14 @@ def measure(path: Path, dpi: float, invert: bool = False) -> Sheet:
     # is nearest the holes, which is what makes this work for a bar
     # above or below the artwork without being told which.
     hole_centroid = np.vstack([centres, round_c]).mean(axis=0)
-    best, best_d = None, None
-    for i in range(4):
-        p, q = corners[i], corners[(i + 1) % 4]
-        d = abs(cross2(q - p, hole_centroid - p)) / np.linalg.norm(q - p)
-        if best_d is None or d < best_d:
-            best, best_d = (p, q), d
-    p, q = best
+    distances = [
+        abs(cross2(corners[(i + 1) % 4] - corners[i],
+                   hole_centroid - corners[i]))
+        / np.linalg.norm(corners[(i + 1) % 4] - corners[i])
+        for i in range(4)
+    ]
+    start = int(np.argmin(distances))
+    p, q = corners[start], corners[(start + 1) % 4]
     # Derive x FROM y, never the other way round.  Taking x along
     # (q - p) makes its sign depend on which corner the edge search
     # happened to call `p`, so two sheets could end up with opposite
@@ -453,10 +454,12 @@ def self_test(dpi: float = 600.0) -> int:
                 np.clip(arr * 255, 0, 255).astype(np.uint8)).save(path)
             measured.append(measure(path, dpi))
 
+    bias_along = measured[0].offset_along - cases[0][0]
+    bias_normal = measured[0].offset_normal - cases[0][1]
     print("absolute bias (constant, cancels in any spread):")
-    print(f"    along  {measured[0].offset_along - cases[0][0]:+.4f} mm"
-          f"   normal {measured[0].offset_normal - cases[0][1]:+.4f} mm"
-          f"   = {(measured[0].offset_normal - cases[0][1])*dpi/MM_PER_INCH:+.2f} px")
+    print(f"    along  {bias_along:+.4f} mm"
+          f"   normal {bias_normal:+.4f} mm"
+          f"   = {bias_normal * dpi / MM_PER_INCH:+.2f} px")
     print()
     print("differences from sheet 0 -- what the report's sigmas rest on:")
     print(f"{'':>8}{'d_along (mm)':>26}{'d_normal (mm)':>26}"

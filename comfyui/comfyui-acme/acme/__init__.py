@@ -15,9 +15,9 @@ from .register import register_image
 from .report import batch_report, frame_report
 
 __all__ = [
-    "Blob", "bimodal_threshold", "Calibration", "FieldSpec", "MM_PER_INCH", "PegModel", "Pose",
-    "SheetModel", "apply_homography", "batch_report", "find_peg_candidates",
-    "find_sheet", "fit_pose", "frame_report", "homography_from_points",
-    "register_image", "rigid_from_points", "rms", "select_peg_triple",
-    "sheet_corners",
+    "Blob", "bimodal_threshold", "Calibration", "FieldSpec",
+    "MM_PER_INCH", "PegModel", "Pose", "SheetModel", "apply_homography",
+    "batch_report", "find_peg_candidates", "find_sheet", "fit_pose",
+    "frame_report", "homography_from_points", "register_image",
+    "rigid_from_points", "rms", "select_peg_triple", "sheet_corners",
 ]

@@ -86,10 +86,12 @@ def select_peg_triple(blobs: Sequence[Blob], positions_mm: np.ndarray,
     pts = positions_mm[order]
     span = 2.0 * spacing_mm
 
-    best, best_score = None, None
+    best: Optional[List[int]] = None
+    best_score = float("inf")
     for a in range(len(order)):
         for b in range(a + 1, len(order)):
-            if abs(float(np.linalg.norm(pts[b] - pts[a])) - span) > 2 * tolerance_mm:
+            separation = float(np.linalg.norm(pts[b] - pts[a]))
+            if abs(separation - span) > 2 * tolerance_mm:
                 continue
             midpoint = (pts[a] + pts[b]) / 2.0
             distance = np.linalg.norm(pts - midpoint, axis=1)
@@ -110,7 +112,7 @@ def select_peg_triple(blobs: Sequence[Blob], positions_mm: np.ndarray,
             elong = [blobs[order[i]].elongation for i in (left, c, right)]
             if int(np.argmin(elong)) != 1:
                 score += tolerance_mm
-            if best_score is None or score < best_score:
+            if score < best_score:
                 best = [order[left], order[c], order[right]]
                 best_score = score
 
@@ -152,7 +154,7 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
              peg_contrast: float = 0.6,
              peg_tolerance_mm: float = 6.0) -> Pose:
     """Register one frame, or say why not."""
-    spec = calibration.field_spec
+    spec = calibration.raster
     peg = calibration.peg
     model_corners = calibration.sheet.corners()
     model_pegs = peg.positions()
@@ -169,18 +171,18 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
     # is neither, and would blur the pixels the warp still has to
     # sample.  Skipped entirely when no intrinsics are present, which
     # keeps OpenCV optional.
-    if calibration.camera_matrix is not None:
+    matrix = calibration.camera_matrix
+    coeffs = calibration.dist_coeffs
+    if matrix is not None and coeffs is not None:
         from .lens import undistort_points
-        corners = undistort_points(corners, calibration.camera_matrix,
-                                   calibration.dist_coeffs)
+        corners = undistort_points(corners, matrix, coeffs)
         # The edge samples measure the outline residual and must live in
         # the same space as the corners the transform was fitted to.
         # Straightening one and not the other silently compares a
         # corrected fit against uncorrected observations, which makes
         # applying a *good* calibration look like it made things worse.
         edge_samples = {
-            name: undistort_points(pts, calibration.camera_matrix,
-                                   calibration.dist_coeffs)
+            name: undistort_points(pts, matrix, coeffs)
             for name, pts in edge_samples.items()
         }
 
@@ -190,8 +192,10 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
     try:
         blobs = find_peg_candidates(
             gray, mask,
-            min_area_px=0.05 * min(round_area, rect_area) * scale_px_mm ** 2,
-            max_area_px=6.0 * max(round_area, rect_area) * scale_px_mm ** 2,
+            min_area_px=float(0.05 * min(round_area, rect_area)
+                              * scale_px_mm ** 2),
+            max_area_px=float(6.0 * max(round_area, rect_area)
+                              * scale_px_mm ** 2),
             polarity=polarity, contrast=peg_contrast)
     except ValueError as exc:
         return Pose(False, str(exc))
@@ -200,10 +204,9 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
                            f"region(s), need 3")
 
     centres = np.array([b.centre for b in blobs])
-    if calibration.camera_matrix is not None:
+    if matrix is not None and coeffs is not None:
         from .lens import undistort_points
-        centres = undistort_points(centres, calibration.camera_matrix,
-                                   calibration.dist_coeffs)
+        centres = undistort_points(centres, matrix, coeffs)
 
     accepted_hypotheses = []
     last_reason = "no_consistent_triple  no orientation produced a peg trio"
@@ -232,8 +235,11 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
     # Among those that fit the bar, prefer the one that rotates the
     # frame least: right whenever the camera is not upside down, and
     # the explicit bar_position control exists for when it is not.
-    accepted_hypotheses.sort(key=lambda c: (round(c[0], 2),
-                                            _rotation_deg(spec.matrix() @ c[2])))
+    def _preference(candidate):
+        score, _, homography, _ = candidate
+        return round(score, 2), _rotation_deg(spec.matrix() @ homography)
+
+    accepted_hypotheses.sort(key=_preference)
     _, idx, h, triple = accepted_hypotheses[0]
 
     pegs_image = centres[triple]

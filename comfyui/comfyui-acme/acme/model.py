@@ -25,7 +25,7 @@ every coordinate.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -127,14 +127,26 @@ class Calibration:
 
     peg: PegModel = field(default_factory=PegModel)
     sheet: SheetModel = field(default_factory=SheetModel)
-    field_spec: FieldSpec = None
-    camera_matrix: np.ndarray = None      # 3x3, from AcmeCalibrateLens
-    dist_coeffs: np.ndarray = None        # (5,) or (8,)
+    field_spec: Optional[FieldSpec] = None
+    camera_matrix: Optional[np.ndarray] = None   # 3x3, AcmeCalibrateLens
+    dist_coeffs: Optional[np.ndarray] = None     # (5,) or (8,)
 
     def __post_init__(self):
         if self.field_spec is None:
             object.__setattr__(self, "field_spec",
                                FieldSpec.for_sheet(self.sheet))
+
+    @property
+    def raster(self) -> FieldSpec:
+        """The output raster.
+
+        ``field_spec`` is Optional only so that its default can be
+        derived from the sheet in ``__post_init__``; a constructed
+        Calibration always has one.  This accessor states that
+        invariant once instead of leaving every caller to assert it.
+        """
+        assert self.field_spec is not None, "__post_init__ sets this"
+        return self.field_spec
 
     def with_bar_position(self, where: str) -> "Calibration":
         if where not in ("below", "above"):
@@ -143,7 +155,7 @@ class Calibration:
         sheet = replace(self.sheet, bar_position=where)
         return replace(self, sheet=sheet,
                        field_spec=FieldSpec.for_sheet(
-                           sheet, self.field_spec.px_per_mm))
+                           sheet, self.raster.px_per_mm))
 
     def to_dict(self) -> dict:
         def arr(a):
@@ -151,7 +163,7 @@ class Calibration:
         return {
             "peg": self.peg.__dict__,
             "sheet": self.sheet.__dict__,
-            "field_spec": {**self.field_spec.__dict__},
+            "field_spec": {**self.raster.__dict__},
             "camera_matrix": arr(self.camera_matrix),
             "dist_coeffs": arr(self.dist_coeffs),
         }

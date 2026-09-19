@@ -50,7 +50,8 @@ def point_line_distance(point: np.ndarray, a: np.ndarray,
     """Perpendicular distance from `point` to the segment's infinite line."""
     a = np.asarray(a, float)
     b = np.asarray(b, float)
-    return abs(cross2(b - a, np.asarray(point, float) - a)) / np.linalg.norm(b - a)
+    offset = np.asarray(point, float) - a
+    return float(abs(cross2(b - a, offset)) / np.linalg.norm(b - a))
 
 
 # ---------------------------------------------------------------------

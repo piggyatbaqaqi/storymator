@@ -104,12 +104,14 @@ class AcmeCalibrateLens(io.ComfyNode):
 
         updated = replace(calibration, camera_matrix=matrix,
                           dist_coeffs=dist)
+        fx, fy = matrix[0, 0], matrix[1, 1]
+        cx, cy = matrix[0, 2], matrix[1, 2]
         lines = [
             f"calibrated on {len(used)}/{len(frames)} views, "
             f"reprojection rms {rms:.3f} px",
             "",
-            f"  focal length   fx {matrix[0, 0]:8.1f}   fy {matrix[1, 1]:8.1f}",
-            f"  principal pt   cx {matrix[0, 2]:8.1f}   cy {matrix[1, 2]:8.1f}",
+            f"  focal length   fx {fx:8.1f}   fy {fy:8.1f}",
+            f"  principal pt   cx {cx:8.1f}   cy {cy:8.1f}",
             "  distortion     " + "  ".join(f"{v:+.4f}" for v in dist[:5]),
         ]
         if skipped:

@@ -219,7 +219,7 @@ class AcmeRegister(io.ComfyNode):
     def execute(cls, image, pose, calibration,
                 interpolation) -> io.NodeOutput:
         order = {"nearest": 0, "bilinear": 1, "bicubic": 3}[interpolation]
-        spec = calibration.field_spec
+        spec = calibration.raster
         width, height = spec.size_px
         frames = batch_to_numpy(image)
         if len(pose) != len(frames):
