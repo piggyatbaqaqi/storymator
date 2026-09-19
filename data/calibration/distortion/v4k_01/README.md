@@ -58,3 +58,11 @@
   focus 134. That is sound here because the measurement is a *ratio* and
   needs no intrinsics.
   Analysis and results: `../../pegs/honbay_0001/README.md`.
+* peg_profile_rectangular_{left,right}-*.raw - The rectangular pegs of
+  honbay_0001, side-on and from overhead. `left-3` is the clean side
+  silhouette and gives the along-bar profile: rounding confined to
+  ~1.2 mm at each end, 81 % of the top flat, and not a circular fillet.
+  The overhead frames have a sheet mounted and show the hole gap, but
+  cannot measure it -- the paper is 6.26 mm below the peg top against
+  ~3 mm of depth of field at this standoff, so only one of the two can
+  be in focus. Same `focus_absolute 635` caveat as peg_profile-5.

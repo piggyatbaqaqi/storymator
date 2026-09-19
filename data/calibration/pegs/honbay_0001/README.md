@@ -443,3 +443,55 @@ brightness threshold cuts into the peg. The measurement models the
 background per row instead and calls "peg" anything departing from it
 by more than 6× the background noise. It works: shaft width came out
 sd **1.10 px over 230 rows**.
+
+## Rect peg profiles: flat top confirmed, quantified
+
+`peg_profile_rectangular_{left,right}-*.raw`. Side views along the bar
+plus overhead views with a sheet mounted.
+
+`left-3` is the clean silhouette. Scaling from the peg's own 12.70 mm
+length — the caliper's best-behaved reading, sd 0.010 — gives
+**60.24 px/mm**, consistent with the round peg shot's 63.35 and so an
+independent check on that length.
+
+| depth below the top | width | fraction of full |
+|---:|---:|---:|
+| 0.25 mm | 10.43 | 0.82 |
+| 0.33 | 11.46 | 0.90 |
+| 0.50 | 11.94 | 0.94 |
+| 1.00 | 12.57 | 0.99 |
+| 1.49 | 12.73 | 1.00 |
+
+**Rounding is confined to about 1.2 mm at each end, leaving ~10.3 mm of
+12.70 (81 %) flat** — matching the eyeball estimate of 84 %.
+
+It is **not a circular fillet**. A single radius reaching full width at
+1.2 mm would be at 93 % by 0.25 mm depth; the measured profile is at
+82 % there and then crawls. Consistent with the tool marks, and with
+blur pulling the topmost rows in.
+
+**So the rect pegs get no sphere-centre trick.** h_eff stays ambiguous
+across [3.13, 6.26] mm and must be solved from the apparent span on
+real captures. That remains the one open input to the parallax
+correction.
+
+### The overhead frames cannot give clearance, and it would not matter
+
+`left-4` and `right-3` look down on the peg through a mounted sheet,
+and the hole gap at each end is visible as a dark crescent of roughly
+the expected size. It is not measurable: the paper sits **6.26 mm below
+the peg top** and depth of field at 57 mm is only about 3 mm, so the
+hole edge is badly out of focus while the peg is sharp. The edge
+transition runs 50 px ≈ 0.8 mm, against a gap of ~1.5 mm.
+
+This is the mirror image of the round-peg profile shot. There,
+everything lay in one plane and close was right. Here there are two
+planes 6.26 mm apart, so **back off to ~200 mm**, where depth of field
+is ~40 mm and both are sharp. Resolution drops to 13 px/mm, still 20 px
+on a 1.5 mm gap.
+
+Worth doing only out of curiosity, because **the rect slot clearance is
+not a registration freedom**. The round peg is a grip fit, so the sheet
+cannot slide along the bar at all; the slots' ~3 mm of length over the
+peg is a humidity allowance that is exercised only when the paper's own
+dimensions change. It does not belong in the error budget.
