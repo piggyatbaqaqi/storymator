@@ -89,12 +89,23 @@ sd 0.034-0.039 sheet to sheet. The residual few hundredths runs the way
 a punched rim biases an optical edge: the punch turns fibres down into
 the aperture, and a lit lip hanging over a black hole reads as hole.
 
-**Not a grip fit.** At 0.1 mm thick, bond has no stiffness to grip
-with -- a few hundredths of radial interference would crush rather than
-hold. And an interference fit would fight the bar's purpose: the round
-peg locates, the slots let the sheet breathe, and paper swells with
-humidity, so a punch sized to bind would jam on a wet day. Punch dies
-are cut a little over peg size for exactly that reason.
+**It is a grip fit after all.** Calipers put the round peg at
+**6.477 mm**, larger than every optical hole estimate, and a mounted
+sheet shows **no measurable lateral motion at the round peg** -- press
+between the round and a rect peg and the sheet **bows upward** instead
+of sliding. That is in-plane compression with nowhere to go: a
+zero-clearance hole.
+
+The earlier argument here -- that bond at 0.1 mm thick is too flimsy to
+grip -- confused bending stiffness with in-plane stiffness. Out of
+plane a sheet is floppy; *in* plane it is a hoop in tension at a few
+GPa, which is ample. The paper grips the post.
+
+Which means the optical hole reads small by roughly **0.15 mm**, about
+1.6 px at 300 dpi. That is credible for a punched rim: the sheet is
+0.115 mm thick, 1.4 px, and the punch tears fibres down into the
+aperture, so a lit burr over a black hole reads as hole. Optical
+measurement is simply the wrong instrument for this feature.
 
 The rect holes run about **2.9 mm longer** than the 12.7 mm peg -- the
 kinematic freedom along the bar, working as designed.

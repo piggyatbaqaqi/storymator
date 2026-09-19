@@ -4,7 +4,9 @@ Digital calipers, three readings per feature, 2026-09-19. Part C of
 [../../../docs/measuring-punch-tolerance.md](../../../docs/measuring-punch-tolerance.md),
 partly done: the pegs are measured, the holes and clearance are not.
 
-The bar's surface is wavy with bumps that cannot be read accurately.
+Heights are depth-gauge readings; the outside jaws are only for the peg
+dimensions. The bar's surface is wavy with bumps that cannot be read
+accurately.
 **Every height below is referenced to one of the higher bumps** and so
 is a lower bound on the local variation.
 
@@ -91,11 +93,22 @@ Measure the apparent span on the existing captures and read h_eff off.
 
 ## The sheet is not flat, either
 
-The bar stands **4.84 mm** above the desk and the sheet away from it
-**0.56 mm**, so the punched edge is lifted **4.29 mm** and the sheet
-drapes rather than lying flat. Against the outline homography's planar
-assumption that is worth 0.76 mm at 10° obliquity, 1.56 at 20°, 2.48
-at 30° — all near the bar, where the pegs are.
+Ten sheets measure 1.1533 mm (sd 0.081), so bond is **0.1153 mm**
+thick, se 0.005.
+
+Measured with the **depth gauge, not the outside jaws** — the jaws
+visibly compress a paper stack and leave marks, and read distinctly
+smaller. So this is free thickness with no compression bias, and it is
+the right technique for every soft or stacked material here. The bar
+stands **4.84 mm** above the desk, so paper over the bar sits at 4.96
+and paper lying flat at 0.12: the sheet drapes through **4.84 mm**.
+Against the outline homography's planar assumption that is 0.85 mm at
+10° obliquity, 1.76 at 20°, **2.80 at 30°** — all near the bar, where
+the pegs are.
+
+(The earlier 4.29 mm used the 0.555 mm paper-above-desk reading as the
+far datum. With the real thickness known, that reading is not thickness
+at all — the sheet sits 0.44 mm off the desk there, which is curl.)
 
 A light table or a sheet of glass removes this. Until then it is a
 second systematic term of the same order as the parallax, and the two
@@ -103,17 +116,43 @@ are not independent, since both grow with obliquity.
 
 ## Still open
 
-* **Hole size and clearance.** The round peg at 6.477 is *larger* than
-  every optical hole estimate (6.29–6.35), which cannot be: the sheet
-  mounts. The optical hole reads at least 0.13 mm small — 1.5 px at
-  300 dpi — more punched-rim bias than expected. Measure clearance
-  **directly** instead: mount a sheet, push it hard one way, measure to
-  a fixed datum, push the other way, measure again. The difference *is*
-  the diametral clearance, with no edge-definition problem at all.
-* **Paper thickness.** Two routes disagree — 0.253 mm from the round
-  peg's above-bar minus above-paper, 0.555 mm from paper-above-desk —
-  and bond is ~0.10 mm, so neither is measuring it. Stack ten sheets,
-  measure, divide: 1 mm read to 0.01 gives thickness to 0.001.
 * **Bar waviness.** Currently only a lower bound, from the sd on
   bar-above-desk (0.465 mm) which mixes real waviness with reading
   error. It matters because it tilts each peg.
+
+## Clearance: there isn't any
+
+A mounted sheet shows **no measurable lateral motion at the round peg**,
+and none at the rect pegs either. Pressing between the round peg and a
+rect peg makes the sheet **bow upward** rather than slide — in-plane
+compression with nowhere to go, which is what zero clearance looks
+like. The round peg at 6.477 mm is a grip fit in the punched hole.
+
+Generously bounding caliper resolution on a mounted sheet at 0.05 mm
+diametral, that caps the physical registration floor at:
+
+| | |
+|---|---|
+| lateral shift | ≤ 0.025 mm = **0.29 px** at rig scale |
+| rotation | ≤ 0.014°, i.e. 0.05 mm at 200 mm out |
+
+**So the floor is not the limiting term — it is the smallest term.**
+The budget now reads:
+
+| term | mm | px at 11.63 px/mm |
+|---|---:|---:|
+| sheet drape at 20° | 1.76 | 20.5 |
+| peg-top parallax (Z=380) | 1.39 | 16.2 |
+| punch-to-edge spread (sd) | 0.27 | 3.1 |
+| peg detector repeatability | 0.22 | 2.6 |
+| hole clearance | ≤0.025 | **≤0.3** |
+
+Both leaders are **geometric and correctable** — parallax exactly, drape
+by flattening the sheet — and neither is physical. That is the good
+outcome: nothing in the paper or the bar limits this rig.
+
+To tighten the clearance bound further, use the rig itself rather than
+the calipers: at 11.63 px/mm it resolves 0.05 mm as 0.6 px. Capture a
+mounted sheet, push it hard one way and capture, push the other way and
+capture, register all three. It measures the quantity that actually
+matters — how far the *drawing* moves — with the pipeline already built.

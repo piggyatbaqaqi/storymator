@@ -93,16 +93,28 @@ foam board the same measurement gives **0.63–0.69 px**.
 
 ### Measure the print, then stop worrying about it
 
-Ours came out **1.6 % oversize** — three independent measurements (the
-printed 50 mm bar at 50.8, 7 squares at 178, 9 at 228) agreeing on
-25.4 mm per square, which is one inch exactly.
+Ours came out **2.07 % oversize**: the printed 50 mm bar reads
+**51.037 mm** on digital calipers (sd 0.153, n=3), putting the square
+at **25.518 mm**, se 0.044.
+
+An earlier ruler pass read the bar at 50.8 and the square at 25.4,
+"one inch exactly" — a tidy story, and 2.7σ from the caliper value.
+It was an artifact of reading a printed line with a ruler.
+
+**Do not measure the short reference bar.** A printed line has width,
+so where you put the jaws is ambiguous by a line width — 0.3 mm here is
+0.6 %, larger than the effect. Measure **corner to corner across
+several squares** instead: a ChArUco corner is a point where four
+quadrants meet, with no width to argue about. Five squares is 127.6 mm,
+inside a 150 mm caliper, and reads to **0.008 %**.
 
 **It does not affect the intrinsics.** Scaling a board uniformly scales
 the recovered extrinsic translations and leaves focal length, principal
 point and distortion untouched. Verified on the real set: 25.00 mm and
 25.40 mm give rms 2.0821 both ways and fx agreeing to six significant
 figures; what moved was the mean board distance, 375.5 → 381.5 mm,
-a ratio of exactly 1.0160.
+a ratio of exactly 1.0160. The correction from 25.400 to 25.518 likewise
+moves only the working distance, 380 → 381.8 mm.
 
 So measure it for absolute work and for mixing boards — not because
 the calibration needs it.
@@ -193,7 +205,7 @@ contrast — do not carry the conclusion across.
 AcmeCalibrateLens
     board_type        charuco
     columns 7   rows 9
-    square_mm 25.4    marker_mm 18.29     # measured, not nominal
+    square_mm 25.518  marker_mm 18.37     # measured, not nominal
     aruco_dictionary  DICT_6X6_250
 ```
 
