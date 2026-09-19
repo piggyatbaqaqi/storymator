@@ -91,10 +91,68 @@ brackets the diameter but never locates a shoulder **height**, so the
 dome's depth is still unknown and "hemispherical" is an assumption.
 
 **Stop measuring shape with calipers.** A caliper measures a dimension;
-this is a profile. Backlight the peg, shoot it side-on with the
-calibrated camera, and the whole silhouette — dome depth, taper,
-shoulder — comes out of one frame. Put a steel rule in the same plane
-for scale. It is the right instrument, and it is already built.
+this is a profile. Shoot the peg in silhouette, side-on, and the whole
+shape — dome depth, taper, shoulder — comes out of one frame.
+
+### The profile shot needs no scale reference
+
+The question is whether **dome depth / peg radius = 1**. Both lengths
+are in the same image at the same depth, so **the scale cancels
+exactly**. The shoulder height then follows from the caliper apex
+reading, 8.787 minus the fitted radius. Put a reference in the frame as
+a cross-check if you like, but do not let it gate the measurement.
+
+Two more constraints lift with it. **Lens distortion is a non-issue if
+the peg is centred**: radial error grows as r³, so the ~70 px
+correction at the frame corner (r = 2040) is **0.001 px** within 50 px
+of centre. And a ratio does not need fx. So this shot is *not* locked
+to `focus_absolute 134` — move closer if you want.
+
+If a reference is wanted anyway, ranked:
+
+1. **Calipers set to a known gap** — 0.01 mm absolute. Set a *long* gap,
+   60–80 mm, so the pixel term shrinks too, and rest the beam on the bar
+   so the jaws sit in the peg's own plane.
+2. **The ChArUco target** — 0.11 % scale, but placed against the back of
+   the peg it sits 3.22 mm behind the peg's centre plane, worth 0.85 %
+   at 380 mm. Correctable, but it also patterns the background and ruins
+   the silhouette. Two strikes.
+3. **A plastic mat-cutter rule** — moulded graduations on a thermally
+   unstable substrate, and it is a working tool, not an instrument. No.
+
+### Standoff
+
+| Z | px/mm | 9 mm peg | dome r | depth of field |
+|---:|---:|---:|---:|---:|
+| 380 | 6.9 | 62 px | 22 px | 320–469 (149) |
+| 250 | 10.5 | 94 px | 34 px | 222–286 (63) |
+| 200 | 13.1 | 118 px | 42 px | 182–222 (40) |
+| **150** | **17.5** | **158 px** | **56 px** | **140–162 (23)** |
+| 120 | 21.9 | 197 px | 70 px | 113–128 (14) |
+
+**Depth of field never binds** — hyperfocal is about 2 m at f/2.4, and
+the peg is only 6.4 mm deep.
+
+Resolution binds less than it looks, because you **fit a circle to the
+dome arc** rather than measuring two points: the radius error goes as
+edge error / √N. At 380 mm that is ~35 arc points and 0.2 % on the
+radius; at 150 mm, ~89 points and 0.06 %. Both far better than needed
+to tell a hemisphere from a shallow crown — so **150–200 mm is
+comfortable and 380 mm would do**. Systematics (silhouette threshold,
+the peg not exactly in profile, the tool marks) will dominate either
+way, which is the real reason not to chase pixels.
+
+### Shoot level
+
+Tilting up by α puts the peg top nearer than its base and scales the
+two ends differently: 0.21 % at 5°, 0.41 % at 10°, 0.81 % at 20° — all
+straight into the ratio being measured. Since nothing in frame needs to
+be legible, there is nothing to elevate *for*. Get the camera down to
+bar height; the bar sitting at the desk edge makes that easy.
+
+For the silhouette, a sheet of white paper a few cm behind the bar, lit
+from the front with the peg itself shaded, gives dark-on-bright without
+a proper backlight.
 
 ### The rect pegs are flat-topped
 
