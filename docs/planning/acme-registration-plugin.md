@@ -896,6 +896,79 @@ replacing them — calibration uses all views together:
 
 Tilt is now good and does not need changing.
 
+## 11i. v4k_01 calibrated — usable now, 2026-09-18
+
+48 frames (32 dropped for motion artefact), board found in 43, 1452
+corners. **rms 0.730 px, fx 2625.1, fy 2627.2 — agreeing to 0.08 %** —
+cx 1644.3, cy 1200.7. Stable across lens models: fx spans 2625–2634,
+0.3 %, and cx spans 1641–1645.
+
+**Validated directly rather than by rms.** A straight line must come
+back straight: on calibration frame `distortion-13`, rows of board
+corners bow 4.3, 3.8 and 4.2 px, and after removing the lens model they
+bow 1.8, 0.8 and 1.1. The model is doing real work.
+
+### Coverage, answered
+
+Empty grid cells fell from 11 to 3 and the left side is now sampled.
+What remains:
+
+* **the bottom-left**, still nearly empty — the bottom row reads
+  1, 0, 1, 6 across its left half;
+* **nothing beyond 90 % of maximum radius**, still. The nearest corner
+  samples sit 452, 245, 531 and 294 px from the four frame corners,
+  and the 90 % ring runs 204 px inside each one.
+
+Model disagreement on the radial correction at the extreme corner fell
+from 28.6 px to 18.8 px, but it is still extrapolation.
+
+**It does not currently matter.** An ACME sheet framed as in
+`training-1` puts its corners at **43–75 % of maximum radius**, where
+the four models agree within 4–6 px. The corner gap bites only if the
+sheet is framed larger than the present rig frames it.
+
+### A correction: the lighting is not the problem
+
+Earlier guidance here said to add light before reshooting. Measured,
+that was wrong. Grouping frames by how bright the board's whites came
+out and comparing per-frame reprojection error:
+
+```
+whites p95 100-125   8 frames   mean error 0.728 px
+whites p95 125-145  17 frames   mean error 0.691 px
+whites p95 145-165  16 frames   mean error 0.666 px
+correlation(brightness, error) = -0.00
+```
+
+The target is black-on-white and the detector has ample contrast even
+at p95 = 139. Underexposure costs nothing measurable *here*. It may
+still matter for capturing pencil on paper, which has a fraction of the
+contrast — but that is a different measurement and should not be
+inferred from this one.
+
+### A bug this exposed
+
+`fit_pose` undistorted the sheet corners and the peg centroids but left
+the edge samples alone — and the edge samples are what the outline
+residual is measured from. So a fit computed in corrected coordinates
+was being compared against uncorrected observations, and applying a
+*good* calibration appeared to make the outline residual worse
+(26.6 → 40.0 px). Fixed; the samples are now corrected with everything
+else.
+
+### The old test captures cannot validate it
+
+After the fix, the intrinsics still do not improve `training-1` or
+`training-4`, and the straight-edge test says why: on calibration
+frames undistortion straightens lines, on those two it does not, and
+some edges get worse. They were shot five hours earlier, before
+`focus_absolute` was pinned at 134 and recorded. Intrinsics describe a
+lens at a focus; those captures are from a different one.
+
+**So the next capture is a pegged sheet shot now, with focus untouched
+since the calibration set** — after which the outline residual finally
+decomposes into lens and curl.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,

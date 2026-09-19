@@ -173,6 +173,16 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         from .lens import undistort_points
         corners = undistort_points(corners, calibration.camera_matrix,
                                    calibration.dist_coeffs)
+        # The edge samples measure the outline residual and must live in
+        # the same space as the corners the transform was fitted to.
+        # Straightening one and not the other silently compares a
+        # corrected fit against uncorrected observations, which makes
+        # applying a *good* calibration look like it made things worse.
+        edge_samples = {
+            name: undistort_points(pts, calibration.camera_matrix,
+                                   calibration.dist_coeffs)
+            for name, pts in edge_samples.items()
+        }
 
     scale_px_mm = (np.linalg.norm(corners[2] - corners[0])
                    / np.linalg.norm(model_corners[2] - model_corners[0]))
