@@ -86,9 +86,8 @@ flank the camera sees. **A domed peg is a better fiducial than a flat
 one.** And 5.549 is 63 % of the apex height, so the round peg's own
 parallax at r = 20 mm drops from 0.47 mm to 0.30 mm.
 
-*The shoulder was not found.* 6.46 slipping all the way to the base
-brackets the diameter but never locates a shoulder **height**, so the
-dome's depth is still unknown and "hemispherical" is an assumption.
+*The dome is hemispherical — measured, see below.* The shoulder sits
+**5.567 mm** above the paper, so that is the round peg's h_eff.
 
 **Stop measuring shape with calipers.** A caliper measures a dimension;
 this is a profile. Shoot the peg in silhouette, side-on, and the whole
@@ -373,3 +372,68 @@ radius = 0.74**. Do not trust that yet: with a 19 px edge rise on a
 top is a rounded nose of roughly the right order — not a shallow
 chamfer, and not obviously a clean hemisphere either. A focused frame
 will settle it.
+
+## The dome is hemispherical
+
+`peg_profile-5.raw`, shot at **57 mm with `focus_absolute 635`**. Edge
+10–90 rise **11 px**, down from 19. Scale from the known 6.440 mm
+shaft: **63.35 px/mm**, 1 px = 15.8 µm.
+
+Fitting the whole arc — semi-axis *a* across, *b* up — against the
+shaft half-width:
+
+| | |
+|---|---|
+| best fit | a = 203.5 px, b = 199.5 px, rms 3.92 px |
+| **b/a** | **0.980** |
+| a true hemisphere | rms **4.03 px** |
+
+The hemisphere fits as well as the free fit does. Profile against the
+two candidates, as a fraction of full width:
+
+| height above apex | measured | hemisphere | ellipse b/a = 0.75 |
+|---:|---:|---:|---:|
+| 10 px | 0.295 | **0.310** | 0.356 |
+| 20 | 0.413 | **0.432** | 0.495 |
+| 40 | 0.597 | **0.595** | 0.675 |
+| 60 | 0.725 | **0.709** | 0.795 |
+| 80 | 0.813 | **0.795** | 0.880 |
+| 120 | 0.914 | **0.912** | 0.977 |
+
+It tracks the hemisphere column and is nowhere near the oblate one.
+
+**So h_eff for the round peg is 8.787 − 3.220 = 5.567 mm**, and the
+sphere-centre rule applies cleanly: apparent position is the projection
+of the centre, independent of view angle.
+
+### A bad estimator, recorded so it is not repeated
+
+The first pass called the shoulder "the first row reaching full width"
+and got dome depth / radius = 0.750, which looked like a decidedly
+oblate cap. It is an artifact. A hemisphere approaches full width
+**tangentially** — the profile is at 0.95 of full width a fifth of the
+way down from the shoulder — so that criterion fires early and noise
+moves it a long way. Fit the whole profile; never key off the point
+where a curve goes flat.
+
+### Two residual caveats, neither changing the answer
+
+**The peg sits at 53 % of maximum frame radius**, not centred, and at
+`focus_absolute 635` the stored distortion model does not apply — it
+was measured at 134. Radial and tangential magnification differ by
+roughly 1–2 % out there, the same order as the b/a uncertainty.
+Recentring would tighten it; it will not overturn a hemisphere.
+
+**11 px of edge rise is 0.17 mm** at this scale. Blur is symmetric so
+it largely cancels in a symmetric fit, but a finer sweep around 635
+would still help. Depth of field at 57 mm is only about 3 mm against a
+6.44 mm peg, so focus wants to sit on the peg's mid-depth, where the
+silhouette tangent lies.
+
+### What handled the chrome
+
+The specular flanks read *brighter* than the background in places, so a
+brightness threshold cuts into the peg. The measurement models the
+background per row instead and calls "peg" anything departing from it
+by more than 6× the background noise. It works: shaft width came out
+sd **1.10 px over 230 rows**.
