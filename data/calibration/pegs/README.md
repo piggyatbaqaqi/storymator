@@ -46,6 +46,29 @@ left/right difference.
 
 These are the numbers the registration fit needs, and they are large.
 
+**The round peg's top is hemispherical, not flat.** At 6.477 mm
+diameter the dome radius is 3.239, so the apex reading of 8.787 puts
+the *shoulder* — and the sphere's centre — at **5.549 mm** above the
+paper.
+
+That matters twice. A sphere's apparent position is the projection of
+its **centre**, to first order independent of view angle, so its
+effective height is 5.549 and is **unambiguous** — where a flat top's
+h_eff floats somewhere between h/2 and h depending on how much lit
+flank the camera sees. **A domed peg is a better fiducial than a flat
+one.** And 5.549 is 63 % of the apex height, so the round peg's own
+parallax at r = 20 mm drops from 0.47 mm to 0.30 mm.
+
+*To confirm the dome is truly hemispherical:* set the calipers to
+6.48 mm and slide them down the peg until they just grip. That height
+is the shoulder — 5.55 mm above the paper if hemispherical, higher if
+the crown is shallower.
+
+**Open: are the rect peg tops rounded too?** Only the along-bar
+coordinate feeds the span, so a half-cylinder rounded *across* the bar
+changes nothing. A full dome would drop h_eff to 4.689 and the
+predicted rigid-fit rms from 1.39 to 1.04 mm.
+
 ## What the heights explain
 
 A peg top at height *h*, seen by a camera at distance *Z*, at lateral
@@ -53,6 +76,10 @@ offset *r* from the optical axis, appears displaced **outward** by
 `r·h/(Z−h)`. The two rect pegs sit at r ≈ ±101.6 mm, so they move
 outward in *opposite* directions: not a translation, a **pure apparent
 scale increase of the peg triple**.
+
+The **rect** pegs drive this, not the round one: they sit at r = ±101.6
+while the round peg is central, so the dome correction above barely
+touches the span. Assuming flat or across-the-bar-rounded rect tops:
 
 | Z | rect peg shift | apparent span | rigid-fit rms |
 |---:|---:|---:|---:|

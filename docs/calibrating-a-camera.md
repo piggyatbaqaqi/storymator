@@ -93,28 +93,55 @@ foam board the same measurement gives **0.63–0.69 px**.
 
 ### Measure the print, then stop worrying about it
 
-Ours came out **2.07 % oversize**: the printed 50 mm bar reads
-**51.037 mm** on digital calipers (sd 0.153, n=3), putting the square
-at **25.518 mm**, se 0.044.
+Ours came out **1.27 % oversize**: five squares corner to corner
+measure **126.582 mm** on digital calipers (six readings, sd 0.33),
+putting the square at **25.3163 mm**, se 0.027.
 
-An earlier ruler pass read the bar at 50.8 and the square at 25.4,
-"one inch exactly" — a tidy story, and 2.7σ from the caliper value.
-It was an artifact of reading a printed line with a ruler.
+### Do not measure the short reference bar
 
-**Do not measure the short reference bar.** A printed line has width,
-so where you put the jaws is ambiguous by a line width — 0.3 mm here is
-0.6 %, larger than the effect. Measure **corner to corner across
-several squares** instead: a ChArUco corner is a point where four
-quadrants meet, with no width to argue about. Five squares is 127.6 mm,
-inside a 150 mm caliper, and reads to **0.008 %**.
+The board's printed "50 mm" bar reads 51.037 outside-line to
+outside-line — but the serifs are 0.53 and 0.58 mm wide, and nobody
+says which convention the 50 is:
+
+| reading of "50 mm" | true | square |
+|---|---:|---:|
+| outside to outside | 51.037 | 25.518 |
+| centre to centre | 50.482 | 25.241 |
+| inside to inside | 49.927 | 24.963 |
+
+**A spread of 2.22 %**, on a quantity worth 1.27 %. The serifs *are*
+the error bar and they swallow the measurement whole. An earlier pass
+here quoted 2.07 % from this bar; it was the outside-to-outside branch
+of a three-way ambiguity, and 3.9σ from the real value.
+
+Measure **corner to corner across five squares** instead. A checker
+corner is a point where four quadrants meet, with no line width to
+argue about, and five squares is 126.6 mm — inside a 150 mm caliper.
+
+The cross-checks line up:
+
+| method | square | |
+|---|---:|---|
+| 5 squares, calipers | 25.316 ± 0.027 | — |
+| 9 squares at 228 mm, ruler | 25.333 ± 0.111 | +0.1σ |
+| 7 squares at 178 mm, ruler | 25.429 ± 0.143 | +0.8σ |
+| 50 mm bar, outside-to-outside | 25.518 ± 0.044 | **+3.9σ** |
+
+The 9-square ruler reading agrees to 0.02 mm. Only the bar is out.
+
+**What limits this is technique, not the caliper.** Six readings gave
+sd 0.33 mm on 126.6 mm — 0.26 %, twenty-five times the caliper's own
+0.01 mm. A checker corner is a *virtual* point and a jaw cannot seat on
+it; you are eyeballing the jaw against a corner. Take six readings, not
+three, and treat the scatter as the error.
 
 **It does not affect the intrinsics.** Scaling a board uniformly scales
 the recovered extrinsic translations and leaves focal length, principal
 point and distortion untouched. Verified on the real set: 25.00 mm and
 25.40 mm give rms 2.0821 both ways and fx agreeing to six significant
 figures; what moved was the mean board distance, 375.5 → 381.5 mm,
-a ratio of exactly 1.0160. The correction from 25.400 to 25.518 likewise
-moves only the working distance, 380 → 381.8 mm.
+a ratio of exactly 1.0160. The correction from 25.400 to 25.3163 likewise
+moves only the working distance, 380 → 378.8 mm.
 
 So measure it for absolute work and for mixing boards — not because
 the calibration needs it.
@@ -205,7 +232,7 @@ contrast — do not carry the conclusion across.
 AcmeCalibrateLens
     board_type        charuco
     columns 7   rows 9
-    square_mm 25.518  marker_mm 18.37     # measured, not nominal
+    square_mm 25.3163 marker_mm 18.228    # measured, not nominal
     aruco_dictionary  DICT_6X6_250
 ```
 
@@ -241,10 +268,38 @@ The bad set put the principal point at cx = 3743 in a 3264-px-wide
 frame. The good set spans 0.3 %. **That spread is the honest
 uncertainty.**
 
-### 2. fx ≈ fy, and the principal point near centre
+### 2. fx ≈ fy, and the principal point near centre — with a caveat
 
 Square pixels are near-universal, so fx and fy should agree closely.
-Ours: **0.11 %** (the bad set: 3.9 %). cx/cy should sit within a few
+Ours: **0.11 %** (the bad set: 3.9 %).
+
+**But fx/fy partly measures the target, not the camera.** A board whose
+print is anisotropic maps that anisotropy straight into fx/fy. Ours is:
+refitting with the board's x and y scaled independently,
+
+| board anisotropy | rms | fx/fy − 1 |
+|---:|---:|---:|
+| −0.380 % (reversed, control) | 0.8644 | −0.320 % |
+| 0 % (isotropic) | 0.7215 | −0.097 % |
+| +0.100 % | 0.7089 | −0.035 % |
+| **+0.150 %** | **0.7070** | **−0.003 %** |
+| +0.200 % | 0.7082 | +0.029 % |
+| +0.380 % (what the calipers said) | 0.7366 | +0.149 % |
+
+Two independent criteria — minimum rms and fx = fy — agree at the same
+point, **+0.15 %**. So the whole of our 0.11 % fx/fy discrepancy was the
+print, and the camera's pixels are square to 0.003 %.
+
+Three things follow. **fx ≈ fy is a weaker check than it looks**, and a
+fx/fy discrepancy under a few tenths of a percent should be blamed on
+the target before the sensor. **The data measures the board better than
+calipers do** — the calipers said +0.38 % ± 0.26, and the calibration
+pins it at +0.15 %. And **the reversed control is much worse**
+(rms 0.8644), which is what makes this a measurement rather than a
+free parameter absorbing noise.
+
+Uniform scale still does not matter: 25.3163 and 25.400 give rms 0.7215
+and fx 2624.44 both, identical to six figures. Only the *ratio* does. cx/cy should sit within a few
 tens of pixels of the frame centre — ours are 1644.8 and 1203.7 against
 1632 and 1224.
 
@@ -268,9 +323,10 @@ something is wrong but not what.
 ## Result for v4k_01
 
 ```
-50 of 55 frames, 1606 corners, rms 0.717 px
-fx 2624.2   fy 2626.9   (0.11 %)
-cx 1644.8   cy 1203.7   (frame centre 1632, 1224)
+48 of 55 frames, 1590 corners
+isotropic board:   rms 0.7215   fx 2624.44  fy 2627.00  (0.097 %)
+board +0.15 % aniso: rms 0.7070   fx 2625.44  fy 2625.52  (0.003 %)   <- adopt
+cx 1645.1   cy 1204.2   (frame centre 1632, 1224)
 focus_absolute 134
 working distance ~380 mm, 6.55 px/mm on the target, 1 px = 153 um
 ```
