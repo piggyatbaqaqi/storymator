@@ -69,6 +69,11 @@ who credited Art Babbit.
 
 ## Bench procedures
 
+* [calibrating-a-camera.md](calibrating-a-camera.md) — lens calibration
+  end to end for a new camera, written from the first one we did. The
+  validation half matters most: two of our three failures were
+  invisible in the reprojection error. Ends with a specification for
+  the coverage tool that would have caught them.
 * [measuring-punch-tolerance.md](measuring-punch-tolerance.md) — how to
   measure ACME punch geometry and peg/hole clearance, with a flatbed and
   a stage micrometer. Produces the three numbers the registration design
