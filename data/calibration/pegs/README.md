@@ -1,4 +1,10 @@
-# ACME peg bar — caliper measurements
+# ACME peg bar honbay_0001 — caliper measurements
+
+Everything here is a property of **honbay_0001 specifically** and must
+be re-measured for any other bar. Camera captures of it live with the
+camera that took them, in
+[../distortion/v4k_01/](../distortion/v4k_01/) —
+`bar_reference.raw` and `peg_profile-*.raw`.
 
 Digital calipers, three readings per feature, 2026-09-19. Part C of
 [../../../docs/measuring-punch-tolerance.md](../../../docs/measuring-punch-tolerance.md),

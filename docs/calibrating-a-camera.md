@@ -47,7 +47,10 @@ v4l2-ctl -d /dev/videoN --set-ctrl=focus_automatic_continuous=0
 v4l2-ctl -d /dev/videoN --set-ctrl=focus_absolute=134         # then WRITE IT DOWN
 ```
 
-Give the camera a name (`v4k_01`) and a directory. Put a `README.md`
+Give the camera a name (`v4k_01`) and a directory. Do the same for
+every physical artifact whose measured properties feed a result — here
+that is the board (`charuco_0001`) and the ACME bar (`honbay_0001`),
+each of which needs its own re-measurement when replaced. Put a `README.md`
 beside the frames recording the model and every control value. When
 the second camera arrives it gets its own name, directory and
 calibration — intrinsics belong to a camera, not to a project.
@@ -61,8 +64,10 @@ identity, so a board pushed half out of frame still contributes — and
 the half-out-of-frame views are exactly the ones that pin distortion
 down. A plain checkerboard must be wholly visible or it gives nothing.
 
-Ours is `calibrx.io`, 7 × 9 squares, `DICT_6X6_250`, nominally
-25/18 mm. **Read the parameters off the board's own printed legend at
+Ours is **`charuco_0001`** — `calibrx.io`, 7 × 9 squares,
+`DICT_6X6_250`, nominally 25/18 mm. Name the board, not just the
+camera: its measured square size and print anisotropy are properties of
+*that printed sheet*, and a reprint is a different target. **Read the parameters off the board's own printed legend at
 full resolution** — reading them off a downscaled preview cost an
 afternoon here, because a wrong dictionary means zero detections and
 looks exactly like a broken detector.
