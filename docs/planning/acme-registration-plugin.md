@@ -969,6 +969,67 @@ lens at a focus; those captures are from a different one.
 since the calibration set** — after which the outline residual finally
 decomposes into lens and curl.
 
+## 11j. The decomposition, at last — 2026-09-18
+
+**v4k_01, final:** 50 of 55 frames, 1606 corners, **rms 0.717 px**,
+fx 2624.2, fy 2626.9 agreeing to 0.11 %, cx 1644.8, cy 1203.7. The
+numbers barely moved from the 48-frame fit (2625.1 / 2627.2 / 1644.3 /
+1200.7), which is the best evidence there is that they are real.
+
+Still nothing beyond 90 % of maximum radius — nearest samples sit 598,
+245, 421 and 294 px from the frame corners — and the models still
+disagree by 18 px on the correction at the extreme corner. It continues
+not to matter at this framing, where the sheet's corners land at
+43–75 % of maximum radius.
+
+### A test of mine that was invalid
+
+The straight-edge check said the intrinsics "do NOT apply" to both
+sheets, bow rising 2.05 → 3.07 and 3.17 → 4.73 px. That verdict is
+wrong, and the test is the thing at fault: **a curled sheet's edges are
+not straight in the first place**, so removing a correct lens model can
+leave *more* bow, not less. The check is sound on a rigid board and
+meaningless on paper. Timestamps settle what it could not — the
+calibration frames are 21:00–21:02 and the sheets 21:04 and 21:05, one
+session, focus untouched.
+
+### The measurement this was all for
+
+With the lens removed, the outline residual is paper flatness alone:
+
+| sheet | outline | pegs |
+|---|---|---|
+| fresh | **2.80 mm** | 2.31 mm |
+| abused | **12.96 mm** | 1.61 mm |
+
+**The fresh sheet is 78 % flatter.** The abused one's corner residuals
+run 187–448 canonical px, 16–38 mm, and the overlay shows why: its
+right edge visibly lifts away from the fitted quadrilateral. Use fresh
+stock, or flatten.
+
+### Which promotes a new dominant error: peg parallax
+
+The bar did not move between the two captures, so the pegs should sit
+at identical image positions. They do, to **1.5 px** — 0.5, 1.0 and
+3.1 px for the three. That is the detection noise, about 0.22 mm.
+
+But the peg residual is **1.6–2.3 mm, ten times larger**. So it is not
+noise; it is systematic, and §3.1 predicted it: **the peg tops are not
+in the paper plane.** The homography maps the paper; the peg tops stand
+several millimetres above it, so mapping them through that homography
+misplaces them by h·tan θ — and θ differs across the bar, so the
+misplacement differs too and cannot be absorbed by a rigid fit.
+
+At 380 mm working distance with the bar spanning 203 mm, the viewing
+angle changes by roughly 15° end to end, which turns a peg height of a
+few millimetres into a few millimetres of differential error. That is
+the observed magnitude.
+
+**This is now the largest term in the budget**, and it is correctable
+rather than irreducible: the peg height can be measured with calipers,
+and the camera pose is now known, so the parallax can be computed and
+removed. That is the next piece of work.
+
 ## 12. Rev 0 plan, and what remains open
 
 **Rev 0 scope**: one camera, one or two sheets, no disc, no light table,
