@@ -57,4 +57,4 @@
   deliberately outside the v4k_01 calibration, which is valid only at
   focus 134. That is sound here because the measurement is a *ratio* and
   needs no intrinsics.
-  Analysis and results: `../../pegs/README.md`.
+  Analysis and results: `../../pegs/honbay_0001/README.md`.
