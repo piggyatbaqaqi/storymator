@@ -311,3 +311,65 @@ the calipers: at 11.63 px/mm it resolves 0.05 mm as 0.6 px. Capture a
 mounted sheet, push it hard one way and capture, push the other way and
 capture, register all three. It measures the quantity that actually
 matters — how far the *drawing* moves — with the pipeline already built.
+
+## First profile attempt: refocus, do not retreat
+
+`data/calibration/distortion/v4k_01/peg_profile-*.raw`, 2026-09-19.
+Frame 4 is the usable one — white card behind, peg silhouetted, peg
+near frame centre. It is out of focus, and the cause is not distance.
+
+Measuring the shaft against its known 6.440 mm diameter:
+
+| | |
+|---|---|
+| shaft width | 89.0 px → **13.8 px/mm** |
+| implied standoff | Z = 2625/13.8 = **190 mm** |
+| edge 10–90 rise | **19 px** (a sharp edge is 1–2) |
+| predicted blur, shooting 190 mm focused at 380 | **10.7 px** |
+
+So the camera moved in to 190 mm and **`focus_absolute` is still 134,
+which is focus for 380 mm**. Moving further away would fix it by
+accident — and throw away half the resolution. Refocus instead:
+
+```sh
+v4l2-ctl -d /dev/videoN --set-ctrl=focus_automatic_continuous=0
+for n in $(seq 0 10 250); do
+    v4l2-ctl -d /dev/videoN --set-ctrl=focus_absolute=$n
+    sleep 0.6
+    <capture> focus-$n.raw
+done
+bin/score-focus focus-*.raw
+```
+
+**Set `focus_absolute` back to 134 afterwards.** The lens calibration
+is for that focus and nothing else. This shot does not need the
+calibration — it is a ratio — so refocusing is free, but leaving it
+moved would silently void every registration capture after it.
+
+### The peg is its own scale reference
+
+Its diameter is known to ±0.010 mm from the slip test, and it is in the
+image, in the plane of interest, by construction. Nothing else needs to
+be in frame. It doubles as an **edge-bias check**: if the measured
+shaft width does not come back to 6.440 mm, the difference is the
+silhouette threshold's bias and applies to the dome radius too.
+
+### Watch the specular edges
+
+The peg is shiny — the highlight in frame 4 confirms the plating
+reading. A polished cylinder against a bright background reflects that
+background near its silhouette edges, where the surface normal turns
+away from the camera, so the edge reads **bright** and the peg measures
+**narrow**. Put something dark on the camera side so there is nothing
+bright for the flanks to reflect, and keep the bright card strictly
+behind.
+
+### What frame 4 says so far
+
+Apex to shoulder is 33 px against a 44.5 px radius, so **dome depth /
+radius = 0.74**. Do not trust that yet: with a 19 px edge rise on a
+33 px dome, blur washes the apex down and biases the depth **low**, so
+0.74 is a lower bound. What is clear from the silhouette is that the
+top is a rounded nose of roughly the right order — not a shallow
+chamfer, and not obviously a clean hemisphere either. A focused frame
+will settle it.
