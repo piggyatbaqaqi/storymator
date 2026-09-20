@@ -1,0 +1,75 @@
+{
+  "peg": {
+    "round_diameter_mm": 6.44,
+    "rect_long_mm": 12.72,
+    "rect_short_mm": 3.142,
+    "centre_spacing_mm": 101.616
+  },
+  "sheet": {
+    "width_mm": 266.7,
+    "height_mm": 317.5,
+    "punch_offset_mm": 12.0,
+    "bar_position": "below"
+  },
+  "field_spec": {
+    "px_per_mm": 11.63,
+    "origin_mm": [
+      0.0,
+      0.0
+    ],
+    "size_px": [
+      1024,
+      1024
+    ],
+    "flip_y": false
+  },
+  "camera_matrix": [
+    [
+      2625.4404322322125,
+      0.0,
+      1640.211406609222
+    ],
+    [
+      0.0,
+      2625.520527678708,
+      1204.1581412222565
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "dist_coeffs": [
+    0.18226958287017447,
+    -0.3993455124731985,
+    0.0008080109208973704,
+    0.005605521659130803,
+    0.23772767957330931
+  ],
+  "_provenance": {
+    "camera": "v4k_01",
+    "bar": "honbay_0001",
+    "target": "charuco_0001",
+    "usb_id": "1778:d009",
+    "usb_product": "IPEVO V4K",
+    "usb_serial": null,
+    "frame_size_px": [
+      3264,
+      2448
+    ],
+    "focus_absolute": 134,
+    "required_controls": {
+      "white_balance_automatic": 0,
+      "auto_exposure": 1,
+      "focus_automatic_continuous": 0,
+      "focus_absolute": 134
+    },
+    "board_square_mm": 25.3163,
+    "board_anisotropy": 0.0015,
+    "calibrated": "2026-09-18",
+    "frames": 48,
+    "rms_px": 0.707,
+    "notes": "Valid ONLY at focus_absolute 134. The V4K reports no USB serial, so identity cannot be checked; verify the controls and frame size instead."
+  }
+}
