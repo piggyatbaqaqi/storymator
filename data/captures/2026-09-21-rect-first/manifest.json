@@ -1,0 +1,65 @@
+{
+  "frames": [
+    {
+      "file": "2026-09-21-rect-first_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00001_.png",
+      "sha256_16": "dbf236ad42cfb50f",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T19:17:53",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.5333,
+        "p98": 0.5333,
+        "mean": 0.324,
+        "sd": 0.2335
+      }
+    },
+    {
+      "file": "2026-09-21-rect-first_002.png",
+      "kind": "overlay",
+      "source": "ComfyUI_temp_cdpxt_00001_.png",
+      "sha256_16": "7ab45d0ac712fbbf",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:17:53",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.0784,
+        "p98": 0.498,
+        "mean": 0.2283,
+        "sd": 0.2145
+      }
+    },
+    {
+      "file": "2026-09-21-rect-first_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00001_.png",
+      "sha256_16": "0c1210d3311b1e18",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:17:50",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.0667,
+        "p98": 0.498,
+        "mean": 0.2269,
+        "sd": 0.215
+      }
+    }
+  ],
+  "session": "2026-09-21-rect-first",
+  "notes": [
+    {
+      "at": "2026-09-21T19:24:18",
+      "note": "First run with slot fitting in earnest. Ambient room light, cell phone behind the lens, white monitor screen opposite the room light. Operator: all three pegs cast a shadow at the same angle, mostly inside the fitted bounding rectangle. Confirmed -- the round peg's fitted rect is 120.0 x 64.6 px at +89.2 deg, and that angle is the SHADOW's direction, not the peg's."
+    }
+  ]
+}

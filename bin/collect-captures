@@ -55,8 +55,13 @@ def classify(path: str) -> str:
     neutral = ((rgb[..., 0] == rgb[..., 1]) & (rgb[..., 1] == rgb[..., 2]))
     if neutral.mean() > 0.80:
         return "diagnostic"
+    # The overlay's banner is a flat (20, 20, 24) bar behind bright
+    # text, so its MAXIMUM is the text and useless.  Count the fill
+    # colour itself.
     banner = rgb[:26]
-    if banner.max() < 70 and banner.std() < 40:
+    fill = ((banner[..., 0] == 20) & (banner[..., 1] == 20)
+            & (banner[..., 2] == 24))
+    if fill.mean() > 0.5:
         return "overlay"
     return "capture"
 
