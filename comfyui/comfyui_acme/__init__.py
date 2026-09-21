@@ -15,17 +15,15 @@ Outside ComfyUI the extension simply is not defined, and asking for it
 says so.
 """
 
+from typing import Optional
+
 try:
     from comfy_api.latest import ComfyExtension, io
 except ModuleNotFoundError as exc:      # pragma: no cover - env dependent
-    _MISSING = exc
-
-    async def comfy_entrypoint():
-        raise RuntimeError(
-            "comfyui_acme needs to run inside ComfyUI 0.35 or newer: "
-            f"{_MISSING}"
-        )
+    _MISSING: Optional[ModuleNotFoundError] = exc
 else:
+    _MISSING = None
+
     from typing_extensions import override
 
     from .nodes import PHASE_1
@@ -35,5 +33,19 @@ else:
         async def get_node_list(self) -> list[type[io.ComfyNode]]:
             return list(PHASE_1)
 
-    async def comfy_entrypoint() -> "AcmeExtension":
-        return AcmeExtension()
+
+async def comfy_entrypoint() -> "AcmeExtension":
+    """The pack's entry point, defined exactly once.
+
+    Two conditional definitions of the same name -- one per import
+    branch -- is what mypy rejects: their signatures cannot match,
+    because the fallback branch has no ``AcmeExtension`` to return.
+    Branching on a flag inside a single definition keeps the guard
+    behaviour and gives the checker one signature to look at.
+    """
+    if _MISSING is not None:
+        raise RuntimeError(
+            "comfyui_acme needs to run inside ComfyUI 0.35 or newer: "
+            f"{_MISSING}"
+        )
+    return AcmeExtension()
