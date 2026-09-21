@@ -27,6 +27,8 @@ nodes run on what ComfyUI already has.
 
 | node | does |
 |---|---|
+| `AcmeCapture` | a frame from the rig, checked against the calibration it will be interpreted with |
+| `AcmeCalibrateLens` | camera intrinsics from several board views |
 | `AcmeCalibration` | bar, sheet and raster geometry, with measured values replacing the nominal ones |
 | `AcmeCalibrationSave` / `Load` | JSON, so a rig's geometry outlives a workflow |
 | `AcmeDetectSheet` | fit each frame; emit a pose, an overlay, and a verdict |
@@ -40,6 +42,20 @@ A minimal graph:
 LoadImage -> AcmeDetectSheet -> AcmeRegister -> PreviewImage
 AcmeCalibration ---^      \-> AcmeRegistrationReport -> PreviewImage
 ```
+
+Capturing live instead of loading files:
+
+```
+AcmeCalibrationLoad -> AcmeCapture -> AcmeDetectSheet -> AcmeRegister
+                   \--------------------^
+```
+
+`AcmeCapture` takes the calibration to **check against**, not to
+capture with. Intrinsics belong to a camera at one focus — v4k_01's
+are valid at `focus_absolute` 134 and nowhere else — so a frame shot at
+any other focus carries a lens model that does not describe it, and
+nothing in the picture says so. The node would rather stop than pass
+one downstream; `on_mismatch` can be set to `warn` if you know better.
 
 ## How the fit works
 

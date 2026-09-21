@@ -289,9 +289,24 @@ def capture_report(results: Sequence[ControlResult],
     """What the operator needs to see on the node, in words.
 
     Silence is the enemy here: a capture at the wrong focus looks
-    exactly like a capture at the right one.
+    exactly like a capture at the right one.  Both numbers are printed
+    for every control, because "focus failed" does not tell anyone
+    which way to turn the dial.
     """
-    raise NotImplementedError
+    bad = failures(results)
+    lines = ["capture verified" if not (bad or problems)
+             else "CAPTURE NOT VERIFIED", ""]
+    if results:
+        lines.append("controls:")
+        for r in results:
+            note = "" if r.accepted else ", and the driver refused it"
+            lines.append(f"  {'!!' if not r.ok else '  '} {r.name:18s}"
+                         f" asked {r.requested:g}, reads {r.actual:g}{note}")
+    if problems:
+        lines.append("")
+        lines.append("against the calibration:")
+        lines += [f"  - {p}" for p in problems]
+    return "\n".join(lines)
 
 
 class CaptureSession:
@@ -313,15 +328,27 @@ class CaptureSession:
     @property
     def index(self) -> Optional[int]:
         """Which device is currently held, if any."""
-        raise NotImplementedError
+        return self._index
 
     def open(self, index: int):
         """The capture for ``index``, reusing the held one if it matches."""
-        raise NotImplementedError
+        wanted = int(index)
+        if self._capture is not None and self._index == wanted:
+            return self._capture
+        self.close()
+        self._capture = self._opener(wanted)
+        self._index = wanted
+        return self._capture
 
     def close(self) -> None:
         """Release whatever is held. Safe to call when nothing is."""
-        raise NotImplementedError
+        if self._capture is not None:
+            try:
+                self._capture.release()
+            except Exception:       # pragma: no cover - driver teardown
+                pass
+        self._capture = None
+        self._index = None
 
 
 _SEQUENCE = itertools.count()

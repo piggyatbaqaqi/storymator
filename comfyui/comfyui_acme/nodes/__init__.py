@@ -1,3 +1,4 @@
+from .capture import AcmeCapture
 from .lens import AcmeCalibrateLens
 from .registration import (AcmeCalibration, AcmeCalibrationLoad,
                            AcmeCalibrationSave, AcmeDetectSheet,
@@ -6,6 +7,7 @@ from .registration import (AcmeCalibration, AcmeCalibrationLoad,
 
 PHASE_1 = [
     AcmeCalibration,
+    AcmeCapture,
     AcmeCalibrateLens,
     AcmeCalibrationSave,
     AcmeCalibrationLoad,
