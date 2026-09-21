@@ -501,7 +501,11 @@ dimensions change. It does not belong in the error budget.
 2026-09-21, from a live `AcmeCapture` frame once the background,
 lighting and the 180-degree outline bug were all out of the way.
 
-**The two rectangular landmarks are not peg tops. They are holes.**
+**The two rectangular landmarks are not peg tops. Their extent is the
+hole.** *(Their centroid is another matter — see
+[../../../../docs/planning/landmark-detection.md](../../../docs/planning/landmark-detection.md).
+The blob spans the slot, but its centroid lands wherever the mass
+falls, which on one frame was dead centre on the side of a peg.)*
 The rect slots are 15.75 mm against a 12.70 mm peg, so ~3 mm of slot
 stands open; with the light on the lens axis nothing reaches into it,
 and it reads as dark as the peg. Measured blob lengths came out
