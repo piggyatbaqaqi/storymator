@@ -23,6 +23,7 @@ from comfyui_acme.acme.synth import camera_homography, render  # noqa: E402
 from comfyui_acme.nodes import (PHASE_1, AcmeCapture,  # noqa: E402
                                 AcmeDetectSheet)
 from comfyui_acme.nodes import capture as capture_node  # noqa: E402
+from comfyui_acme.nodes import registration as reg_node  # noqa: E402
 from comfyui_acme.nodes._convert import (stack_to_tensor,  # noqa: E402
                                          to_gray)
 
@@ -254,3 +255,53 @@ def test_the_peg_marks_follow_the_slot_not_a_fixed_circle():
         span = max(xs.max() - xs.min(), ys.max() - ys.min())
         assert span >= rect.long_px - 4, (
             f"marks span {span} px for a {rect.long_px:.0f} px slot")
+
+
+# --- reaching the threshold that decides peg from shadow --------------
+
+contrast_pending = pytest.mark.xfail(reason="peg_contrast is hardcoded")
+
+
+@contrast_pending
+def test_peg_contrast_is_offered_and_comes_last():
+    """Appended, because ComfyUI stores widget values POSITIONALLY --
+    `widgets_values` is a bare list, so inserting one in the middle
+    silently reassigns every saved value after it."""
+    ids = [i.id for i in AcmeDetectSheet.define_schema().inputs]
+    assert ids == ["image", "calibration", "max_residual_px",
+                   "peg_appearance", "peg_contrast"]
+
+
+@contrast_pending
+def test_the_default_leaves_behaviour_unchanged():
+    """0.6 is what fit_pose already used, so exposing the knob must not
+    move anybody's existing results."""
+    spec = {i.id: i for i in AcmeDetectSheet.define_schema().inputs}
+    assert spec["peg_contrast"].default == pytest.approx(0.6)
+
+
+@contrast_pending
+def test_the_range_stays_inside_the_paper_level():
+    """The threshold is a fraction OF the paper level. At 0 nothing is
+    dark enough to be a peg and at 1 the paper itself qualifies, so
+    neither end is a usable setting."""
+    spec = {i.id: i for i in AcmeDetectSheet.define_schema().inputs}
+    assert spec["peg_contrast"].min > 0.0
+    assert spec["peg_contrast"].max < 1.0
+
+
+@contrast_pending
+def test_the_setting_actually_reaches_the_fitter(monkeypatch):
+    """A widget that does not arrive is worse than no widget: it looks
+    like the knob does nothing rather than like it is missing."""
+    seen = {}
+    real = reg_node.fit_pose
+
+    def spy(gray, calibration, **kwargs):
+        seen.update(kwargs)
+        return real(gray, calibration, **kwargs)
+
+    monkeypatch.setattr(reg_node, "fit_pose", spy)
+    cal, _, batch = _scene()
+    AcmeDetectSheet.execute(batch, cal, 1.5, "dark", 0.33)
+    assert seen["peg_contrast"] == pytest.approx(0.33)
