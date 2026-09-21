@@ -228,6 +228,24 @@ class VideoCaptureLike(Protocol):
     def get(self, propId: int) -> float: ...
 
 
+def fourcc_name(code: float) -> str:
+    """The inverse of :func:`fourcc_code`, for reports.
+
+    A FOURCC is four characters packed into an integer, so ``%g``
+    renders ``MJPG`` as ``1.19644e+09`` -- accurate, useless, and
+    indistinguishable from a malfunction. Falls back to hex when the
+    bytes are not printable, which is what a driver reporting 0 or a
+    misread control looks like.
+    """
+    packed = int(round(code))
+    if packed < 0 or packed > 0xFFFFFFFF:
+        return f"0x{packed:x}"
+    chars = [chr((packed >> (8 * i)) & 0xFF) for i in range(4)]
+    if all(" " <= c <= "~" for c in chars):
+        return "".join(chars)
+    return f"0x{packed:08x}"
+
+
 class Cv2Device:
     """Adapts ``cv2.VideoCapture`` to :class:`ControlDevice`.
 
@@ -293,6 +311,9 @@ def capture_report(results: Sequence[ControlResult],
     for every control, because "focus failed" does not tell anyone
     which way to turn the dial.
     """
+    def show(name: str, value: float) -> str:
+        return fourcc_name(value) if name == "fourcc" else f"{value:g}"
+
     bad = failures(results)
     lines = ["capture verified" if not (bad or problems)
              else "CAPTURE NOT VERIFIED", ""]
@@ -301,7 +322,8 @@ def capture_report(results: Sequence[ControlResult],
         for r in results:
             note = "" if r.accepted else ", and the driver refused it"
             lines.append(f"  {'!!' if not r.ok else '  '} {r.name:18s}"
-                         f" asked {r.requested:g}, reads {r.actual:g}{note}")
+                         f" asked {show(r.name, r.requested)},"
+                         f" reads {show(r.name, r.actual)}{note}")
     if problems:
         lines.append("")
         lines.append("against the calibration:")

@@ -397,10 +397,21 @@ def test_a_fresh_session_holds_nothing():
 
 # --- readability of the report --------------------------------------
 
-pending = pytest.mark.xfail(reason="fourcc is printed as a float")
+
+def test_fourcc_name_inverts_fourcc_code():
+    from acme.capture import fourcc_code, fourcc_name
+    for code in ("MJPG", "YUYV", "H264"):
+        assert fourcc_name(fourcc_code(code)) == code
 
 
-@pending
+def test_fourcc_name_falls_back_to_hex_when_not_printable():
+    """A driver reporting 0, or a control that is not a FOURCC at all,
+    must not be rendered as four control characters."""
+    from acme.capture import fourcc_name
+    assert fourcc_name(0) == "0x00000000"
+    assert fourcc_name(1) == "0x00000001"
+
+
 def test_fourcc_is_reported_as_its_four_characters():
     """A FOURCC is a packed integer, and %g renders it as 1.19644e+09.
 
@@ -415,7 +426,6 @@ def test_fourcc_is_reported_as_its_four_characters():
     assert "e+09" not in text
 
 
-@pending
 def test_a_wrong_fourcc_shows_both_codes_readably():
     from acme.capture import fourcc_code
     text = capture_report([ControlResult("fourcc", fourcc_code("MJPG"),
