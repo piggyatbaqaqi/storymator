@@ -122,3 +122,55 @@ it came from looking at the picture, not the numbers.
 `AcmeDetectSheet`**, so an operator cannot reach it. The sweep above
 spans 15.56 to 40.62 px of peg residual, which is too much leverage to
 leave hardcoded at 0.6.
+
+## Phone beside the lens: better, and the shadow is now characterised
+
+`data/captures/2026-09-21-phone-beside-lens/`, ambient room light,
+phone beside the lens rather than behind it, white monitor fill.
+Subjectively much better, and measurably so — peg residual **19.99 px**
+against 30.29 with the phone behind.
+
+Fitted landmarks on frame `_009`, against a 15.75 × 3.09 mm slot and a
+6.31 mm round hole:
+
+| | fitted | angle |
+|---|---|---:|
+| left | 16.54 × 4.94 mm | −17.8° |
+| round | 8.50 × 5.86 mm | **−90.0°** |
+| right | 13.60 × 8.84 mm | −12.3° |
+
+**The long dimension is roughly right and the short dimension is not.**
+Left is +5 % on its length, right −14 %, while the short axis runs
+1.6× to 2.9× oversize on all three. So the shadow is falling
+**across the bar**, inflating the short axis and leaving the long one
+alone.
+
+That is a useful split: the fitted **angle and length are trustworthy;
+the short extent and the across-bar position are not.**
+
+### A prediction that failed
+
+Last turn I predicted that if the shadow stopped dominating, the round
+peg's box would swing from +89° to roughly the bar's angle. It did not
+— it is **−90.0°**, still across the bar. Moving the light from behind
+the lens to beside it shortened the shadow without changing which
+dimension it dominates, and a round peg has no long axis of its own to
+compete with it.
+
+### And a fix that does not apply
+
+The operator's reading was that the right box encloses only the shadow,
+ignoring the peg beside it — which would mean peg and shadow are
+separate candidates and the wrong one won, fixable by filtering on
+shape with the already-written `Rect.matches`.
+
+They are not separate. There are four candidates in that frame and only
+one anywhere near the right peg, at 13.30 × 8.65 mm: peg and shadow are
+a single merged blob, and the fitted rectangle spans both. The box
+*looks* like it is on the shadow because the shadow is the larger part
+of the union.
+
+`Rect.matches` would reject all four, since none is within half of
+3.09 mm on the short axis. It is the right idea and the wrong stage —
+useful once something separates the two, useless while they are one
+blob.
