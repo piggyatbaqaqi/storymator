@@ -57,6 +57,63 @@ matter — correlation between brightness and per-frame error was −0.00
 on a **black-on-white printed target**. A ChArUco board has ample
 contrast at any exposure. Chrome pegs on white paper do not.
 
+### Put the light at the lens
+
+Measured over four setups on 2026-09-21. Shadow length is `h / tan θ`
+for a peg of height *h* under light at elevation θ, so at the 30–39°
+the room lighting gave, a 6.26 mm peg threw 8–11 mm of shadow — longer
+than the peg, and contiguous with it, so it joined the same blob and
+dragged the centroid:
+
+| setup | light elevation | centroid pull |
+|---|---|---|
+| room light only | 30–39° | 2.8–4.2 mm |
+| phone beside camera, room on | 32–45° | 1.5–2.1 mm |
+| phone over the round peg, room off | 31–60° | 0.97 mm round, 2.1–2.4 mm rect |
+| **phone 2 cm from the lens** | — | **0.28–0.74 mm, all three** |
+
+**Elevation is the wrong thing to chase.** Putting the light over one
+peg fixes that peg and leaves the others — measured: the round peg
+reached 60° and 0.97 mm while the rect pegs stayed at 31–38°.
+
+Co-locating the light with the lens hides every shadow behind its own
+peg, because the hiding is a property of the *camera's* viewpoint. Off
+the lens by *d*, with the camera at working distance *Z*, the shadow
+reappears at about `h·d/Z`. At this rig's **Z = 322 mm**:
+
+| offset from lens | round, h=8.79 | rect, h=6.26 |
+|---:|---:|---:|
+| 100 mm | 2.72 mm | 1.94 mm |
+| 50 mm | 1.36 mm | 0.97 mm |
+| **30 mm** | **0.82 mm** | **0.58 mm** |
+| 10 mm | 0.27 mm | 0.19 mm |
+
+**Within ~30 mm of the lens** puts every peg under a millimetre.
+
+### What on-axis light costs: the slot goes dark
+
+It trades an external shadow for an internal one. With the light on the
+lens axis nothing reaches into the unoccupied part of a rectangular
+slot — the hole is 15.75 mm against a 12.70 mm peg — so it reads as
+dark as the peg and joins the blob:
+
+| feature | blob extent | true size |
+|---|---:|---:|
+| left rect | 16.7 mm | 12.70 |
+| right rect | 17.2 mm | 12.70 |
+| round | 7.7 mm | 6.44 |
+
+One continuous dark run, and the centroid lands wherever the peg
+happens to sit in its slot. On the right peg this read as the detected
+centre sitting on the peg's "left shoulder".
+
+**This may be worth embracing rather than fixing.** What is being
+detected there is the *hole*, and the hole lies in the paper plane, so
+it has no peg-top parallax — the 1.4–2.2 mm systematic that currently
+tops the error budget. The scanner already measured hole geometry
+across the ream at **26 µm** pitch sd. Not acted on: it is a design
+change, not a lighting fix.
+
 ---
 
 ## Check the sheet model matches the paper
