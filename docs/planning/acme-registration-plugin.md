@@ -438,8 +438,19 @@ field-boundary use makes it worth phase 3.
 
 OpenCV is **declared** in the pack's own `requirements.txt` —
 `opencv-contrib-python`, since ArUco remains available for the
-world-reference fiducial of §6 even though rev 0 does not use it. It is
-not a ComfyUI dependency and is not currently in the `storymator` env.
+world-reference fiducial of §6 even though rev 0 does not use it.
+
+> **Superseded 2026-09-21.** This section used to end "It is not a
+> ComfyUI dependency and is not currently in the `storymator` env",
+> which was true when written and is not now: `storymator` carries cv2
+> 5.0.0 and is the environment ComfyUI runs in.
+>
+> That sentence had hardened into an unwritten rule that `acme/` should
+> avoid OpenCV, which was never a decision anyone made. It is a
+> **declared dependency**; modules may use it. `acme.lens`,
+> `acme.capture` and `acme.rect` import it lazily, not to keep it
+> optional but so that a missing install produces a sentence instead of
+> a traceback.
 
 ```
 storymator/comfyui/comfyui_acme/

@@ -24,8 +24,14 @@ centroid cannot:
 punching a hole in the middle of the blob moves its centre of mass and
 leaves its bounding extent untouched.
 
-No OpenCV: :mod:`acme.detect` and everything it calls must run in a
-plain ComfyUI environment, so this is numpy and scipy only.
+OpenCV does this well, so it does the work: ``findContours`` plus
+``minAreaRect`` is the oriented bounding rectangle, and the *outer*
+contour ignores interior holes by construction -- which is precisely
+the highlight case, for free and better tested than a hand-rolled
+equivalent. It is imported lazily, as in :mod:`acme.lens` and
+:mod:`acme.capture`, only so a missing install gives a sentence rather
+than a traceback; ``opencv-contrib-python`` is a declared dependency of
+this pack and is expected to be there.
 """
 
 from __future__ import annotations
