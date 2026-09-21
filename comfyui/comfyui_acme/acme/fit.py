@@ -33,6 +33,15 @@ from .geometry import (apply_homography, homography_from_points,
 from .model import Calibration
 
 
+#: How far the detected pegs may sit from the peg line before an
+#: orientation is treated as implausible rather than merely worse.
+#: Generous against everything that legitimately moves them -- punch
+#: scatter is 0.27 mm sd across the ream, peg-top parallax reaches
+#: ~2 mm, detection error ~1 mm -- and far below the ~192 mm that
+#: fitting the sheet end for end produces.
+PEG_LINE_TOLERANCE_MM = 25.0
+
+
 @dataclass
 class Pose:
     """One frame's registration, accepted or not.
@@ -219,28 +228,43 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         # handedness is describing a sheet seen from behind.
         if np.linalg.det(h[:2, :2]) <= 0:
             continue
+        candidates_mm = apply_homography(h, centres)
         triple, score, reason = select_peg_triple(
-            blobs, apply_homography(h, centres),
-            peg.centre_spacing_mm, peg_tolerance_mm)
+            blobs, candidates_mm, peg.centre_spacing_mm, peg_tolerance_mm)
         if triple is None:
             last_reason = reason
             continue
-        accepted_hypotheses.append((score, idx, h, triple))
+        # How far the chosen pegs sit from the peg line, which is y = 0
+        # by definition of the peg frame.  This is what separates an
+        # orientation from its 180-degree twin; see below.
+        off_line = float(np.abs(candidates_mm[triple][:, 1]).mean())
+        accepted_hypotheses.append((score, off_line, idx, h, triple))
 
     if not accepted_hypotheses:
         return Pose(False, last_reason)
 
-    # Several orientations can fit, because a symmetric bar on a
-    # nominally centred punch looks the same rotated by 180 degrees.
-    # Among those that fit the bar, prefer the one that rotates the
-    # frame least: right whenever the camera is not upside down, and
-    # the explicit bar_position control exists for when it is not.
+    # Several orientations fit the BAR equally well, because peg
+    # spacing and collinearity are both unchanged by turning the sheet
+    # end for end.  What is not unchanged is where the pegs land: the
+    # punch is deliberately off-centre across the sheet, 12 mm from the
+    # punched edge and 203.9 mm from the far one, so the wrong end puts
+    # the pegs ~192 mm from the line they are nailed to.
+    #
+    # That is decisive and physical, where "prefer the smaller frame
+    # rotation" is a guess about how the camera is mounted -- and it
+    # guessed wrong on the first real rig capture, fitting the sheet
+    # 180 degrees out with a 568 px outline residual while reporting a
+    # plausible-looking peg fit.  Rule the implausible ones out first,
+    # then keep the old tiebreak for hypotheses that are genuinely
+    # ambiguous.
     def _preference(candidate):
-        score, _, homography, _ = candidate
-        return round(score, 2), _rotation_deg(spec.matrix() @ homography)
+        score, off_line, _, homography, _ = candidate
+        return (off_line > PEG_LINE_TOLERANCE_MM,
+                round(score, 2),
+                _rotation_deg(spec.matrix() @ homography))
 
     accepted_hypotheses.sort(key=_preference)
-    _, idx, h, triple = accepted_hypotheses[0]
+    _, _, idx, h, triple = accepted_hypotheses[0]
 
     pegs_image = centres[triple]
     pegs_mm = apply_homography(h, pegs_image)

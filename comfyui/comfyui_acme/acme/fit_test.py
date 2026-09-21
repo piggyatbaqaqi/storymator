@@ -26,17 +26,14 @@ from acme.synth import camera_homography, render
 
 SIZE = (1280, 960)
 
-pending = pytest.mark.xfail(reason="orientation tiebreak ignores peg y")
-
 
 def _rig():
     return Calibration(peg=PegModel(), sheet=SheetModel(),
                        field_spec=FieldSpec())
 
 
-@pending
-@pytest.mark.parametrize("roll_deg", [0.0, 175.0, 180.0, 185.0])
-def test_the_pegs_land_on_the_peg_line_whatever_the_camera_roll(roll_deg):
+@pytest.mark.parametrize("rotation_deg", [0.0, 175.0, 180.0, 185.0])
+def test_the_pegs_land_on_the_peg_line_whatever_the_camera_roll(rotation_deg):
     """The fit must not choose a hypothesis that puts the pegs 194 mm
     from the line they are nailed to.
 
@@ -44,7 +41,7 @@ def test_the_pegs_land_on_the_peg_line_whatever_the_camera_roll(roll_deg):
     smaller frame rotation" pick the wrong end of the sheet.
     """
     cal = _rig()
-    h = camera_homography(cal, SIZE, roll_deg=roll_deg)
+    h = camera_homography(cal, SIZE, rotation_deg=rotation_deg)
     pose = fit_pose(render(cal, h, SIZE), cal)
     assert pose.accepted, pose.reason
     assert abs(pose.punch_offset_mm) < 20.0, (
@@ -52,12 +49,11 @@ def test_the_pegs_land_on_the_peg_line_whatever_the_camera_roll(roll_deg):
         f"the sheet is 180 degrees out")
 
 
-@pending
 def test_a_flipped_sheet_is_not_silently_accepted():
     """The failure mode that matters: not a refusal, but a confident
     fit of the sheet end for end."""
     cal = _rig()
-    h = camera_homography(cal, SIZE, roll_deg=180.0)
+    h = camera_homography(cal, SIZE, rotation_deg=180.0)
     pose = fit_pose(render(cal, h, SIZE), cal)
     assert pose.accepted, pose.reason
     corners = pose.corners_image
