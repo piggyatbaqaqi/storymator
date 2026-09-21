@@ -393,3 +393,31 @@ def test_close_releases_and_can_be_called_twice():
 
 def test_a_fresh_session_holds_nothing():
     assert CaptureSession(FakeOpener()).index is None
+
+
+# --- readability of the report --------------------------------------
+
+pending = pytest.mark.xfail(reason="fourcc is printed as a float")
+
+
+@pending
+def test_fourcc_is_reported_as_its_four_characters():
+    """A FOURCC is a packed integer, and %g renders it as 1.19644e+09.
+
+    Seen on the first real run: the line read "fourcc asked
+    1.19644e+09, reads 1.19644e+09", which is correct, useless, and
+    looks like a malfunction. The operator needs to see MJPG.
+    """
+    from acme.capture import fourcc_code
+    code = fourcc_code("MJPG")
+    text = capture_report([ControlResult("fourcc", code, code, True)], [])
+    assert "MJPG" in text
+    assert "e+09" not in text
+
+
+@pending
+def test_a_wrong_fourcc_shows_both_codes_readably():
+    from acme.capture import fourcc_code
+    text = capture_report([ControlResult("fourcc", fourcc_code("MJPG"),
+                                         fourcc_code("YUYV"), True)], [])
+    assert "MJPG" in text and "YUYV" in text
