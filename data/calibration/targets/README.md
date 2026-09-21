@@ -1,38 +1,65 @@
 # Calibration targets
 
-## calibrx-charuco-175x225mm — the 7×9 board
+> **These SVGs are third-party assets under unresolved terms.** They
+> came from calibrx.io and carry no embedded copyright or licence text.
+> See [../../../LICENSES.md](../../../LICENSES.md) — including the note
+> that an equivalent board can be generated from OpenCV, which removes
+> the dependency entirely.
+
+## calibrx-charuco-175x225mm — `charuco_0001`, the 7×9 board
 
 ChArUco, 7×9 squares, `DICT_6X6_250`. Nominal 25 mm squares with 18 mm
 markers, so a nominal 175 × 225 mm board on a 191 × 265 mm page.
 
-### Measured 2026-09-18 — the print is 1.6 % oversize
+### Measured — the print is 1.27 % oversize
 
-| feature | nominal | measured | scale |
-|---|---:|---:|---:|
-| the printed 50 mm calibration line | 50 mm | **50.8 mm** | 1.0160 |
-| 7 squares across the width | 175 mm | **178 mm** | 1.0171 |
-| 9 squares along the length | 225 mm | **228 mm** | 1.0133 |
+**Superseded reading below.** An early ruler pass gave 1.6 % and a
+square of 25.4 mm "one inch exactly", which was a tidy story and wrong.
 
-Three independent measurements agreeing on **1.016**, which is
-`25.4 / 25` exactly — so each 25 mm square printed at **25.4 mm, one
-inch**, and the 50 mm line came out at 50.8 mm, two inches. A 1.6 %
-error that lands on exactly an inch is unlikely to be a coincidence;
-something in the print path applied an inch-for-millimetre scaling
-rather than fitting to the page. Check the print dialog is set to
-*Actual size* / 100 % before reprinting.
+| method | square | |
+|---|---:|---|
+| **5 squares corner to corner, calipers** | **25.3163 ± 0.027** | current |
+| 9 squares at 228 mm, ruler | 25.333 ± 0.111 | +0.1σ |
+| 7 squares at 178 mm, ruler | 25.429 ± 0.143 | +0.8σ |
+| the printed 50 mm bar, calipers | 25.518 ± 0.044 | **+3.9σ — do not use** |
+
+**Never measure the printed 50 mm bar.** Its serifs are 0.53 and
+0.58 mm wide, and "50 mm" could mean outside-, centre- or
+inside-to-inside, giving 25.518, 25.241 or 24.963 — a **2.22 % spread**
+on a quantity worth 1.27 %. The serifs are the error bar. Measure
+corner to corner across five squares instead: a checker corner is a
+point where four quadrants meet, with no width to argue about, and
+126.6 mm fits a 150 mm caliper.
+
+Technique limits this, not the caliper: six readings gave sd 0.33 mm on
+126.6, twenty-five times the caliper's own resolution, because a
+checker corner is a *virtual* point a jaw cannot seat on. Take six
+readings and treat the scatter as the error.
+
+### The print is also anisotropic by +0.15 %
+
+Refitting the 48-frame set with x and y scaled independently, minimum
+rms (0.7070) and fx = fy (−0.003 %) land at the same point, and a
+reversed control is much worse (0.8644). Calipers said +0.38 ± 0.26 %;
+the calibration data measures the board better than the calipers do.
+
+The whole of the recorded 0.11 % fx/fy discrepancy was the print, not
+the sensor. See `../distortion/v4k_01/anisotropy_scan.py`.
 
 **Use these values** with `AcmeCalibrateLens` for this physical print:
 
 ```
-columns 7    rows 9    square_mm 25.4    marker_mm 18.29
+columns 7    rows 9    square_mm 25.3163    marker_mm 18.228
 aruco_dictionary DICT_6X6_250
 ```
 
 ### It does not affect the lens calibration
 
 Scaling a board uniformly scales the recovered extrinsic translations
-and leaves focal length, principal point and distortion untouched.
-Verified on the 13-frame set in `../distortion/`:
+and leaves focal length, principal point and distortion untouched. Only
+the *ratio* of the two axes matters, which is why the anisotropy above
+does and the 1.27 % does not. Verified twice — on the superseded
+13-frame set:
 
 ```
 25.00 / 18.00 mm   rms 2.0821   fx 2519.731   cx 1507.433   k1 +0.15730
@@ -43,9 +70,12 @@ Identical to six significant figures, the last-digit difference being
 solver noise. What moved was the mean board distance, 375.5 → 381.5 mm
 — a ratio of 1.0160, which is the scale factor and nothing else.
 
+and again on the final 48-frame set, where 25.3163 and 25.400 give rms
+0.7215 and fx 2624.44 identically to six figures.
+
 So the measurement matters for absolute work and for mixing boards, not
 for calibrating the lens. Incidentally it also tells us the working
-distance of the rig: **about 380 mm.**
+distance of the rig: **about 379 mm.**
 
 ## calibrx-charuco-175x125mm — the 7×5 board
 
