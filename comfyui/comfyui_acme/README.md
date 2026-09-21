@@ -167,11 +167,23 @@ keystone, sensor noise, camera moves, and each refusal path.
 
 Unit tests live **beside the module they exercise**, as
 `acme/foo_test.py`. `tests/test_*.py` is the older layout and is being
-migrated one module at a time; both are collected meanwhile. Migrating
-the remaining six — `test_geometry`, `test_fit`, `test_register`,
-`test_lens`, `test_charuco`, `test_detect` — is a rename plus a
-`pytest.ini` edit when the last one moves, and is worth doing as its
-own commit rather than mixed into feature work.
+migrated one module at a time; both are collected meanwhile.
+
+Five remain in the old layout: `test_geometry`, `test_register`,
+`test_lens`, `test_charuco`, and `test_fit` — which is **currently
+split**, with orientation tests in `acme/fit_test.py` and the rest in
+`tests/test_fit.py`. Consolidating that one is worth doing first;
+each of the others is a rename, plus a `pytest.ini` edit when the last
+moves. Worth doing as its own commit rather than mixed into feature
+work.
+
+`tests/test_node_contract.py` and `tests/test_nodes.py` stay where they
+are: they are cross-cutting rather than one module's unit tests, and
+the first one *must* live outside `nodes/` — a test file inside it
+makes pytest import `nodes/__init__.py`, which needs ComfyUI.
+
+`acme/detect.py` has **no tests**, which is the largest gap in the
+pack: it is where every real-world failure so far has actually lived.
 
 ### Integration tests
 
