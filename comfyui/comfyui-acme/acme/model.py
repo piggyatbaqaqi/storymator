@@ -130,6 +130,11 @@ class Calibration:
     field_spec: Optional[FieldSpec] = None
     camera_matrix: Optional[np.ndarray] = None   # 3x3, AcmeCalibrateLens
     dist_coeffs: Optional[np.ndarray] = None     # (5,) or (8,)
+    # What the intrinsics were measured under -- frame size, focus,
+    # board. Carried so a capture can be checked against them; see
+    # acme.capture.verify_against.  Not geometry, so the fitter
+    # ignores it.
+    provenance: Optional[dict] = None
 
     def __post_init__(self):
         if self.field_spec is None:
