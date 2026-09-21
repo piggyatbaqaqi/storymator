@@ -87,6 +87,16 @@ pytest -q                 # unit tests
 pytest -q --integration   # and the rig
 ```
 
+**Run these under the environment ComfyUI runs in.** The pack's own
+arithmetic needs only numpy and scipy, but `tests/test_nodes.py`
+imports the node classes for real, which needs `comfy_api` and so
+everything ComfyUI depends on. Those tests *skip* elsewhere rather than
+failing, which is convenient and also a trap: a green run in the wrong
+environment is quietly nine tests lighter. Check the skip count.
+
+`COMFYUI_ROOT` points at the ComfyUI checkout if it is not at the
+default path.
+
 From the repository root, name the pack explicitly instead:
 
 ```sh

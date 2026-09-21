@@ -1,18 +1,20 @@
-"""What can be checked about the node layer without ComfyUI.
+"""A cheap structural check over the node layer.
 
-``comfy_api`` needs ``av``, which is not a dependency of this pack, so
-node modules cannot be imported here and never have been tested.  That
-is tolerable only because they are thin adapters -- but "thin" does not
-mean "cannot contain a typo", and a name that does not exist in
-``acme`` fails at ComfyUI load time, far from the edit that caused it.
+``tests/test_nodes.py`` imports these modules for real and is the
+stronger test -- but it needs ComfyUI on the path, so it skips wherever
+ComfyUI is not installed. This one parses instead of importing: it
+needs nothing but the standard library and ``acme``, runs in a
+fraction of a second, and therefore still guards the node layer in a
+checkout or an environment where ComfyUI is absent.
 
-Parsing rather than importing catches exactly that class of mistake,
-costs nothing, and needs neither ComfyUI nor a camera.
+It catches the class of mistake that is otherwise silent until ComfyUI
+loads the pack -- a name imported from ``acme`` that does not exist, a
+node missing a method ComfyUI will call -- far from the edit that
+caused it.
 
-It lives in ``tests/`` rather than beside the modules it checks
-because a test file inside ``nodes/`` makes pytest import
-``nodes/__init__.py``, which imports ``comfy_api``, which is the very
-thing this file exists to work around.
+It lives in ``tests/`` rather than beside the modules it checks because
+a test file inside ``nodes/`` makes pytest import ``nodes/__init__.py``,
+and that needs ComfyUI, which is the very thing this file avoids.
 """
 
 import ast

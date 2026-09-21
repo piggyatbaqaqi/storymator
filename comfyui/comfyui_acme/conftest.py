@@ -9,10 +9,26 @@ beside the module they exercise, as ``acme/foo_test.py`` -- see
 ``pytest.ini``.
 """
 
+import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+_PACK = Path(__file__).resolve().parent
+sys.path.insert(0, str(_PACK))
+
+# ...and the pack's PARENT, so ``comfyui_acme.nodes`` resolves.  Node
+# modules use relative imports (``from ..acme.capture import ...``), so
+# they can only be imported as part of the package, not as a top-level
+# ``nodes``.
+sys.path.insert(0, str(_PACK.parent))
+
+# ...and ComfyUI, if it is findable, so node modules can be imported at
+# all.  Tests that need it use ``pytest.importorskip``, so a checkout
+# without ComfyUI still runs everything else.
+_COMFY = Path(os.environ.get(
+    "COMFYUI_ROOT", "/data/piggy/src/github.com/Comfy-Org/ComfyUI"))
+if (_COMFY / "comfy_api").is_dir():
+    sys.path.append(str(_COMFY))
 
 
 def pytest_addoption(parser):
