@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Code, not data: the surrounding directory is CC-BY-SA-4.0.
+
 import numpy as np
 def s(name, vals, nominal=None, note=""):
     v = np.array(vals, float); m = v.mean()

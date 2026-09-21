@@ -11,6 +11,16 @@ what governs is the version in force when the files were made.
 Conclusions drawn from these live in [../../LICENSES.md](../../LICENSES.md).
 Nothing here is legal advice.
 
+**These two files are CalibrX's own content**, quoted for record-
+keeping. The CC-BY-SA-4.0 grant covering the rest of `docs/` stops at
+this directory.
+
+**Three questions are with `support@calibrx.io`, sent 2026-09-21** —
+redistribution under an open licence, the `calibrx.io` trademark on
+redistributed boards, and a suggestion that they support anisotropic
+targets. Everything concluded below and in `LICENSES.md` is our
+cautious reading pending their reply, not their position.
+
 ## CalibrX tiers, as published 2026-09-21
 
 | | price | scope | credits |

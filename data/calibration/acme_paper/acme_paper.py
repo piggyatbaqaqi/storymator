@@ -36,6 +36,8 @@ Measurement notes that matter for reading the numbers:
   stand while the size *means* do not.
 """
 
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Code, not data: the surrounding directory is CC-BY-4.0.
 from __future__ import annotations
 
 import argparse

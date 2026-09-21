@@ -1,4 +1,7 @@
 """Round punch diameter across the whole ream, three ways."""
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Code, not data: the surrounding directory is CC-BY-4.0.
 import glob
 import numpy as np
 from PIL import Image

@@ -7,12 +7,13 @@ otherwise. The full text is in [LICENSE](LICENSE).
 |---|---|---|
 | everything not listed below | **GPL-3.0-or-later** | source, build scripts, tooling |
 | `comfyui/comfyui-acme/` | **GPL-3.0-or-later** | ComfyUI is itself GPL-3.0, so this matches its ecosystem |
-| `docs/` | **undecided** | prose, not source — see below |
+| `docs/` | **CC-BY-SA-4.0** | prose — **except `docs/licensing/`, see below** |
+| `docs/licensing/` | **third-party, quoted** | vendor terms and a pricing screenshot; not ours |
 | `data/calibration/acme_paper/` | **CC-BY-4.0** | our own measurements; declared in that dataset's card |
 | `data/calibration/distortion/` — non-code | **CC-BY-SA-4.0** | frames, calibration JSON, cards |
-| `data/calibration/distortion/**/*.py` | **GPL-3.0-or-later** | code is code wherever it sits |
 | `data/calibration/targets/` | **CC-BY-SA-4.0** | ours under the CalibrX terms — **trademark note below** |
-| `data/calibration/pegs/` | **undecided** | the only data directory still uncalled |
+| `data/calibration/pegs/` — non-code | **CC-BY-SA-4.0** | caliper readings and analysis of our own bar |
+| `data/**/*.py` | **GPL-3.0-or-later** | code is code wherever it sits; all carry SPDX headers |
 
 ## Why GPL-3.0-or-later for the code
 
@@ -35,14 +36,20 @@ and the cards — as are the `targets/` they were shot against.
 Share-alike rather than plain BY because a camera calibration is the
 kind of thing that improves by being given back.
 
-`pegs/` is **still undecided**. It is the obvious sibling of
-`distortion/` and will probably follow it, but it has not been called.
+`pegs/` is **CC-BY-SA-4.0** too, matching `distortion/` — the same
+kind of thing, caliper readings and analysis of our own bar.
 
-**Code is code wherever it sits.** `anisotropy_scan.py` and
-`make_calibration.py` live inside a CC-BY-SA-4.0 directory and are
-**GPL-3.0-or-later** like the rest of the source. Both carry an SPDX
-header saying so, which is the one place in this repository where the
-boundary genuinely needs marking.
+**Code is code wherever it sits.** Six Python files live inside data
+directories and are **GPL-3.0-or-later** like the rest of the source.
+All six carry an SPDX header naming both their own licence and the
+licence of the directory around them, because that boundary is the one
+place in this repository a reader could reasonably guess wrong:
+
+| file | surrounding data |
+|---|---|
+| `acme_paper/acme_paper.py`, `acme_paper/src/*.py` | CC-BY-4.0 |
+| `distortion/v4k_01/anisotropy_scan.py`, `make_calibration.py` | CC-BY-SA-4.0 |
+| `pegs/honbay_0001/analyse.py` | CC-BY-SA-4.0 |
 
 Mixing the two CC licences across directories is fine, and the
 compatibility runs one way: CC-BY-4.0 material (`acme_paper`) may be
@@ -120,16 +127,50 @@ measurements of *our* camera and a tool does not acquire rights in its
 output — but the file carries a server-side `calibration_id`, so check
 the SDK's terms before redistributing it alongside the rest.
 
+## `docs/` — CC-BY-SA-4.0, with one carve-out
+
+Prose and diagrams are **CC-BY-SA-4.0**, matching the calibration data
+they document.
+
+**`docs/licensing/` is not ours to license.** It holds a text extract
+of CalibrX's terms and a screenshot of their pricing page, retained
+dated as evidence of what was in force when the target files were
+generated. Both are CalibrX's own content, quoted for record-keeping.
+Nothing here relicenses them, and the CC-BY-SA-4.0 grant above stops at
+that directory.
+
+## Open with CalibrX — asked 2026-09-21, awaiting reply
+
+Three questions are with `support@calibrx.io`. **The guidance above is
+our cautious reading pending their answers, not their position.**
+
+1. **Redistribution.** Whether the §4/§5 ownership grant is understood
+   as permitting output to be released under an open licence — giving
+   files to the public, rather than the team-scoped use the Commercial
+   tier describes.
+2. **Trademark.** Whether the `calibrx.io` mark on a generated board
+   may stay on redistributed copies, and what they want on modified
+   ones. Our current rule — strip it from modified boards, keep it on
+   unmodified — is a conservative default chosen without their input,
+   and their answer supersedes it either way.
+3. **Anisotropic targets** *(a suggestion, not a question).* Their
+   format carries one `square_size` and no second axis, so a print
+   whose x and y scales differ cannot be described. Ours differs by
+   **+0.15 %**, which their own fit pushes into fx/fy as a 0.104 %
+   discrepancy — see
+   [data/calibration/distortion/v4k_01/calibrx/README.md](data/calibration/distortion/v4k_01/calibrx/README.md).
+   A second axis in the board spec would let their pipeline recover it.
+
+If the answers move any of this, update **this file, the notice in
+`data/calibration/targets/README.md`, and the tier notes in
+`docs/licensing/README.md`** — the guidance is stated in all three.
+
 ## Decisions still to make
 
-* **`docs/`** — prose under GPL is awkward. CC-BY-4.0 or CC-BY-SA-4.0
-  is the usual choice.
-* **`pegs/`** — CC-BY-SA-4.0 to match `distortion/`, or CC-BY-4.0 to
-  match `acme_paper`. The only data directory still uncalled.
 * **`-or-later` vs `-only`** — this file says `-or-later`, the FSF's
   own recommendation and the kinder option downstream. To make it
   `-only`, change the line above and say so in the source headers.
-* **SPDX headers.** Only the two scripts under `distortion/` carry
-  them, where the GPL/CC boundary needs marking. Elsewhere `LICENSE`
-  plus this file is unambiguous; adding them repo-wide is tidiness, not
-  a requirement.
+* **SPDX headers.** All six Python files inside data directories carry
+  them, which is where the GPL/CC boundary needs marking. Elsewhere
+  `LICENSE` plus this file is unambiguous; adding them repo-wide is
+  tidiness, not a requirement.

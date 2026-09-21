@@ -6,6 +6,8 @@
 > [../../../LICENSES.md](../../../LICENSES.md).
 >
 > **"calibrx.io" is a trademark of CalibrX and is not licensed here.**
+> *(The rule below is our conservative default; CalibrX was asked
+> directly on 2026-09-21 and their answer supersedes it.)*
 > Each board's printed legend carries that mark. If you redistribute a
 > **modified** board, remove it — a changed target must not imply
 > endorsement CalibrX never gave. Unmodified copies may keep it.

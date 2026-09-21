@@ -1,4 +1,7 @@
 """Absolute hole size, sub-pixel, three independent ways."""
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Code, not data: the surrounding directory is CC-BY-4.0.
 import glob, os
 import numpy as np
 from PIL import Image
