@@ -149,7 +149,11 @@ class AcmeDetectSheet(io.ComfyNode):
             description="Locate the sheet outline and the peg bar, and "
                         "solve the registration for each frame.",
             inputs=[
-                io.Image.Input("image"),
+                io.Image.Input(
+                    "image",
+                    tooltip="The captured frames. AcmeRegister must be "
+                            "given these SAME frames, not the overlay "
+                            "this node emits."),
                 AcmeCalibrationType.Input("calibration"),
                 io.Float.Input("max_residual_px", default=1.5, min=0.1,
                                max=50.0, step=0.1,
@@ -164,7 +168,13 @@ class AcmeDetectSheet(io.ComfyNode):
             ],
             outputs=[
                 AcmePoseType.Output("pose"),
-                io.Image.Output("overlay"),
+                io.Image.Output(
+                    "overlay",
+                    tooltip="Diagnostic only: the frame with the fitted "
+                            "outline, pegs and verdict drawn on it. Send "
+                            "it to a preview. Do NOT feed it to "
+                            "AcmeRegister -- the annotations would be "
+                            "warped into the product."),
                 io.String.Output("report"),
             ],
         )
@@ -205,7 +215,14 @@ class AcmeRegister(io.ComfyNode):
             category=CATEGORY,
             description="Warp each frame into ACME field coordinates.",
             inputs=[
-                io.Image.Input("image"),
+                io.Image.Input(
+                    "image",
+                    tooltip="The ORIGINAL frames, from the same source "
+                            "AcmeDetectSheet was given -- not its "
+                            "overlay output. Both are IMAGE and both "
+                            "have the right shape, so wiring the overlay "
+                            "here works and silently bakes the drawn "
+                            "annotations into the registered result."),
                 AcmePoseType.Input("pose"),
                 AcmeCalibrationType.Input("calibration"),
                 io.Combo.Input("interpolation",

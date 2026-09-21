@@ -68,12 +68,26 @@ a package rather than a lone module.
 | `AcmeRegistrationReport` | residual distribution and every refusal reason |
 | `AcmeFilterByResidual` | split a batch into trusted and not |
 
-A minimal graph:
+A minimal graph. **The image fans out; it does not flow through
+AcmeDetectSheet**, whose image output is a diagnostic overlay:
 
 ```
-LoadImage -> AcmeDetectSheet -> AcmeRegister -> PreviewImage
-AcmeCalibration ---^      \-> AcmeRegistrationReport -> PreviewImage
+                     ┌──────────────> AcmeDetectSheet ─ overlay ─> Preview
+                     │                      │  report ──────────> Preview
+   AcmeCapture ── image                     └─ pose ─┐
+    (or LoadImage)   │                               │
+                     └──────────────> AcmeRegister <─┘ ─ registered -> Preview
+                                            ^
+   AcmeCalibrationLoad ─ calibration ───────┴──> (and to the other two)
+
+   AcmeDetectSheet.pose ──> AcmeRegistrationReport ──> Preview
 ```
+
+**`AcmeRegister.image` takes the same frames `AcmeDetectSheet` was
+given, never its `overlay` output.** Both are `IMAGE` and both have the
+right shape, so wiring the overlay there works and silently warps the
+drawn outline, peg markers and verdict text into the product. Nothing
+downstream notices.
 
 Capturing live instead of loading files:
 
