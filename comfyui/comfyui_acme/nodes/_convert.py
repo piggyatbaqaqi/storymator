@@ -46,7 +46,9 @@ def masks_to_tensor(masks: List[np.ndarray]) -> torch.Tensor:
 
 def draw_overlay(frame: np.ndarray, corners: Optional[np.ndarray],
                  pegs: Optional[np.ndarray], caption: str,
-                 accepted: bool) -> np.ndarray:
+                 accepted: bool,
+                 colour: Optional[Tuple[int, int, int]] = None
+                 ) -> np.ndarray:
     """The fit drawn over the frame, with its verdict written on it.
 
     The caption is burned in rather than only returned as a string so
@@ -60,7 +62,12 @@ def draw_overlay(frame: np.ndarray, corners: Optional[np.ndarray],
     draw = ImageDraw.Draw(img)
     good = (60, 220, 120)
     bad = (250, 90, 70)
-    colour = good if accepted else bad
+    # The verdict colours the marks by default.  A caller may override
+    # it -- the greyscale diagnostic does, because the verdict is
+    # already carried by the overlay and the report, and one fixed
+    # colour stays legible on neutral whatever the outcome.
+    if colour is None:
+        colour = good if accepted else bad
 
     if corners is not None and len(corners) == 4:
         draw.polygon([tuple(p) for p in corners], outline=colour, width=3)
@@ -73,12 +80,16 @@ def draw_overlay(frame: np.ndarray, corners: Optional[np.ndarray],
             draw.line([x - r * 2, y, x + r * 2, y], fill=colour, width=1)
             draw.line([x, y - r * 2, x, y + r * 2], fill=colour, width=1)
 
-    pad = 6
-    lines = [caption[i:i + 88] for i in range(0, len(caption), 88)] or [""]
-    box_h = 14 * len(lines) + 2 * pad
-    draw.rectangle([0, 0, img.width, box_h], fill=(20, 20, 24))
-    for i, line in enumerate(lines):
-        draw.text((pad, pad + 14 * i), line, fill=colour)
+    # An empty caption means no banner at all, which keeps the
+    # greyscale diagnostic uniformly grey outside the marks -- the
+    # property that makes "anything with R > G is a mark" true.
+    if caption:
+        pad = 6
+        lines = [caption[i:i + 88] for i in range(0, len(caption), 88)]
+        box_h = 14 * len(lines) + 2 * pad
+        draw.rectangle([0, 0, img.width, box_h], fill=(20, 20, 24))
+        for i, line in enumerate(lines):
+            draw.text((pad, pad + 14 * i), line, fill=colour)
     return np.asarray(img).astype(np.float64) / 255.0
 
 

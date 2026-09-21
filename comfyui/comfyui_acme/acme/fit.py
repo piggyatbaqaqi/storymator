@@ -277,7 +277,7 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         pegs_image,
         [peg.rect_landmark_height_mm, peg.round_landmark_height_mm,
          peg.rect_landmark_height_mm],
-        matrix, scale_px_mm)
+        matrix, float(scale_px_mm))
     pegs_mm = apply_homography(h, pegs_fitted)
     correction = rigid_from_points(pegs_mm, model_pegs)
     transform = correction @ h

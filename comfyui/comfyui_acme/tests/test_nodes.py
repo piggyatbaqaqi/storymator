@@ -139,8 +139,6 @@ def test_no_calibration_is_unverified_rather_than_assumed_fine(rig):
 
 # --- the diagnostic view ---------------------------------------------
 
-pending = pytest.mark.xfail(reason="gray output not implemented")
-
 SIZE = (1280, 960)
 
 
@@ -163,7 +161,6 @@ def _neutral(img):
     return (img[..., 0] == img[..., 1]) & (img[..., 1] == img[..., 2])
 
 
-@pending
 def test_gray_comes_last_so_existing_links_survive():
     """Appended, not inserted.  A workflow already wired to overlay and
     report must not have its links shifted by a diagnostic."""
@@ -172,7 +169,6 @@ def test_gray_comes_last_so_existing_links_survive():
         "pose", "overlay", "report", "gray"]
 
 
-@pending
 def test_the_background_is_the_luminance_the_detector_was_given():
     """Not a mean of the channels.  Rec. 709 suppresses the undercolour
     relative to graphite, and a diagnostic showing anything else would
@@ -186,7 +182,6 @@ def test_the_background_is_the_luminance_the_detector_was_given():
     assert np.allclose(gray[..., 0][keep], want[keep], atol=1e-6)
 
 
-@pending
 def test_the_markers_are_red_on_the_grey():
     """Red is maximally legible on neutral, and nothing else in the
     picture can be mistaken for it: a grey pixel has R == G == B, so
@@ -200,7 +195,6 @@ def test_the_markers_are_red_on_the_grey():
     assert np.median(r) > np.median(b)
 
 
-@pending
 def test_the_markers_stay_red_whatever_the_verdict():
     """The overlay output carries the verdict in green or red.  This
     one answers a different question -- where did it look, and what did
@@ -213,7 +207,6 @@ def test_the_markers_stay_red_whatever_the_verdict():
     assert np.median(gray[..., 0][drawn]) > np.median(gray[..., 1][drawn])
 
 
-@pending
 def test_gray_is_a_previewable_image_not_a_bare_channel():
     """ComfyUI IMAGE is (B, H, W, 3); a PreviewImage must just work."""
     cal, _, batch = _scene()
@@ -222,7 +215,6 @@ def test_gray_is_a_previewable_image_not_a_bare_channel():
     assert gray.dtype == torch.float32
 
 
-@pending
 def test_gray_is_emitted_for_every_frame_in_the_batch():
     """Frame i of gray must be frame i of the input, like every other
     per-frame output on this node."""

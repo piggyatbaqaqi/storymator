@@ -26,6 +26,11 @@ AcmePoseType = io.Custom("ACME_POSE")
 
 CATEGORY = "storymator/acme"
 
+#: Marks on the greyscale diagnostic.  Fixed rather than verdict-
+#: coloured, and red because a grey pixel has R == G == B, so anything
+#: with R > G is unambiguously a mark.
+DIAGNOSTIC_RED = (255, 64, 64)
+
 
 class AcmeCalibration(io.ComfyNode):
     """Bar, sheet and raster geometry.
@@ -176,6 +181,14 @@ class AcmeDetectSheet(io.ComfyNode):
                             "AcmeRegister -- the annotations would be "
                             "warped into the product."),
                 io.String.Output("report"),
+                io.Image.Output(
+                    "gray",
+                    tooltip="What the detector actually saw -- the Rec. "
+                            "709 luminance it works on -- with the "
+                            "located corners and pegs marked in red. "
+                            "Every detection failure so far has lived "
+                            "in this intermediate, invisible in both "
+                            "the capture and the overlay."),
             ],
         )
 
@@ -185,17 +198,33 @@ class AcmeDetectSheet(io.ComfyNode):
         frames = batch_to_numpy(image)
         poses: List[Pose] = []
         overlays = []
+        diagnostics = []
         for frame in frames:
-            pose = fit_pose(to_gray(frame), calibration,
+            gray = to_gray(frame)
+            pose = fit_pose(gray, calibration,
                             max_residual_px=max_residual_px,
                             polarity=peg_appearance)
             poses.append(pose)
             overlays.append(draw_overlay(
                 frame, pose.corners_image, pose.pegs_image,
                 pose.summary(), pose.accepted))
+            # No caption, and red regardless of the verdict: the
+            # verdict is on the overlay and in the report, and this one
+            # answers "what did it see and where did it look".
+            marks = draw_overlay(gray, pose.corners_image, pose.pegs_image,
+                                 "", pose.accepted, colour=DIAGNOSTIC_RED)
+            # Composite the marks back over the ORIGINAL luminance
+            # rather than shipping what PIL returned.  Drawing goes
+            # through 8 bits, and a diagnostic whose grey is quantised
+            # cannot be measured off -- which is half of what it is
+            # for.  A mark is any pixel PIL left non-neutral.
+            drawn = marks[..., 0] != marks[..., 1]
+            plate = np.repeat(gray[:, :, None], 3, axis=2)
+            diagnostics.append(np.where(drawn[:, :, None], marks, plate))
 
         text = batch_report(poses)
         return io.NodeOutput(poses, stack_to_tensor(overlays), text,
+                             stack_to_tensor(diagnostics),
                              ui=ui.PreviewText(text))
 
 
