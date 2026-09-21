@@ -20,8 +20,40 @@ ln -s /path/to/storymator/comfyui/comfyui_acme \
       /path/to/ComfyUI/custom_nodes/comfyui_acme
 ```
 
-`requirements.txt` is needed only for lens calibration; the registration
-nodes run on what ComfyUI already has.
+Then **restart ComfyUI** — custom nodes are loaded once at startup.
+
+`requirements.txt` is needed only for lens calibration; the
+registration nodes run on what ComfyUI already has. Install it into the
+environment ComfyUI itself runs in, not whatever the shell defaults to.
+
+### Checking it loaded
+
+A custom node that fails to import is reported once in ComfyUI's
+console and then simply is not there, which looks identical to having
+forgotten the symlink. Loading it the same way ComfyUI does says so
+directly:
+
+```sh
+cd /path/to/ComfyUI
+python - <<'EOF'
+import asyncio, importlib.util, pathlib, sys
+sys.path.insert(0, str(pathlib.Path.cwd()))
+path = pathlib.Path("custom_nodes/comfyui_acme/__init__.py")
+spec = importlib.util.spec_from_file_location(
+    "comfyui_acme", path, submodule_search_locations=[str(path.parent)])
+mod = importlib.util.module_from_spec(spec)
+sys.modules["comfyui_acme"] = mod
+spec.loader.exec_module(mod)
+ext = asyncio.run(mod.comfy_entrypoint())
+for n in asyncio.run(ext.get_node_list()):
+    print(n.define_schema().node_id)
+EOF
+```
+
+Nine node ids means the pack is sound and any remaining problem is in
+ComfyUI's own discovery. The `submodule_search_locations` argument is
+not optional: the pack uses relative imports, so it has to be loaded as
+a package rather than a lone module.
 
 ## Nodes
 
