@@ -4,7 +4,7 @@
 # Code, not data: the surrounding directory is CC-BY-SA-4.0.
 import glob, json, sys
 import numpy as np, cv2
-sys.path.insert(0, "/data/piggy/src/github.com/piggyatbaqaqi/storymator/comfyui/comfyui-acme")
+sys.path.insert(0, "/data/piggy/src/github.com/piggyatbaqaqi/storymator/comfyui/comfyui_acme")
 from acme.model import Calibration, PegModel, SheetModel, FieldSpec
 
 D = "/data/piggy/src/github.com/piggyatbaqaqi/storymator/data/calibration/distortion/v4k_01/"

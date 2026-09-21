@@ -22,7 +22,7 @@ except ModuleNotFoundError as exc:      # pragma: no cover - env dependent
 
     async def comfy_entrypoint():
         raise RuntimeError(
-            "comfyui-acme needs to run inside ComfyUI 0.35 or newer: "
+            "comfyui_acme needs to run inside ComfyUI 0.35 or newer: "
             f"{_MISSING}"
         )
 else:

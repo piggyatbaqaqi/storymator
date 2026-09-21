@@ -107,7 +107,7 @@ but an attributing comment costs nothing and is the right manners.
 
 ## Recommendation
 
-Write **`AcmeCapture`** ourselves: V3 schema, in `comfyui-acme/nodes/`,
+Write **`AcmeCapture`** ourselves: V3 schema, in `comfyui_acme/nodes/`,
 roughly 150 lines, with an attributing comment pointing here.
 
 Widgets it needs that upstream does not have: device selection by

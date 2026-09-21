@@ -6,7 +6,7 @@ otherwise. The full text is in [LICENSE](LICENSE).
 | path | licence | notes |
 |---|---|---|
 | everything not listed below | **GPL-3.0-or-later** | source, build scripts, tooling |
-| `comfyui/comfyui-acme/` | **GPL-3.0-or-later** | ComfyUI is itself GPL-3.0, so this matches its ecosystem |
+| `comfyui/comfyui_acme/` | **GPL-3.0-or-later** | ComfyUI is itself GPL-3.0, so this matches its ecosystem |
 | `docs/` | **CC-BY-SA-4.0** | prose — **except `docs/licensing/`, see below** |
 | `docs/licensing/` | **their respective owners** | see that directory's README for per-file provenance |
 | `data/calibration/acme_paper/` | **CC-BY-4.0** | our own measurements; declared in that dataset's card |
@@ -17,7 +17,7 @@ otherwise. The full text is in [LICENSE](LICENSE).
 
 ## Why GPL-3.0-or-later for the code
 
-ComfyUI is GPL-3.0, and `comfyui-acme` is a ComfyUI custom node, so
+ComfyUI is GPL-3.0, and `comfyui_acme` is a ComfyUI custom node, so
 copyleft is the natural fit rather than an imposition. The runtime
 dependencies are all one-way compatible with it: OpenCV is Apache-2.0,
 numpy, scipy and Pillow are BSD-family.

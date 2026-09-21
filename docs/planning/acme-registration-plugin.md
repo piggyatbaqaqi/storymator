@@ -442,7 +442,7 @@ world-reference fiducial of §6 even though rev 0 does not use it. It is
 not a ComfyUI dependency and is not currently in the `storymator` env.
 
 ```
-storymator/comfyui/comfyui-acme/
+storymator/comfyui/comfyui_acme/
     __init__.py            exports comfy_entrypoint()
     nodes/                 thin adapters: tensors in, tensors out
     acme/                  the arithmetic, importable and tested
@@ -458,7 +458,7 @@ and, as noted, so it can be tested without standing up a graph.
 
 ## 11a. What is implemented — 2026-09-18
 
-Phase 1 is in `comfyui/comfyui-acme/`. Seven nodes load and their
+Phase 1 is in `comfyui/comfyui_acme/`. Seven nodes load and their
 schemas validate against ComfyUI 0.35.0; 24 tests pass against
 synthetic captures with exact ground truth, covering rotation to ±25°,
 keystone, sensor noise, camera moves between frames, and every refusal

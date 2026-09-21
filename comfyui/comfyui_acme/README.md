@@ -1,4 +1,4 @@
-# comfyui-acme
+# comfyui_acme
 
 Registration of hand-drawn animation captured on an ACME peg bar, for
 ComfyUI 0.35+ (V3 schema API).
@@ -16,8 +16,8 @@ storymator repository. Bench procedure for the geometry constants:
 ## Install
 
 ```sh
-ln -s /path/to/storymator/comfyui/comfyui-acme \
-      /path/to/ComfyUI/custom_nodes/comfyui-acme
+ln -s /path/to/storymator/comfyui/comfyui_acme \
+      /path/to/ComfyUI/custom_nodes/comfyui_acme
 ```
 
 `requirements.txt` is needed only for lens calibration; the registration
@@ -66,7 +66,7 @@ operating mode rather than a failure to survive.
 The arithmetic imports neither ComfyUI nor torch:
 
 ```sh
-python -m pytest comfyui/comfyui-acme/tests -q
+python -m pytest comfyui/comfyui_acme/tests -q
 ```
 
 Synthetic captures with exact ground truth cover rotation to ±25°,
