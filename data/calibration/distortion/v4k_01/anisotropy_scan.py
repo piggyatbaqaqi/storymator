@@ -1,3 +1,11 @@
+"""Sweep the ChArUco board's x/y anisotropy and refit, to ask whether
+charuco_0001's print is anisotropic.  Minimum rms and fx=fy both land
+at +0.15 %; a reversed control is much worse, which is what makes it a
+measurement rather than a free parameter soaking up noise."""
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Code, not data: the surrounding directory is CC-BY-SA-4.0.
+
 import glob
 import numpy as np, cv2
 D = "data/calibration/distortion/v4k_01/"

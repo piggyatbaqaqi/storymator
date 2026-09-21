@@ -1,4 +1,7 @@
 """Write the v4k_01 calibration file from the measured values."""
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Code, not data: the surrounding directory is CC-BY-SA-4.0.
 import glob, json, sys
 import numpy as np, cv2
 sys.path.insert(0, "/data/piggy/src/github.com/piggyatbaqaqi/storymator/comfyui/comfyui-acme")

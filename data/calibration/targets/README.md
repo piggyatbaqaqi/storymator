@@ -1,10 +1,14 @@
 # Calibration targets
 
-> **These SVGs are third-party assets under unresolved terms.** They
-> came from calibrx.io and carry no embedded copyright or licence text.
-> See [../../../LICENSES.md](../../../LICENSES.md) — including the note
-> that an equivalent board can be generated from OpenCV, which removes
-> the dependency entirely.
+> **Licence: CC-BY-SA-4.0.** Generated with CalibrX under a lifetime
+> commercial licence, whose terms grant ownership of generated output
+> (§4, reaffirmed in §5). See
+> [../../../LICENSES.md](../../../LICENSES.md).
+>
+> **"calibrx.io" is a trademark of CalibrX and is not licensed here.**
+> Each board's printed legend carries that mark. If you redistribute a
+> **modified** board, remove it — a changed target must not imply
+> endorsement CalibrX never gave. Unmodified copies may keep it.
 
 ## calibrx-charuco-175x225mm — `charuco_0001`, the 7×9 board
 

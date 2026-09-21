@@ -1,0 +1,82 @@
+Retrieved from https://calibrx.io/terms-and-conditions on 2026-09-21.
+Text extracted from the served HTML; kept because site terms change and
+what matters is the version in force when the files were generated.
+======================================================================
+
+Terms & Conditions | CalibrX
+Calibr
+Products
+Solutions
+Pattern generator
+Pricing
+Docs
+Blog
+Log in
+Start free
+→
+Legal
+Terms
+Privacy
+Refunds
+Terms
+Terms and
+conditions
+Last updated: June 4, 2026
+These Terms govern access to CalibrX, the camera calibration platform, export tools, and related SDK resources.
+1. Service
+CalibrX provides software tools for uploading calibration image datasets, detecting calibration patterns, reviewing validation results, running camera calibration workflows, generating analytics, and exporting calibration files for use in computer vision pipelines.
+The service is intended for engineering, research, manufacturing, robotics, and computer vision workflows. You are responsible for deciding whether the generated calibration results are suitable for your own use case.
+2. Accounts and eligibility
+You must be at least 18 years old, or the age of majority in your jurisdiction, to create an account and use CalibrX. The service is built for professional, engineering, and research use and is not directed at children.
+You must provide accurate account information and keep your login credentials secure. You are responsible for activity that occurs under your account.
+If you use CalibrX on behalf of an organization, you confirm that you are authorized to accept these Terms for that organization.
+3. Licences and payments
+Paid plans, if selected, are billed through Paddle, our merchant of record and payment processor. Paddle may collect payment details, billing information, tax information, and related transaction data under its own buyer terms and policies.
+Licences are sold as one-time purchases. Paying once grants a perpetual licence that does not renew and is never billed again; the credit allowance included with a licence is replenished monthly for as long as you hold it. Prices, included credits, and features are shown at checkout or on the pricing page.
+4. Customer data and calibration files
+You retain ownership of images, metadata, calibration projects, exported files, and other content that you upload or generate through CalibrX.
+You grant CalibrX permission to store, process, transform, and display that content only as needed to provide the service, generate calibration outputs, improve reliability, prevent abuse, and comply with legal obligations.
+5. Intellectual property
+CalibrX, including its software, user interface, design, branding, documentation, and SDK, is owned by CalibrX and protected by intellectual property laws. These Terms do not transfer any ownership of the platform to you.
+You keep ownership of your own uploaded content and calibration outputs, as described in Section 4. Any feedback you choose to share with us may be used to improve the service without restriction or obligation to you.
+6. Acceptable use
+You may not use CalibrX to upload illegal content, attack or disrupt the service, attempt unauthorized access, reverse engineer hosted systems, or use the platform in a way that violates applicable law.
+You are responsible for ensuring that you have the rights and permissions needed for any images, datasets, or project files you upload.
+7. Exports and SDK
+CalibrX may provide JSON, YAML, image, report, and SDK-ready exports. You are responsible for validating exported calibration parameters before using them in production systems.
+The CalibrX SDK and examples are provided to help apply exported calibration and undistortion results outside the platform. SDK usage may be subject to the license included with the SDK repository or package.
+8. Availability
+We aim to keep CalibrX reliable, but we do not guarantee uninterrupted or error-free access. We may update, suspend, limit, or discontinue parts of the service when needed for maintenance, security, product changes, or legal reasons.
+9. Limitation of liability
+To the maximum extent permitted by law, CalibrX is provided on an “as is” and “as available” basis. We are not liable for indirect, incidental, special, consequential, or lost-profit damages arising from your use of the service.
+Nothing in these Terms limits rights or protections that cannot be limited or excluded under applicable law.
+10. Termination
+You may stop using CalibrX at any time. We may suspend or terminate access if you materially violate these Terms, create a security risk, fail to pay applicable fees, or use the service unlawfully.
+On termination, your right to access the service ends. Sections that by their nature should survive — such as data ownership, intellectual property, and limitation of liability — remain in effect.
+11. Changes to these Terms
+We may update these Terms from time to time. When we make material changes, we will revise the “last updated” date above and, where appropriate, provide additional notice. Continued use of CalibrX after changes take effect means you accept the updated Terms.
+12. Contact
+Questions about these Terms can be sent to support@calibrx.io.
+Calibr
+Camera calibration, end-to-end —
+built for production teams
+.
+Camera calibration software
+Product
+Products
+Solutions
+Pricing
+Start free
+Resources
+Documentation
+Tutorials
+Glossary
+Blog
+About
+Calibration patterns
+Without OpenCV / MATLAB
+Legal
+Terms
+Privacy
+Refunds
+© 2026 CalibrX. All rights reserved.
