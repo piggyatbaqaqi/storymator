@@ -171,6 +171,7 @@ class Calibration:
             "field_spec": {**self.raster.__dict__},
             "camera_matrix": arr(self.camera_matrix),
             "dist_coeffs": arr(self.dist_coeffs),
+            "provenance": self.provenance,
         }
 
     @classmethod
@@ -186,4 +187,7 @@ class Calibration:
             field_spec=FieldSpec(**spec),
             camera_matrix=arr(data.get("camera_matrix")),
             dist_coeffs=arr(data.get("dist_coeffs")),
+            # Written as "_provenance" by hand-authored calibration
+            # files, "provenance" by to_dict.  Accept both.
+            provenance=data.get("provenance", data.get("_provenance")),
         )

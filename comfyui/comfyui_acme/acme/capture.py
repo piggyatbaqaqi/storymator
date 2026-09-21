@@ -27,6 +27,10 @@ See docs/planning/camera-input-node.md.
 
 from __future__ import annotations
 
+import itertools
+import os
+import re
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Protocol, Sequence, Tuple
 
@@ -68,7 +72,22 @@ class CaptureRequest:
         Order is load-bearing twice: FOURCC before geometry, and
         autofocus off before an absolute focus.
         """
-        raise NotImplementedError
+        out: List[Tuple[str, float]] = [
+            ("fourcc", float(fourcc_code(self.fourcc))),
+            ("width", float(self.width)),
+            ("height", float(self.height)),
+        ]
+        if self.focus is not None:
+            # Autofocus first: an absolute focus set while the lens is
+            # still hunting does not stick, and nothing says so.
+            out.append(("autofocus", 0.0))
+            out.append(("focus", float(self.focus)))
+        for name, value in (("auto_exposure", self.auto_exposure),
+                            ("auto_white_balance", self.auto_white_balance),
+                            ("brightness", self.brightness)):
+            if value is not None:
+                out.append((name, float(value)))
+        return out
 
 
 @dataclass(frozen=True)
@@ -82,23 +101,42 @@ class ControlResult:
 
     @property
     def ok(self) -> bool:
-        raise NotImplementedError
+        """Accepted *and* reading back what was asked for.
+
+        Both halves are needed: V4L2 returns False on a control it does
+        not have, and True on one it silently substitutes.
+        """
+        return self.accepted and abs(self.actual - self.requested) <= 0.5
 
 
 def apply_request(device: ControlDevice,
                   request: CaptureRequest) -> List[ControlResult]:
     """Apply every control in order and read each one back."""
-    raise NotImplementedError
+    results = []
+    for name, value in request.controls():
+        accepted = bool(device.set_control(name, value))
+        actual = float(device.get_control(name))
+        results.append(ControlResult(name=name, requested=value,
+                                     actual=actual, accepted=accepted))
+    return results
 
 
 def failures(results: Sequence[ControlResult]) -> List[ControlResult]:
     """The controls that did not take."""
-    raise NotImplementedError
+    return [r for r in results if not r.ok]
 
 
 def frame_to_rgb(frame: np.ndarray) -> np.ndarray:
-    """BGR uint8 as OpenCV delivers it -> RGB float32 in 0..1."""
-    raise NotImplementedError
+    """BGR uint8 as OpenCV delivers it -> RGB float32 in 0..1.
+
+    No batch dimension: batching is the node's job, via
+    ``nodes/_convert.stack_to_tensor``.
+    """
+    if frame.ndim != 3 or frame.shape[2] != 3:
+        raise ValueError(f"expected an (H, W, 3) BGR frame, got "
+                         f"{frame.shape}")
+    rgb = np.ascontiguousarray(frame[..., ::-1])
+    return (rgb.astype(np.float32) / 255.0)
 
 
 def verify_against(provenance: Optional[Dict], width: int, height: int,
@@ -109,7 +147,35 @@ def verify_against(provenance: Optional[Dict], width: int, height: int,
     cannot be checked, which is not the same as passing, so that is
     reported too.
     """
-    raise NotImplementedError
+    if not provenance:
+        return ["the calibration carries no provenance block, so this "
+                "capture cannot be checked against it"]
+
+    problems: List[str] = []
+
+    size = provenance.get("frame_size_px")
+    if size is None:
+        problems.append("the calibration records no frame size, so the "
+                        "capture geometry cannot be checked")
+    elif [int(width), int(height)] != [int(v) for v in size]:
+        problems.append(
+            f"frame is {width}x{height} but the calibration was measured "
+            f"at {int(size[0])}x{int(size[1])}")
+
+    want = provenance.get("focus_absolute")
+    if want is None:
+        problems.append("the calibration records no focus, so it cannot "
+                        "be checked; intrinsics belong to one focus")
+    elif focus is None:
+        problems.append(
+            f"focus is not pinned, but the calibration is valid only at "
+            f"focus_absolute {int(want)}")
+    elif int(focus) != int(want):
+        problems.append(
+            f"focus is {int(focus)} but the calibration was measured at "
+            f"{int(want)}")
+
+    return problems
 
 
 #: Our control names, and the ``cv2.CAP_PROP_*`` each maps to.  Named
@@ -133,7 +199,21 @@ def fourcc_code(fourcc: str) -> int:
     Arithmetic rather than ``cv2.VideoWriter_fourcc`` so this module
     stays importable without OpenCV.
     """
-    raise NotImplementedError
+    if len(fourcc) != 4:
+        raise ValueError(f"a FOURCC is four characters, not {fourcc!r}")
+    return sum(ord(c) << (8 * i) for i, c in enumerate(fourcc))
+
+
+class VideoCaptureLike(Protocol):
+    """The slice of ``cv2.VideoCapture`` the adapter touches.
+
+    Structural rather than importing the real class, which would drag
+    OpenCV into this module's import time for a type annotation.
+    """
+
+    def set(self, propId: int, value: float) -> bool: ...
+
+    def get(self, propId: int) -> float: ...
 
 
 class Cv2Device:
@@ -148,14 +228,29 @@ class Cv2Device:
     this module costs nothing.
     """
 
-    def __init__(self, capture: object) -> None:
+    def __init__(self, capture: VideoCaptureLike) -> None:
         self._cap = capture
 
+    def _prop(self, name: str) -> int:
+        try:
+            import cv2
+        except ModuleNotFoundError as exc:   # pragma: no cover
+            raise RuntimeError("capture needs OpenCV: pip install "
+                               "opencv-contrib-python") from exc
+        try:
+            attr = CONTROL_PROPERTIES[name]
+        except KeyError:
+            raise ValueError(f"unknown control {name!r}") from None
+        prop = getattr(cv2, attr, None)
+        if prop is None:                     # pragma: no cover
+            raise RuntimeError(f"this OpenCV build has no {attr}")
+        return int(prop)
+
     def set_control(self, name: str, value: float) -> bool:
-        raise NotImplementedError
+        return bool(self._cap.set(self._prop(name), float(value)))
 
     def get_control(self, name: str) -> float:
-        raise NotImplementedError
+        return float(self._cap.get(self._prop(name)))
 
 
 def device_index(spec: str) -> int:
@@ -165,7 +260,19 @@ def device_index(spec: str) -> int:
     bare integer. By-path is the useful one: the V4K reports no USB
     serial, so the port it is plugged into is its only stable identity.
     """
-    raise NotImplementedError
+    text = str(spec).strip()
+    if text.isdigit():
+        return int(text)
+    name = os.path.basename(os.path.realpath(text))
+    match = re.fullmatch(r"video(\d+)", name)
+    if match is None:
+        raise ValueError(
+            f"{spec!r} does not resolve to a /dev/videoN node; give an "
+            f"index, a device node, or a /dev/v4l/by-path symlink")
+    return int(match.group(1))
+
+
+_SEQUENCE = itertools.count()
 
 
 def capture_token() -> str:
@@ -173,5 +280,9 @@ def capture_token() -> str:
 
     A registration pass that silently re-used a cached frame would look
     like perfect repeatability, which is the worst way to be wrong.
+
+    The counter rather than a clock alone: two calls inside one tick
+    would otherwise collide, and that is exactly the case a cache hit
+    arises in.
     """
-    raise NotImplementedError
+    return f"{next(_SEQUENCE)}-{time.time_ns()}"

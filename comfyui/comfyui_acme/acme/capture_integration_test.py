@@ -25,7 +25,6 @@ from acme.capture import (CaptureRequest, Cv2Device, apply_request,
 cv2 = pytest.importorskip("cv2")
 
 pytestmark = pytest.mark.integration
-pending = pytest.mark.xfail(reason="AcmeCapture not implemented yet")
 
 WIDTH, HEIGHT, FOCUS = 3264, 2448, 134
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -65,7 +64,6 @@ def device(camera):
 
 # --- what the driver actually does ----------------------------------
 
-@pending
 def test_the_camera_delivers_the_calibrated_frame_size(camera, device):
     """1920x1080 would silently invalidate the intrinsics."""
     results = apply_request(device, CaptureRequest(width=WIDTH,
@@ -77,7 +75,6 @@ def test_the_camera_delivers_the_calibrated_frame_size(camera, device):
     assert frame.shape[:2] == (HEIGHT, WIDTH)
 
 
-@pending
 def test_absolute_focus_sticks(device):
     """Measured by hand: set(134) reads back 134.0, set(635) 635.0.
 
@@ -89,7 +86,6 @@ def test_absolute_focus_sticks(device):
         assert failures(results) == [], f"focus {want} did not take"
 
 
-@pending
 def test_mjpg_is_materially_faster_than_yuyv(camera, device):
     """Measured 2026-09-21: 10.7 fps against 1.3, and 0.58 s to first
     frame against 4.53.  One extra set() call, an order of magnitude.
@@ -112,7 +108,6 @@ def test_mjpg_is_materially_faster_than_yuyv(camera, device):
 
 # --- end to end, with the target in view -----------------------------
 
-@pending
 def test_a_captured_frame_converts_to_a_usable_image(camera, device):
     apply_request(device, CaptureRequest(width=WIDTH, height=HEIGHT,
                                          focus=FOCUS))
@@ -125,7 +120,6 @@ def test_a_captured_frame_converts_to_a_usable_image(camera, device):
     assert rgb.std() > 0.01, "an even field means the lens cap is on"
 
 
-@pending
 def test_the_calibration_target_is_found_in_a_live_frame(camera, device):
     """The one test that exercises capture through to detection.
 
@@ -148,7 +142,6 @@ def test_the_calibration_target_is_found_in_a_live_frame(camera, device):
 
 # --- against the stored calibration ----------------------------------
 
-@pending
 def test_a_live_capture_verifies_against_the_stored_calibration(
         camera, device):
     """The node's whole reason for existing, end to end."""
@@ -163,7 +156,6 @@ def test_a_live_capture_verifies_against_the_stored_calibration(
     assert verify_against(provenance, w, h, FOCUS) == []
 
 
-@pending
 def test_a_wrong_focus_is_caught_against_the_stored_calibration(camera):
     """Shooting at 635 against a 134 calibration -- the mistake already
     made by hand on the peg profiles."""
