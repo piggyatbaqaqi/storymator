@@ -66,9 +66,27 @@ operating mode rather than a failure to survive.
 The arithmetic imports neither ComfyUI nor torch:
 
 ```sh
-python -m pytest comfyui/comfyui_acme -q                 # unit tests
-python -m pytest comfyui/comfyui_acme -q --integration   # and the rig
+cd comfyui/comfyui_acme
+pytest -q                 # unit tests
+pytest -q --integration   # and the rig
 ```
+
+From the repository root, name the pack explicitly instead:
+
+```sh
+pytest comfyui/comfyui_acme -q --integration
+```
+
+**`--integration` is registered by this pack's `conftest.py`, so pytest
+has to reach it.** It does when the pack is the working directory or is
+named on the command line, and not otherwise — `pytest --integration`
+from the repository root fails, as does naming a path that does not
+exist from where you are standing.
+
+The error in both cases is `unrecognized arguments: --integration`,
+because pytest parses options before it validates paths. It is
+reporting the second problem, not the first: **check the path before
+you believe the flag is broken.**
 
 Synthetic captures with exact ground truth cover rotation to ±25°,
 keystone, sensor noise, camera moves, and each refusal path.
