@@ -1,0 +1,74 @@
+"""Fitting the slot, instead of averaging whatever is inside it.
+
+A rectangular peg landmark is not a blob. It is a **hole in the
+paper** with structure inside it: the peg body, the open end or ends of
+the slot, the bar showing through, and a specular highlight wherever
+the light happens to catch the chrome. Taking one centroid over all
+that throws the structure away and lets the answer move with the
+lighting -- measured on the rig, the detected point sat on a peg's left
+shoulder in one frame and dead centre on its side in another.
+
+The hole itself does not move. It is 15.75 x 3.09 mm of crisp paper
+edge lying in the paper plane, and fitting **it** gives three things a
+centroid cannot:
+
+* a **centre** that is the midpoint of the hole's extent, so interior
+  structure -- a highlight, a gap at one end, a peg sitting hard
+  against one side -- does not shift it;
+* an **angle**, which the bar constrains and which is currently
+  discarded entirely;
+* a **size**, which is free: anything not close to 15.75 x 3.09 mm is
+  not a slot and should be refused rather than fitted.
+
+**Extent, not mass.** That is the whole idea. A bright highlight
+punching a hole in the middle of the blob moves its centre of mass and
+leaves its bounding extent untouched.
+
+No OpenCV: :mod:`acme.detect` and everything it calls must run in a
+plain ComfyUI environment, so this is numpy and scipy only.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional, Tuple
+
+import numpy as np
+
+
+@dataclass(frozen=True)
+class Rect:
+    """An oriented rectangle in image pixels."""
+
+    centre: np.ndarray          # (2,) x, y
+    long_px: float
+    short_px: float
+    angle_rad: float            # of the long axis, from +x
+
+    @property
+    def elongation(self) -> float:
+        return self.long_px / max(self.short_px, 1e-9)
+
+    def matches(self, long_px: float, short_px: float,
+                tolerance: float = 0.25) -> bool:
+        """Whether this is plausibly the slot we were looking for."""
+        raise NotImplementedError
+
+
+def principal_axes(mask: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Unit vectors along and across a mask's principal directions.
+
+    The long axis comes first, and its sign is canonical so that two
+    calls on the same shape cannot disagree by 180 degrees.
+    """
+    raise NotImplementedError
+
+
+def fit_rect(mask: np.ndarray,
+             origin: Optional[Tuple[int, int]] = None) -> Rect:
+    """An oriented rectangle covering ``mask``'s extent.
+
+    ``origin`` offsets the result when ``mask`` is a crop, so callers
+    need not translate it back themselves.
+    """
+    raise NotImplementedError
