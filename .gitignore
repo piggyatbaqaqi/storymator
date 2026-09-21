@@ -84,3 +84,13 @@ output/
 # Claude Code: settings.json is shared and committed; the .local one is
 # this machine's accumulated permission grants and is not.
 .claude/settings.local.json
+
+# Rescued camera frames.  bin/collect-captures pulls these out of
+# ComfyUI's temp before a restart clears it, which is a rescue rather
+# than a decision to keep them -- 53 frames is 406 MB against a 141 MB
+# repository.  The manifest IS tracked: it is small, and the exposure
+# statistics and the operator's note are the part that cannot be
+# recovered from the pixels later.  Commit a frame deliberately, with
+# `git add -f`, when it earns its place as a regression case.
+data/captures/**/*.png
+data/captures/**/*.jpg

@@ -1,0 +1,165 @@
+#!/usr/bin/env python
+"""Rescue camera frames out of ComfyUI's temp directory into a corpus.
+
+ComfyUI writes every PreviewImage to `temp/` and clears it on restart.
+Frames analysed during one session are therefore gone by the next one
+— which is exactly what happened to the four lighting setups of
+2026-09-21, whose measurements survive in the docs while the frames
+they were measured from do not.
+
+A frame is worth keeping when it is *hard to reproduce*: a particular
+lighting rig, a particular failure, a sheet placed a particular way.
+Those are the regression corpus. Re-running the graph tomorrow does
+not recreate them.
+
+    bin/collect-captures --note "phone at lens, room dark"
+    bin/collect-captures --session daylight --dry-run
+
+Captures only by default: overlays and greyscale diagnostics are
+regenerable from the capture plus a calibration, so storing them is
+storing the same information twice.
+
+Each session gets a directory and a `manifest.json` recording, per
+frame, what can be derived — size, exposure percentiles, mean and
+standard deviation — plus the operator's note, which is the part no
+program can recover later and the whole reason to write it down now.
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime
+import hashlib
+import json
+import os
+import shutil
+import sys
+from typing import Dict, List, Optional
+
+import numpy as np
+from PIL import Image
+
+DEFAULT_TEMP = "/data/piggy/src/github.com/Comfy-Org/ComfyUI/temp"
+DEFAULT_OUT = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "data", "captures")
+
+
+def classify(path: str) -> str:
+    """capture, overlay, diagnostic or other.
+
+    The overlay carries a burnt-in caption banner; the greyscale
+    diagnostic is neutral everywhere except its red marks. A capture is
+    neither, which is the only one that cannot be regenerated.
+    """
+    rgb = np.asarray(Image.open(path).convert("RGB"), dtype=np.int16)
+    neutral = ((rgb[..., 0] == rgb[..., 1]) & (rgb[..., 1] == rgb[..., 2]))
+    if neutral.mean() > 0.80:
+        return "diagnostic"
+    banner = rgb[:26]
+    if banner.max() < 70 and banner.std() < 40:
+        return "overlay"
+    return "capture"
+
+
+def describe(path: str) -> Dict:
+    gray = np.asarray(Image.open(path).convert("L"), dtype=float) / 255.0
+    lo, mid, hi = (float(v) for v in np.percentile(gray, [2, 50, 98]))
+    with open(path, "rb") as fh:
+        digest = hashlib.sha256(fh.read()).hexdigest()[:16]
+    return {
+        "sha256_16": digest,
+        "size_px": list(Image.open(path).size),
+        "captured": datetime.datetime.fromtimestamp(
+            os.path.getmtime(path)).isoformat(timespec="seconds"),
+        "exposure": {"p2": round(lo, 4), "median": round(mid, 4),
+                     "p98": round(hi, 4),
+                     "mean": round(float(gray.mean()), 4),
+                     "sd": round(float(gray.std()), 4)},
+    }
+
+
+def collect(temp: str, out_root: str, session: str, note: str,
+            keep: List[str], since: Optional[float],
+            dry_run: bool) -> int:
+    if not os.path.isdir(temp):
+        print(f"no such directory: {temp}", file=sys.stderr)
+        return 1
+    found = []
+    for name in sorted(os.listdir(temp)):
+        path = os.path.join(temp, name)
+        if not name.lower().endswith((".png", ".jpg", ".jpeg")):
+            continue
+        if since is not None and os.path.getmtime(path) < since:
+            continue
+        kind = classify(path)
+        if kind in keep:
+            found.append((path, kind))
+    if not found:
+        print(f"nothing matching {'/'.join(keep)} in {temp}")
+        return 1
+
+    target = os.path.join(out_root, session)
+    print(f"{len(found)} frame(s) -> {target}")
+    entries = []
+    for index, (path, kind) in enumerate(found, start=1):
+        stem = f"{session}_{index:03d}"
+        record = {"file": stem + os.path.splitext(path)[1],
+                  "kind": kind, "source": os.path.basename(path)}
+        record.update(describe(path))
+        entries.append(record)
+        e = record["exposure"]
+        print(f"   {record['file']:28s} {kind:10s} "
+              f"median {e['median']:.3f}  p98 {e['p98']:.3f}")
+        if not dry_run:
+            os.makedirs(target, exist_ok=True)
+            shutil.copy2(path, os.path.join(target, record["file"]))
+    if dry_run:
+        print("\n--dry-run: nothing written")
+        return 0
+
+    manifest = os.path.join(target, "manifest.json")
+    existing = (json.load(open(manifest))
+                if os.path.exists(manifest) else {"frames": []})
+    existing.setdefault("session", session)
+    existing.setdefault("notes", [])
+    existing["notes"].append({
+        "at": datetime.datetime.now().isoformat(timespec="seconds"),
+        "note": note})
+    existing["frames"] += entries
+    with open(manifest, "w") as fh:
+        json.dump(existing, fh, indent=2)
+    print(f"\nwrote {manifest}")
+    if not note:
+        print("NOTE IS EMPTY.  The conditions are the part no program "
+              "can recover later; add them with --note.", file=sys.stderr)
+    return 0
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--temp", default=os.environ.get("COMFYUI_TEMP",
+                                                     DEFAULT_TEMP),
+                    help="ComfyUI's temp directory")
+    ap.add_argument("--out", default=os.environ.get("CAPTURE_CORPUS",
+                                                    DEFAULT_OUT))
+    ap.add_argument("--session",
+                    default=datetime.date.today().isoformat(),
+                    help="subdirectory name; defaults to today")
+    ap.add_argument("--note", default="",
+                    help="the lighting and anything else a future "
+                         "reader cannot derive from the pixels")
+    ap.add_argument("--kind", action="append", choices=
+                    ["capture", "overlay", "diagnostic"],
+                    help="repeatable; captures only by default")
+    ap.add_argument("--since-minutes", type=float, default=None,
+                    help="only frames newer than this")
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args(argv)
+    since = (None if args.since_minutes is None
+             else datetime.datetime.now().timestamp() - args.since_minutes*60)
+    return collect(args.temp, args.out, args.session, args.note,
+                   args.kind or ["capture"], since, args.dry_run)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
