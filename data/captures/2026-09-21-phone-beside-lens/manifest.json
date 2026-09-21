@@ -1,0 +1,173 @@
+{
+  "frames": [
+    {
+      "file": "2026-09-21-phone-beside-lens_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00002_.png",
+      "sha256_16": "cfb741dfed7e9c96",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T19:29:44",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00003_.png",
+      "sha256_16": "d14a410d3d239b04",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T19:29:56",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00004_.png",
+      "sha256_16": "92908db435cbc1a3",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T19:30:35",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.5333,
+        "p98": 0.5333,
+        "mean": 0.324,
+        "sd": 0.2336
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_004.png",
+      "kind": "overlay",
+      "source": "ComfyUI_temp_cdpxt_00002_.png",
+      "sha256_16": "687f5b7fa40282f3",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:29:44",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.3686,
+        "p98": 0.9686,
+        "mean": 0.4101,
+        "sd": 0.3571
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_005.png",
+      "kind": "overlay",
+      "source": "ComfyUI_temp_cdpxt_00003_.png",
+      "sha256_16": "e5bd1206599c8c09",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:29:56",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.2588,
+        "p98": 0.9608,
+        "mean": 0.3518,
+        "sd": 0.3313
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_006.png",
+      "kind": "overlay",
+      "source": "ComfyUI_temp_cdpxt_00004_.png",
+      "sha256_16": "96009485c29f08f8",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:30:35",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.251,
+        "p98": 0.9529,
+        "mean": 0.3944,
+        "sd": 0.35
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_007.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00002_.png",
+      "sha256_16": "1a853f63af60145c",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:29:42",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.3686,
+        "p98": 0.9686,
+        "mean": 0.4091,
+        "sd": 0.3581
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_008.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00003_.png",
+      "sha256_16": "159b97488b6cb715",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:29:54",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.2588,
+        "p98": 0.9608,
+        "mean": 0.3507,
+        "sd": 0.3322
+      }
+    },
+    {
+      "file": "2026-09-21-phone-beside-lens_009.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00004_.png",
+      "sha256_16": "e4d49efd96044fa8",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:30:33",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.251,
+        "p98": 0.9529,
+        "mean": 0.3949,
+        "sd": 0.3507
+      }
+    }
+  ],
+  "session": "2026-09-21-phone-beside-lens",
+  "notes": [
+    {
+      "at": "2026-09-21T19:35:55",
+      "note": "Cell phone NEXT TO the lens (not behind it), ambient room light, white monitor screen. Operator: subjectively much better. Left peg almost perfect, rotated a few degrees CCW but covering the top. Round peg good -- the shoulder of the dome is clearly resolved. RIGHT peg: the box has the angle of the peg spot on, but encloses only the SHADOW, ignoring the peg beside it."
+    }
+  ]
+}

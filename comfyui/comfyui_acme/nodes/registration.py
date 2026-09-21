@@ -170,6 +170,20 @@ class AcmeDetectSheet(io.ComfyNode):
                                        "read darker or brighter than the "
                                        "paper. A rig property, not a "
                                        "tuning knob."),
+                io.Float.Input(
+                    "peg_contrast", default=0.6, min=0.05, max=0.95,
+                    step=0.01,
+                    tooltip="Where a peg stops and its shadow begins, "
+                            "as a fraction of the paper's own "
+                            "brightness. Lower cuts tighter and "
+                            "excludes more shadow -- but a chrome peg "
+                            "is not uniformly dark, so cutting too "
+                            "tight eats the peg's lit flank as fast as "
+                            "the shadow. Measured range of effect on "
+                            "one frame: 15.6 to 40.6 px of peg "
+                            "residual. Unlike peg_appearance this IS a "
+                            "tuning knob, because the shadow depends "
+                            "on where the light is."),
             ],
             outputs=[
                 AcmePoseType.Output("pose"),
@@ -194,7 +208,7 @@ class AcmeDetectSheet(io.ComfyNode):
 
     @classmethod
     def execute(cls, image, calibration, max_residual_px,
-                peg_appearance) -> io.NodeOutput:
+                peg_appearance, peg_contrast=0.6) -> io.NodeOutput:
         frames = batch_to_numpy(image)
         poses: List[Pose] = []
         overlays = []
@@ -203,7 +217,8 @@ class AcmeDetectSheet(io.ComfyNode):
             gray = to_gray(frame)
             pose = fit_pose(gray, calibration,
                             max_residual_px=max_residual_px,
-                            polarity=peg_appearance)
+                            polarity=peg_appearance,
+                            peg_contrast=peg_contrast)
             poses.append(pose)
             overlays.append(draw_overlay(
                 frame, pose.corners_image, pose.pegs_image,

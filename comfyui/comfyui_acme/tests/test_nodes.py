@@ -259,10 +259,7 @@ def test_the_peg_marks_follow_the_slot_not_a_fixed_circle():
 
 # --- reaching the threshold that decides peg from shadow --------------
 
-contrast_pending = pytest.mark.xfail(reason="peg_contrast is hardcoded")
 
-
-@contrast_pending
 def test_peg_contrast_is_offered_and_comes_last():
     """Appended, because ComfyUI stores widget values POSITIONALLY --
     `widgets_values` is a bare list, so inserting one in the middle
@@ -272,7 +269,6 @@ def test_peg_contrast_is_offered_and_comes_last():
                    "peg_appearance", "peg_contrast"]
 
 
-@contrast_pending
 def test_the_default_leaves_behaviour_unchanged():
     """0.6 is what fit_pose already used, so exposing the knob must not
     move anybody's existing results."""
@@ -280,7 +276,6 @@ def test_the_default_leaves_behaviour_unchanged():
     assert spec["peg_contrast"].default == pytest.approx(0.6)
 
 
-@contrast_pending
 def test_the_range_stays_inside_the_paper_level():
     """The threshold is a fraction OF the paper level. At 0 nothing is
     dark enough to be a peg and at 1 the paper itself qualifies, so
@@ -290,7 +285,6 @@ def test_the_range_stays_inside_the_paper_level():
     assert spec["peg_contrast"].max < 1.0
 
 
-@contrast_pending
 def test_the_setting_actually_reaches_the_fitter(monkeypatch):
     """A widget that does not arrive is worse than no widget: it looks
     like the knob does nothing rather than like it is missing."""
