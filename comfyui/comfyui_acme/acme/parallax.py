@@ -44,7 +44,7 @@ def working_distance_mm(camera_matrix: np.ndarray, px_per_mm: float) -> float:
     ``fx`` is in pixels and ``px_per_mm`` is the scale *at the paper*,
     so their ratio is the distance in millimetres.
     """
-    raise NotImplementedError
+    return float(camera_matrix[0, 0]) / float(px_per_mm)
 
 
 def correct_parallax(points_px: np.ndarray,
@@ -57,5 +57,20 @@ def correct_parallax(points_px: np.ndarray,
     such as a hole. Returns the points unchanged when there are no
     intrinsics, since neither the principal point nor the working
     distance is knowable without them.
+
+    Scaling the radius by ``1 - h/Z`` *is* a shift of ``r*h/Z``, and
+    doing it that way keeps the direction exactly radial rather than
+    accumulating error in a normalise-and-step.
     """
-    raise NotImplementedError
+    points = np.asarray(points_px, dtype=float)
+    if camera_matrix is None:
+        return points.copy()
+    heights = np.asarray(heights_mm, dtype=float)
+    if heights.shape[0] != points.shape[0]:
+        raise ValueError(f"{heights.shape[0]} heights for "
+                         f"{points.shape[0]} points")
+    distance = working_distance_mm(camera_matrix, px_per_mm)
+    principal = np.array([camera_matrix[0, 2], camera_matrix[1, 2]],
+                         dtype=float)
+    shrink = (1.0 - heights / distance)[:, None]
+    return principal + (points - principal) * shrink

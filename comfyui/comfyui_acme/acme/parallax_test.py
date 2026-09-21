@@ -9,8 +9,6 @@ import pytest
 
 from acme.parallax import correct_parallax, working_distance_mm
 
-pending = pytest.mark.xfail(reason="parallax correction not implemented")
-
 FX, CX, CY = 2625.44, 1640.2, 1204.2
 K = np.array([[FX, 0.0, CX], [0.0, FX, CY], [0.0, 0.0, 1.0]])
 PX_PER_MM = 8.59                      # at the paper, on the measured frame
@@ -18,14 +16,12 @@ Z = FX / PX_PER_MM                    # 305.6 mm
 ROUND_H = 5.567                       # sphere centre above the paper
 
 
-@pending
 def test_working_distance_is_focal_length_over_scale():
     assert working_distance_mm(K, PX_PER_MM) == pytest.approx(Z, rel=1e-9)
 
 
 # --- what must not move ---------------------------------------------
 
-@pending
 def test_a_landmark_in_the_paper_plane_is_untouched():
     """The rect landmarks are holes. h = 0, and nothing happens."""
     pts = np.array([[500.0, 900.0], [2800.0, 2100.0]])
@@ -33,7 +29,6 @@ def test_a_landmark_in_the_paper_plane_is_untouched():
     assert np.allclose(out, pts)
 
 
-@pending
 def test_a_landmark_on_the_optical_axis_is_untouched():
     """Height only matters off-axis: straight down the axis a raised
     point projects to the same place as its footprint."""
@@ -42,7 +37,6 @@ def test_a_landmark_on_the_optical_axis_is_untouched():
     assert np.allclose(out, pts, atol=1e-9)
 
 
-@pending
 def test_without_intrinsics_nothing_is_corrected():
     """No principal point and no working distance, so no correction --
     the same way distortion is skipped when OpenCV is absent."""
@@ -52,7 +46,6 @@ def test_without_intrinsics_nothing_is_corrected():
 
 # --- the correction itself -------------------------------------------
 
-@pending
 def test_the_shift_is_r_times_h_over_z():
     """Stated in terms of the OBSERVED radius, which is what a detector
     hands you."""
@@ -63,7 +56,6 @@ def test_the_shift_is_r_times_h_over_z():
         r_mm * ROUND_H / Z, rel=1e-6)
 
 
-@pending
 def test_the_shift_points_at_the_principal_point():
     """Inward, radially -- not along an image axis."""
     for offset in ([+700.0, +900.0], [-700.0, +900.0], [+700.0, -900.0]):
@@ -76,7 +68,6 @@ def test_the_shift_points_at_the_principal_point():
                            before / np.linalg.norm(before), atol=1e-9)
 
 
-@pending
 def test_heights_are_applied_per_landmark():
     """The round peg is raised and the rect holes are not, so only one
     of the three may move."""
@@ -89,7 +80,6 @@ def test_heights_are_applied_per_landmark():
 
 # --- the thing it is for ----------------------------------------------
 
-@pending
 def test_correcting_the_round_landmark_restores_equal_spacing():
     """The end-to-end claim, on a synthetic rig with known truth.
 
@@ -119,7 +109,6 @@ def test_correcting_the_round_landmark_restores_equal_spacing():
     assert gaps[1] == pytest.approx(spacing, abs=0.05)
 
 
-@pending
 def test_the_measured_rig_case_predicts_what_was_observed():
     """119 mm off-axis at Z = 306 predicted 2.2 mm; 2.43 was seen.
 

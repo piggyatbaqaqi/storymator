@@ -31,6 +31,7 @@ from .detect import Blob, find_peg_candidates, find_sheet, sheet_corners
 from .geometry import (apply_homography, homography_from_points,
                        point_line_distance, residuals, rigid_from_points, rms)
 from .model import Calibration
+from .parallax import correct_parallax
 
 
 #: How far the detected pegs may sit from the peg line before an
@@ -267,11 +268,21 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
     _, _, idx, h, triple = accepted_hypotheses[0]
 
     pegs_image = centres[triple]
-    pegs_mm = apply_homography(h, pegs_image)
+    # Correct landmarks that stand above the paper, before the rigid
+    # stage -- which would otherwise absorb the displacement into a
+    # translation and hide it, exactly as it hid the 180-degree flip.
+    # pegs_image itself stays as DETECTED, so the overlay keeps showing
+    # the operator where the blob actually was.
+    pegs_fitted = correct_parallax(
+        pegs_image,
+        [peg.rect_landmark_height_mm, peg.round_landmark_height_mm,
+         peg.rect_landmark_height_mm],
+        matrix, scale_px_mm)
+    pegs_mm = apply_homography(h, pegs_fitted)
     correction = rigid_from_points(pegs_mm, model_pegs)
     transform = correction @ h
 
-    peg_errors = residuals(transform, pegs_image, model_pegs)
+    peg_errors = residuals(transform, pegs_fitted, model_pegs)
     corner_errors = residuals(transform, corners[idx], model_corners)
     px_mm = spec.px_per_mm
     peg_rms_px = rms(peg_errors) * px_mm

@@ -40,6 +40,18 @@ class PegModel:
     rect_long_mm: float = 0.5 * MM_PER_INCH            # 12.700, along the bar
     rect_short_mm: float = 0.125 * MM_PER_INCH         # 3.175, across it
     centre_spacing_mm: float = 4.0 * MM_PER_INCH       # 101.600, round to rect
+    # How high above the PAPER the thing actually detected stands, which
+    # decides the parallax correction (see acme.parallax).  Zero means
+    # the landmark is in the paper plane and needs none.
+    #
+    # On honbay_0001 the rect landmarks really are holes -- the slots
+    # stand ~3 mm open and on-axis light does not reach in -- so they
+    # are 0.  The round peg grips its hole, leaving nothing to see but
+    # the dome, whose apparent position is the projection of the
+    # hemisphere's centre.  Both default to 0 so a rig that has not
+    # measured them is uncorrected rather than wrongly corrected.
+    round_landmark_height_mm: float = 0.0
+    rect_landmark_height_mm: float = 0.0
 
     def positions(self) -> np.ndarray:
         """(3, 2) peg centres: -x rect, round, +x rect, in that order."""
