@@ -284,6 +284,46 @@ def device_index(spec: str) -> int:
     return int(match.group(1))
 
 
+def capture_report(results: Sequence[ControlResult],
+                   problems: Sequence[str]) -> str:
+    """What the operator needs to see on the node, in words.
+
+    Silence is the enemy here: a capture at the wrong focus looks
+    exactly like a capture at the right one.
+    """
+    raise NotImplementedError
+
+
+class CaptureSession:
+    """Holds one camera open across executions.
+
+    Re-opening a UVC device costs half a second at best and four and a
+    half at worst, measured on v4k_01, so a node that opened per
+    execution would be unusable. V3 nodes have no instance state --
+    ``execute`` is a classmethod -- so the handle lives here instead.
+
+    ``opener`` is injected so this is testable without a camera.
+    """
+
+    def __init__(self, opener) -> None:
+        self._opener = opener
+        self._index: Optional[int] = None
+        self._capture = None
+
+    @property
+    def index(self) -> Optional[int]:
+        """Which device is currently held, if any."""
+        raise NotImplementedError
+
+    def open(self, index: int):
+        """The capture for ``index``, reusing the held one if it matches."""
+        raise NotImplementedError
+
+    def close(self) -> None:
+        """Release whatever is held. Safe to call when nothing is."""
+        raise NotImplementedError
+
+
 _SEQUENCE = itertools.count()
 
 

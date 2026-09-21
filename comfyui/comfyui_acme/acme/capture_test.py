@@ -10,9 +10,10 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pytest
 
-from acme.capture import (CaptureRequest, ControlResult, apply_request,
-                          capture_token, device_index, failures,
-                          frame_to_rgb, verify_against)
+from acme.capture import (CaptureRequest, CaptureSession, ControlResult,
+                          apply_request, capture_report, capture_token,
+                          device_index, failures, frame_to_rgb,
+                          verify_against)
 from acme.model import Calibration, FieldSpec, PegModel, SheetModel
 
 
@@ -298,3 +299,108 @@ def test_capture_token_differs_between_calls():
     """ComfyUI caches by IS_CHANGED; a cached frame would look like
     perfect repeatability."""
     assert capture_token() != capture_token()
+
+
+# --- the report the operator actually reads -------------------------
+
+pending = pytest.mark.xfail(reason="ComfyUI wrapper not implemented yet")
+
+GOOD = [ControlResult("width", 3264, 3264, True),
+        ControlResult("focus", 134, 134, True)]
+BAD = [ControlResult("width", 3264, 3264, True),
+       ControlResult("focus", 134, 0, True)]
+
+
+@pending
+def test_a_clean_capture_reports_itself_as_clean():
+    text = capture_report(GOOD, [])
+    assert "focus" in text
+    assert "134" in text
+
+
+@pending
+def test_a_failed_control_is_named_with_both_numbers():
+    """Requested and actual: "focus failed" alone does not help."""
+    text = capture_report(BAD, [])
+    assert "focus" in text
+    assert "134" in text and "0" in text
+
+
+@pending
+def test_a_verification_problem_reaches_the_report_verbatim():
+    problem = "focus is 635 but the calibration was measured at 134"
+    assert problem in capture_report(GOOD, [problem])
+
+
+@pending
+def test_control_failures_and_verification_problems_both_appear():
+    problem = "frame is 1920x1080 but the calibration was measured at ..."
+    text = capture_report(BAD, [problem])
+    assert problem in text
+    assert "focus" in text
+
+
+@pending
+def test_a_clean_report_is_distinguishable_from_a_dirty_one():
+    """Downstream and the operator both need a yes/no, not prose to
+    parse."""
+    assert capture_report(GOOD, []) != capture_report(BAD, [])
+
+
+# --- holding the camera open ----------------------------------------
+
+class FakeOpener:
+    """Records opens and releases, so reuse can be asserted."""
+
+    def __init__(self):
+        self.opened: List[int] = []
+        self.released: List[int] = []
+
+    def __call__(self, index: int):
+        self.opened.append(index)
+        opener = self
+
+        class _Capture:
+            def __init__(self) -> None:
+                self.index = index
+
+            def release(self) -> None:
+                opener.released.append(index)
+
+        return _Capture()
+
+
+@pending
+def test_the_same_device_is_opened_once_and_reused():
+    """Re-opening costs 0.58 s at best and 4.53 s at worst on v4k_01."""
+    opener = FakeOpener()
+    session = CaptureSession(opener)
+    first = session.open(3)
+    assert session.open(3) is first
+    assert opener.opened == [3]
+
+
+@pending
+def test_changing_device_releases_the_old_one():
+    opener = FakeOpener()
+    session = CaptureSession(opener)
+    session.open(3)
+    session.open(4)
+    assert opener.opened == [3, 4]
+    assert opener.released == [3], "the old device must not be left held"
+
+
+@pending
+def test_close_releases_and_can_be_called_twice():
+    opener = FakeOpener()
+    session = CaptureSession(opener)
+    session.open(3)
+    session.close()
+    session.close()
+    assert opener.released == [3]
+    assert session.index is None
+
+
+@pending
+def test_a_fresh_session_holds_nothing():
+    assert CaptureSession(FakeOpener()).index is None
