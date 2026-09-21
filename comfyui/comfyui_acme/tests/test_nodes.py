@@ -10,6 +10,7 @@ needs none of that; it is the cheap guard, this is the real one.
 """
 
 import numpy as np
+import torch
 import pytest
 
 pytest.importorskip("comfy_api.latest",
@@ -18,8 +19,12 @@ pytest.importorskip("comfy_api.latest",
 
 from comfyui_acme.acme.model import (Calibration, FieldSpec,  # noqa: E402
                                      PegModel, SheetModel)
-from comfyui_acme.nodes import PHASE_1, AcmeCapture  # noqa: E402
+from comfyui_acme.acme.synth import camera_homography, render  # noqa: E402
+from comfyui_acme.nodes import (PHASE_1, AcmeCapture,  # noqa: E402
+                                AcmeDetectSheet)
 from comfyui_acme.nodes import capture as capture_node  # noqa: E402
+from comfyui_acme.nodes._convert import (stack_to_tensor,  # noqa: E402
+                                         to_gray)
 
 PROV = {"frame_size_px": [640, 480], "focus_absolute": 134}
 
@@ -130,3 +135,102 @@ def test_no_calibration_is_unverified_rather_than_assumed_fine(rig):
     """Nothing to check against is not the same as checked and clean."""
     with pytest.raises(RuntimeError, match="unverified"):
         _run(calibration=None)
+
+
+# --- the diagnostic view ---------------------------------------------
+
+pending = pytest.mark.xfail(reason="gray output not implemented")
+
+SIZE = (1280, 960)
+
+
+def _scene(n=1):
+    """A synthetic capture, as a ComfyUI IMAGE batch."""
+    cal = _calibration(None)
+    frames = [render(cal, camera_homography(cal, SIZE), SIZE)
+              for _ in range(n)]
+    rgb = [np.repeat(f[:, :, None], 3, axis=2) if f.ndim == 2 else f
+           for f in frames]
+    return cal, rgb, stack_to_tensor(rgb)
+
+
+def _detect(batch, cal):
+    return AcmeDetectSheet.execute(batch, cal, 1.5, "dark").result
+
+
+def _neutral(img):
+    """Where the picture is grey, i.e. not drawn on."""
+    return (img[..., 0] == img[..., 1]) & (img[..., 1] == img[..., 2])
+
+
+@pending
+def test_gray_comes_last_so_existing_links_survive():
+    """Appended, not inserted.  A workflow already wired to overlay and
+    report must not have its links shifted by a diagnostic."""
+    schema = AcmeDetectSheet.define_schema()
+    assert [o.id for o in schema.outputs] == [
+        "pose", "overlay", "report", "gray"]
+
+
+@pending
+def test_the_background_is_the_luminance_the_detector_was_given():
+    """Not a mean of the channels.  Rec. 709 suppresses the undercolour
+    relative to graphite, and a diagnostic showing anything else would
+    be worse than none -- the whole point is 'what did the detector
+    see'."""
+    cal, rgb, batch = _scene()
+    gray = _detect(batch, cal)[3][0].numpy()
+    want = to_gray(rgb[0])
+    keep = _neutral(gray)
+    assert keep.mean() > 0.9, "the annotations should not cover the frame"
+    assert np.allclose(gray[..., 0][keep], want[keep], atol=1e-6)
+
+
+@pending
+def test_the_markers_are_red_on_the_grey():
+    """Red is maximally legible on neutral, and nothing else in the
+    picture can be mistaken for it: a grey pixel has R == G == B, so
+    any pixel with R > G is a mark."""
+    cal, _, batch = _scene()
+    gray = _detect(batch, cal)[3][0].numpy()
+    drawn = ~_neutral(gray)
+    assert drawn.sum() > 500, "expected the corners and pegs to be drawn"
+    r, g, b = gray[..., 0][drawn], gray[..., 1][drawn], gray[..., 2][drawn]
+    assert np.median(r) > np.median(g)
+    assert np.median(r) > np.median(b)
+
+
+@pending
+def test_the_markers_stay_red_whatever_the_verdict():
+    """The overlay output carries the verdict in green or red.  This
+    one answers a different question -- where did it look, and what did
+    it find -- and one fixed colour keeps it readable either way."""
+    cal, _, batch = _scene()
+    accepted, *_ = _detect(batch, cal)
+    gray = _detect(batch, cal)[3][0].numpy()
+    assert accepted[0].accepted, "this synthetic scene should fit"
+    drawn = ~_neutral(gray)
+    assert np.median(gray[..., 0][drawn]) > np.median(gray[..., 1][drawn])
+
+
+@pending
+def test_gray_is_a_previewable_image_not_a_bare_channel():
+    """ComfyUI IMAGE is (B, H, W, 3); a PreviewImage must just work."""
+    cal, _, batch = _scene()
+    gray = _detect(batch, cal)[3]
+    assert gray.shape == (1, SIZE[1], SIZE[0], 3)
+    assert gray.dtype == torch.float32
+
+
+@pending
+def test_gray_is_emitted_for_every_frame_in_the_batch():
+    """Frame i of gray must be frame i of the input, like every other
+    per-frame output on this node."""
+    cal, rgb, batch = _scene(2)
+    gray = _detect(batch, cal)[3]
+    assert gray.shape[0] == 2
+    for i in range(2):
+        img = gray[i].numpy()
+        keep = _neutral(img)
+        assert np.allclose(img[..., 0][keep], to_gray(rgb[i])[keep],
+                           atol=1e-6)
