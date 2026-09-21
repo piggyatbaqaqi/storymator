@@ -112,6 +112,52 @@ def verify_against(provenance: Optional[Dict], width: int, height: int,
     raise NotImplementedError
 
 
+#: Our control names, and the ``cv2.CAP_PROP_*`` each maps to.  Named
+#: rather than numeric so this module needs no OpenCV, and so a control
+#: that does not exist in the installed build fails loudly.
+CONTROL_PROPERTIES: Dict[str, str] = {
+    "fourcc": "CAP_PROP_FOURCC",
+    "width": "CAP_PROP_FRAME_WIDTH",
+    "height": "CAP_PROP_FRAME_HEIGHT",
+    "autofocus": "CAP_PROP_AUTOFOCUS",
+    "focus": "CAP_PROP_FOCUS",
+    "auto_exposure": "CAP_PROP_AUTO_EXPOSURE",
+    "auto_white_balance": "CAP_PROP_AUTO_WB",
+    "brightness": "CAP_PROP_BRIGHTNESS",
+}
+
+
+def fourcc_code(fourcc: str) -> int:
+    """A four-character code as the integer V4L2 wants.
+
+    Arithmetic rather than ``cv2.VideoWriter_fourcc`` so this module
+    stays importable without OpenCV.
+    """
+    raise NotImplementedError
+
+
+class Cv2Device:
+    """Adapts ``cv2.VideoCapture`` to :class:`ControlDevice`.
+
+    The indirection earns its keep twice: :mod:`acme.capture` stays
+    testable without a camera, and the mapping from our names to
+    ``CAP_PROP_*`` lives in one table rather than scattered through a
+    node class.
+
+    OpenCV is imported lazily, as in :mod:`acme.lens`, so importing
+    this module costs nothing.
+    """
+
+    def __init__(self, capture: object) -> None:
+        self._cap = capture
+
+    def set_control(self, name: str, value: float) -> bool:
+        raise NotImplementedError
+
+    def get_control(self, name: str) -> float:
+        raise NotImplementedError
+
+
 def device_index(spec: str) -> int:
     """Resolve a device spec to an OpenCV index.
 
