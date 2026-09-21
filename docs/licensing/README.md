@@ -1,25 +1,22 @@
 # Licensing evidence
 
-Dated copies of third-party terms, kept because vendor pages change and
-what governs is the version in force when the files were made.
+Dated copies of third-party material, kept because vendor pages change
+and what governs is the version in force when our files were made.
 
-| file | what | retrieved |
-|---|---|---|
-| [calibrx-terms-2026-09-21.txt](calibrx-terms-2026-09-21.txt) | CalibrX terms and conditions, text extract | 2026-09-21 |
-| [calibrx-pricing-2026-09-21.png](calibrx-pricing-2026-09-21.png) | CalibrX pricing and licence tiers | 2026-09-21 |
+**Documents in this directory belong to their respective owners**, as
+listed below. The CC-BY-SA-4.0 grant covering the rest of `docs/` does
+not extend here.
 
-Conclusions drawn from these live in [../../LICENSES.md](../../LICENSES.md).
-Nothing here is legal advice.
+## Provenance
 
-**These two files are CalibrX's own content**, quoted for record-
-keeping. The CC-BY-SA-4.0 grant covering the rest of `docs/` stops at
-this directory.
+| file | owner | source | retrieved | how |
+|---|---|---|---|---|
+| `calibrx-terms-2026-09-21.txt` | CalibrX | `https://calibrx.io/terms-and-conditions` | 2026-09-21 | fetched with `curl`; plain text extracted from the served HTML, tags stripped, wording unaltered |
+| `calibrx-pricing-2026-09-21.png` | CalibrX | `https://calibrx.io/#pricing` | 2026-09-21 | screenshot taken by the operator |
+| `README.md` *(this file)* | storymator | — | — | ours; **CC-BY-SA-4.0** |
 
-**Three questions are with `support@calibrx.io`, sent 2026-09-21** —
-redistribution under an open licence, the `calibrx.io` trademark on
-redistributed boards, and a suggestion that they support anisotropic
-targets. Everything concluded below and in `LICENSES.md` is our
-cautious reading pending their reply, not their position.
+Conclusions drawn from this material live in
+[../../LICENSES.md](../../LICENSES.md). Nothing here is legal advice.
 
 ## CalibrX tiers, as published 2026-09-21
 
@@ -35,9 +32,9 @@ cameras is exactly that — so the earlier idea that R&D might serve if
 the rig were offered as a DIY system is closed off by the tier's own
 wording. Commercial is the correct tier and is the one held.
 
-### Credits
+## Credits
 
-5 per project, 1 per detection, 5 per camera model solved, uploads
+5 per project, 1 per detection, 5 per camera model solved; uploads
 free. The v4k_01 calibration cost about 11 credits of a 1000/month
 allowance.
 
@@ -47,11 +44,22 @@ locally, so refitting the same frames a dozen ways — which is how the
 board anisotropy was found — costs nothing. CalibrX is the independent
 cross-check, not the working tool.
 
-### One thing the pricing page does not settle
+## Open with CalibrX — asked 2026-09-21
 
-"Usable across your team" scopes **who may operate the service**, not
-what may be done with files already owned. Redistribution rights come
-from the terms' §4/§5 ownership grant, and ownership is not seat-
-limited. The two statements answer different questions and do not
-conflict — but if that reading ever mattered commercially, it is the
-sentence to put to CalibrX directly.
+Three items are with `support@calibrx.io`. The guidance in
+`LICENSES.md` is our reading pending their reply, not their position.
+
+1. **Redistribution.** Whether the §4/§5 ownership grant is understood
+   as permitting generated output to be released under an open licence.
+2. **Trademark.** Whether the `calibrx.io` mark may stay on
+   redistributed boards, and what they want on modified ones. Our
+   current rule — strip it from modified boards, keep it on unmodified
+   — is a default chosen without their input.
+3. **Anisotropic targets** *(a suggestion).* Their format carries one
+   `square_size` and no second axis, so a print whose x and y scales
+   differ cannot be described. Ours differs by **+0.15 %**, which their
+   own fit pushes into fx/fy as a 0.104 % discrepancy — see
+   [../../data/calibration/distortion/v4k_01/calibrx/README.md](../../data/calibration/distortion/v4k_01/calibrx/README.md).
+
+A reply affects three files: `LICENSES.md`,
+`data/calibration/targets/README.md`, and this one.

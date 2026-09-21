@@ -8,7 +8,7 @@ otherwise. The full text is in [LICENSE](LICENSE).
 | everything not listed below | **GPL-3.0-or-later** | source, build scripts, tooling |
 | `comfyui/comfyui-acme/` | **GPL-3.0-or-later** | ComfyUI is itself GPL-3.0, so this matches its ecosystem |
 | `docs/` | **CC-BY-SA-4.0** | prose — **except `docs/licensing/`, see below** |
-| `docs/licensing/` | **third-party, quoted** | vendor terms and a pricing screenshot; not ours |
+| `docs/licensing/` | **their respective owners** | see that directory's README for per-file provenance |
 | `data/calibration/acme_paper/` | **CC-BY-4.0** | our own measurements; declared in that dataset's card |
 | `data/calibration/distortion/` — non-code | **CC-BY-SA-4.0** | frames, calibration JSON, cards |
 | `data/calibration/targets/` | **CC-BY-SA-4.0** | ours under the CalibrX terms — **trademark note below** |
@@ -132,12 +132,12 @@ the SDK's terms before redistributing it alongside the rest.
 Prose and diagrams are **CC-BY-SA-4.0**, matching the calibration data
 they document.
 
-**`docs/licensing/` is not ours to license.** It holds a text extract
-of CalibrX's terms and a screenshot of their pricing page, retained
-dated as evidence of what was in force when the target files were
-generated. Both are CalibrX's own content, quoted for record-keeping.
-Nothing here relicenses them, and the CC-BY-SA-4.0 grant above stops at
-that directory.
+**Documents under `docs/licensing/` belong to their respective owners**,
+as documented in
+[docs/licensing/README.md](docs/licensing/README.md) — which lists each
+file with its owner, source URL, retrieval date and method. They are
+dated copies of vendor material, kept as evidence of what was in force
+when our files were generated. The grant above stops at that directory.
 
 ## Open with CalibrX — asked 2026-09-21, awaiting reply
 
