@@ -149,3 +149,33 @@ reviewed before implementation.
 Keeping upstream's `IS_CHANGED` behaviour matters more here than it
 does for them: a registration pass that silently re-uses a cached frame
 would look like perfect repeatability.
+
+## Decided: a missing calibration refuses
+
+Operator's call, 2026-09-21, after the node's first real run in
+ComfyUI refused a capture whose every control had taken cleanly —
+because no calibration was wired.
+
+The question that raised: `calibration` is declared **optional**, yet
+omitting it is fatal under the default `on_mismatch=refuse`. That looks
+like a contradiction, and the alternative was to treat *unverifiable*
+as a separate case from *mismatched* — return the frame with
+`verified=False` and let a graph gate on it.
+
+**Refuse.** An unverified frame is exactly as dangerous as a wrongly
+verified one, because both look like a good capture to everything
+downstream. Nothing in a picture reveals which focus it was shot at.
+Having no calibration is not a reason to skip the check; it is the
+check failing for want of a reference.
+
+The input stays optional so `on_mismatch=warn` remains usable
+deliberately — during rig setup, before a calibration exists, when you
+only want to see framing. Optional in that sense, not in the sense that
+the default tolerates its absence.
+
+**This was already the behaviour**, pinned by
+`test_no_calibration_is_unverified_rather_than_assumed_fine`. What
+changed is that the tooltip said the opposite — *"Without it the frame
+is returned unverified and the report says so"* — describing the
+design that was rejected. A tooltip that contradicts the code is worse
+than none, since it is the only description most operators will read.

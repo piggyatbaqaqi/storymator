@@ -50,6 +50,14 @@ class AcmeCapture(io.ComfyNode):
     does not describe it.  Nothing in the picture says so, which is why
     this node would rather stop than hand one downstream.
 
+    **A missing calibration counts as a mismatch**, not as a reason to
+    skip checking (operator's decision, 2026-09-21).  An unverified
+    frame is exactly as dangerous as a wrongly-verified one, because
+    both look like a good capture to everything downstream.  The
+    ``calibration`` input stays optional so that ``on_mismatch=warn``
+    can still be used deliberately -- during rig setup, before a
+    calibration exists -- but the default refuses.
+
     Two things are done in a particular order, both measured:
 
     * **FOURCC before the geometry.** 3264x2448 in YUYV gives 1.3 fps
@@ -106,8 +114,12 @@ class AcmeCapture(io.ComfyNode):
                 AcmeCalibrationType.Input(
                     "calibration", optional=True,
                     tooltip="Checked against, not used to capture. "
-                            "Without it the frame is returned "
-                            "unverified and the report says so."),
+                            "Leaving it unconnected is itself a "
+                            "mismatch: there is nothing to check, so "
+                            "on_mismatch decides. Under the default "
+                            "this node refuses. Optional only in the "
+                            "sense that on_mismatch=warn will let an "
+                            "unverified frame through."),
             ],
             outputs=[
                 io.Image.Output("image"),
