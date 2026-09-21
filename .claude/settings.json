@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pytest:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python -m flake8:*)",
+      "Bash(python -m mypy:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(sed -n *)",
+      "Bash(mkdir:*)",
+      "Bash(chmod:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+      "Bash(v4l2-ctl:*)",
+      "Bash(lsusb:*)",
+      "Read(//tmp/**)",
+      "WebFetch(domain:calibrx.io)",
+      "WebFetch(domain:docs.comfy.org)",
+      "WebFetch(domain:github.com)"
+    ]
+  }
+}

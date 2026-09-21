@@ -80,3 +80,7 @@ user/default/*
 # lost by this -- ComfyUI embeds the full `prompt` and `workflow` JSON in
 # each PNG's metadata chunks.  See docs/planning/artifact-tracking.md.
 output/
+
+# Claude Code: settings.json is shared and committed; the .local one is
+# this machine's accumulated permission grants and is not.
+.claude/settings.local.json
