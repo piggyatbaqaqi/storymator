@@ -5,8 +5,6 @@ import pytest
 
 from acme.rect import fit_rect, principal_axes
 
-pending = pytest.mark.xfail(reason="rectangle fitting not implemented")
-
 
 def _slot(w=120, h=30, angle_deg=0.0, centre=(200.0, 150.0),
           size=(300, 400)):
@@ -21,7 +19,6 @@ def _slot(w=120, h=30, angle_deg=0.0, centre=(200.0, 150.0),
 
 # --- the basics -------------------------------------------------------
 
-@pending
 def test_a_plain_slot_is_recovered():
     r = fit_rect(_slot())
     assert r.centre == pytest.approx([200.0, 150.0], abs=0.5)
@@ -30,7 +27,6 @@ def test_a_plain_slot_is_recovered():
     assert r.angle_rad == pytest.approx(0.0, abs=0.02)
 
 
-@pending
 @pytest.mark.parametrize("angle", [0.0, 7.0, -11.0, 30.0, 88.0])
 def test_the_angle_is_recovered(angle):
     """The bar's tilt in the frame, which a centroid discards."""
@@ -39,7 +35,6 @@ def test_the_angle_is_recovered(angle):
     assert min(abs(got - angle), abs(abs(got - angle) - 180)) < 1.5
 
 
-@pending
 def test_a_crop_can_be_offset_back_into_the_frame():
     full = fit_rect(_slot(centre=(200.0, 150.0)))
     crop = _slot(centre=(60.0, 50.0), size=(120, 160))
@@ -49,7 +44,6 @@ def test_a_crop_can_be_offset_back_into_the_frame():
 
 # --- the point of the exercise ----------------------------------------
 
-@pending
 def test_a_highlight_inside_the_slot_does_not_move_the_centre():
     """A specular highlight on chrome punches a hole in the blob.
 
@@ -67,22 +61,50 @@ def test_a_highlight_inside_the_slot_does_not_move_the_centre():
         fit_rect(clean).centre, abs=0.5)
 
 
-@pending
-def test_a_peg_sitting_hard_against_one_end_does_not_move_the_centre():
-    """The measured case: the slot is 15.75 mm and the peg 12.70, so
-    ~3 mm of it stands open, and the peg may be at either end.
+def test_a_bite_out_of_the_slot_EDGE_does_not_move_the_centre():
+    """The one that is actually hard.
 
-    What is detected is the hole either way, so the answer must be the
-    same either way."""
-    left = _slot()
-    right = _slot()
-    left[:, 145:160] = left[:, 145:160] & False    # peg hard right
-    right[:, 240:255] = right[:, 240:255] & False  # peg hard left
+    An interior hole is ignored by an outer contour for free. A
+    highlight that eats into the slot's *boundary* is not, and that is
+    what a specular on a chrome peg near the slot wall does. The rect
+    survives because the extremes it is pinned by still exist
+    elsewhere along the edge -- a centroid has no such protection.
+    """
+    clean = _slot()
+    bitten = clean.copy()
+    bitten[135:150, 170:230] = False          # a notch in one long edge
+
+    def centroid(m):
+        ys, xs = np.nonzero(m)
+        return np.array([xs.mean(), ys.mean()])
+    assert np.linalg.norm(centroid(clean) - centroid(bitten)) > 1.5, \
+        "the notch must actually move the centroid"
+    assert fit_rect(bitten).centre == pytest.approx(
+        fit_rect(clean).centre, abs=0.5)
+
+
+def test_which_end_the_peg_sits_at_does_not_move_the_centre():
+    """The measured case: the slot is 15.75 mm and the peg 12.70, so
+    ~3 mm stands open and the peg may be at either end.
+
+    What is detected is the hole either way -- peg and open slot both
+    read dark -- so the only thing that actually varies is where the
+    peg's specular highlight falls inside it. The answer must not
+    follow the highlight around.
+    """
+    left, right = _slot(), _slot()
+    left[142:158, 150:180] = False      # highlight toward the left end
+    right[142:158, 220:250] = False     # ...and toward the right
+
+    def centroid(m):
+        ys, xs = np.nonzero(m)
+        return np.array([xs.mean(), ys.mean()])
+    assert np.linalg.norm(centroid(left) - centroid(right)) > 3.0, \
+        "the two highlights must actually pull the centroid apart"
     assert fit_rect(left).centre == pytest.approx(
         fit_rect(right).centre, abs=0.5)
 
 
-@pending
 def test_size_is_reported_so_a_non_slot_can_be_refused():
     """15.75 x 3.09 mm is a free consistency check -- the one thing a
     centroid can never provide."""
@@ -94,14 +116,12 @@ def test_size_is_reported_so_a_non_slot_can_be_refused():
 
 # --- axes -------------------------------------------------------------
 
-@pending
 def test_the_long_axis_comes_first():
     long_axis, short_axis = principal_axes(_slot(w=120, h=30))
     assert abs(float(np.dot(long_axis, short_axis))) < 1e-9
     assert abs(long_axis[0]) > abs(long_axis[1])
 
 
-@pending
 def test_the_axis_sign_is_canonical():
     """eigh's sign is arbitrary, and an arbitrary sign once registered
     two captures of one sheet into mirror images of each other."""
@@ -112,7 +132,6 @@ def test_the_axis_sign_is_canonical():
 
 # --- noise ------------------------------------------------------------
 
-@pending
 def test_a_ragged_edge_does_not_move_the_centre_much():
     """Real hole edges are torn paper, not straight lines."""
     rng = np.random.default_rng(3)
