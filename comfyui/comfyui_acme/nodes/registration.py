@@ -207,12 +207,14 @@ class AcmeDetectSheet(io.ComfyNode):
             poses.append(pose)
             overlays.append(draw_overlay(
                 frame, pose.corners_image, pose.pegs_image,
-                pose.summary(), pose.accepted))
+                pose.summary(), pose.accepted,
+                peg_rects=pose.peg_rects))
             # No caption, and red regardless of the verdict: the
             # verdict is on the overlay and in the report, and this one
             # answers "what did it see and where did it look".
             marks = draw_overlay(gray, pose.corners_image, pose.pegs_image,
-                                 "", pose.accepted, colour=DIAGNOSTIC_RED)
+                                 "", pose.accepted, colour=DIAGNOSTIC_RED,
+                                 peg_rects=pose.peg_rects)
             # Composite the marks back over the ORIGINAL luminance
             # rather than shipping what PIL returned.  Drawing goes
             # through 8 bits, and a diagnostic whose grey is quantised

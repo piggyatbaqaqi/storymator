@@ -230,10 +230,7 @@ def test_gray_is_emitted_for_every_frame_in_the_batch():
 
 # --- the marks the operator actually looks at -------------------------
 
-rect_pending = pytest.mark.xfail(reason="pegs are still drawn as circles")
 
-
-@rect_pending
 def test_the_peg_marks_follow_the_slot_not_a_fixed_circle():
     """What the operator expects to see.
 

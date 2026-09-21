@@ -55,6 +55,14 @@ class Rect:
     def elongation(self) -> float:
         return self.long_px / max(self.short_px, 1e-9)
 
+    def corners(self) -> np.ndarray:
+        """(4, 2) corners, counter-clockwise from the -long -short one."""
+        along = np.array([np.cos(self.angle_rad), np.sin(self.angle_rad)])
+        across = np.array([-along[1], along[0]])
+        a, b = along * self.long_px / 2.0, across * self.short_px / 2.0
+        return np.array([self.centre - a - b, self.centre + a - b,
+                         self.centre + a + b, self.centre - a + b])
+
     def matches(self, long_px: float, short_px: float,
                 tolerance: float = 0.25) -> bool:
         """Whether this is plausibly the slot we were looking for.

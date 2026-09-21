@@ -32,6 +32,7 @@ from .geometry import (apply_homography, homography_from_points,
                        point_line_distance, residuals, rigid_from_points, rms)
 from .model import Calibration
 from .parallax import correct_parallax
+from .rect import Rect
 
 
 #: How far the detected pegs may sit from the peg line before an
@@ -61,6 +62,9 @@ class Pose:
     punch_offset_mm: float = float("nan")
     corners_image: Optional[np.ndarray] = None
     pegs_image: Optional[np.ndarray] = None
+    # The fitted slots, so the overlay can draw what was actually
+    # matched rather than a circle that says only "something here".
+    peg_rects: Optional[List["Rect"]] = None
     per_landmark_px: dict = field(default_factory=dict)
 
     def summary(self) -> str:
@@ -312,6 +316,9 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         punch_offset_mm=float(np.linalg.norm(correction[:2, 2])),
         corners_image=corners[idx],
         pegs_image=pegs_image,
+        peg_rects=[Rect(centre=centres[i], long_px=blobs[i].long_px,
+                        short_px=blobs[i].short_px,
+                        angle_rad=blobs[i].angle_rad) for i in triple],
         per_landmark_px={
             "peg_-x": float(peg_errors[0]) * px_mm,
             "peg_round": float(peg_errors[1]) * px_mm,

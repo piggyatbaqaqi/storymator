@@ -10,8 +10,6 @@ import pytest
 
 from acme.detect import find_peg_candidates
 
-pending = pytest.mark.xfail(reason="candidates are still blob centroids")
-
 SHEET = (400, 600)
 
 
@@ -46,7 +44,6 @@ def _find(gray, sheet):
 
 # --- position ---------------------------------------------------------
 
-@pending
 def test_a_highlight_inside_a_slot_does_not_move_the_reported_centre():
     """The measured failure, in miniature.
 
@@ -70,7 +67,6 @@ def test_the_reported_centre_is_the_slot_centre():
 
 # --- shape ------------------------------------------------------------
 
-@pending
 def test_a_candidate_reports_its_angle():
     """Which the bar constrains, and which a centroid discards."""
     for angle in (0.0, 12.0, -20.0):

@@ -6,7 +6,9 @@ about torch and ComfyUI conventions, and nothing in ``acme`` does.
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
+
+from ..acme.rect import Rect
 
 import numpy as np
 import torch
@@ -47,7 +49,8 @@ def masks_to_tensor(masks: List[np.ndarray]) -> torch.Tensor:
 def draw_overlay(frame: np.ndarray, corners: Optional[np.ndarray],
                  pegs: Optional[np.ndarray], caption: str,
                  accepted: bool,
-                 colour: Optional[Tuple[int, int, int]] = None
+                 colour: Optional[Tuple[int, int, int]] = None,
+                 peg_rects: Optional[Sequence["Rect"]] = None
                  ) -> np.ndarray:
     """The fit drawn over the frame, with its verdict written on it.
 
@@ -74,9 +77,18 @@ def draw_overlay(frame: np.ndarray, corners: Optional[np.ndarray],
         for i, (x, y) in enumerate(corners):
             draw.text((x + 6, y + 6), str(i), fill=colour)
     if pegs is not None:
-        for x, y in pegs:
-            r = max(6, img.width // 120)
-            draw.ellipse([x - r, y - r, x + r, y + r], outline=colour, width=3)
+        r = max(6, img.width // 120)
+        for index, (x, y) in enumerate(pegs):
+            # The fitted slot when there is one: an outline says "this
+            # shape, this angle, this long", which is checkable at a
+            # glance.  A circle only says "something is here".
+            rect = peg_rects[index] if peg_rects is not None else None
+            if rect is not None:
+                draw.polygon([tuple(p) for p in rect.corners()],
+                             outline=colour, width=3)
+            else:
+                draw.ellipse([x - r, y - r, x + r, y + r],
+                             outline=colour, width=3)
             draw.line([x - r * 2, y, x + r * 2, y], fill=colour, width=1)
             draw.line([x, y - r * 2, x, y + r * 2], fill=colour, width=1)
 

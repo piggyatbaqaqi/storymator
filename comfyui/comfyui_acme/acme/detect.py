@@ -17,6 +17,7 @@ import numpy as np
 from scipy import ndimage
 
 from .geometry import fit_line, line_intersection
+from .rect import fit_rect
 
 
 @dataclass
@@ -27,6 +28,9 @@ class Blob:
     area_px: float
     short_px: float
     long_px: float
+    # Of the long axis.  The bar constrains it, and a centroid throws
+    # it away; see acme.rect.
+    angle_rad: float = 0.0
 
     @property
     def centre(self) -> np.ndarray:
@@ -280,18 +284,16 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
         area = float(window.sum())
         if not (min_area_px <= area <= max_area_px) or area < 4:
             continue
-        ys, xs = np.nonzero(window)
-        ys = ys + box[0].start
-        xs = xs + box[1].start
-        pts = np.column_stack([xs, ys]).astype(float)
-        centre = pts.mean(axis=0)
-        cov = np.cov((pts - centre).T)
-        if not np.all(np.isfinite(cov)):
+        # Fit the slot rather than average what is inside it.  A
+        # specular highlight on chrome moves a centre of mass and
+        # leaves a bounding extent alone; see acme.rect.
+        try:
+            rect = fit_rect(window, origin=(box[1].start, box[0].start))
+        except ValueError:                  # pragma: no cover - degenerate
             continue
-        _, evecs = np.linalg.eigh(np.atleast_2d(cov))
-        extent = np.ptp((pts - centre) @ evecs, axis=0)
-        blobs.append(Blob(x=float(centre[0]), y=float(centre[1]),
+        blobs.append(Blob(x=float(rect.centre[0]), y=float(rect.centre[1]),
                           area_px=area,
-                          short_px=float(min(extent)),
-                          long_px=float(max(extent))))
+                          short_px=rect.short_px,
+                          long_px=rect.long_px,
+                          angle_rad=rect.angle_rad))
     return blobs

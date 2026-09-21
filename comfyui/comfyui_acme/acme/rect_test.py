@@ -141,3 +141,22 @@ def test_a_ragged_edge_does_not_move_the_centre_much():
     ragged[edge & (rng.random(clean.shape) < 0.5)] = False
     assert fit_rect(ragged).centre == pytest.approx(
         fit_rect(clean).centre, abs=1.0)
+
+
+def test_corners_bound_the_rectangle():
+    r = fit_rect(_slot(w=120, h=30, angle_deg=0.0))
+    c = r.corners()
+    assert c.shape == (4, 2)
+    assert c[:, 0].min() == pytest.approx(140.0, abs=1.5)
+    assert c[:, 0].max() == pytest.approx(260.0, abs=1.5)
+    assert c[:, 1].min() == pytest.approx(135.0, abs=1.5)
+    assert c[:, 1].max() == pytest.approx(165.0, abs=1.5)
+
+
+def test_corners_turn_with_the_rectangle():
+    """They must follow the fit, not the image axes."""
+    c = fit_rect(_slot(angle_deg=30.0)).corners()
+    edge = c[1] - c[0]
+    assert np.degrees(np.arctan2(edge[1], edge[0])) == pytest.approx(
+        30.0, abs=1.5)
+    assert np.linalg.norm(edge) == pytest.approx(120.0, abs=2.0)
