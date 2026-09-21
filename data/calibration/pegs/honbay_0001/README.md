@@ -522,18 +522,30 @@ is the dome itself — and the dome sits 5.567 mm above the paper.
 |---|---|
 | round landmark off the optical axis | 1026 px = 119 mm |
 | working distance, fx / scale | 306 mm |
-| **predicted** shift, r·h/(Z−h) at h = 5.567 | **2.22 mm** |
-| at the apex instead, h = 8.787 | 3.53 mm |
-| **observed** offset from the midpoint of the rect pair | **2.43 mm** |
+| **predicted** total radial shift, r·h/Z at h = 5.567 | **2.18 mm** |
+| of which lies **along the bar** | **0.71 mm** |
+| of which lies across it | 2.06 mm |
+| **observed** offset from the midpoint of the rect pair, along the bar | **2.43 mm** |
 
-Predicted and observed agree within 0.2 mm, and the apex value does
-not. So **h_eff = 5.567 mm is confirmed**: the sphere-centre rule holds,
-which is what the hemispherical dome bought us.
+> **Correction, same day.** An earlier version of this section claimed
+> these agreed. They do not, and the agreement was a coincidence of
+> magnitude: 2.18 mm is the **total radial** shift while 2.43 mm is an
+> **along-bar** offset, and the radial direction here runs 71° off the
+> bar. Only 32 % of the parallax lies along it, so parallax accounts
+> for **0.71 of the 2.43 mm — about 29 %**.
+>
+> Confirmed by implementing it: correcting the round landmark moved the
+> peg residual from 31.89 px to 29.99 px, consistent with 0.7 mm and
+> not with 2.4.
 
-This is the quantity that had been open since the bench work. It is
-also why the split is wrong while the span is right: gaps of 104.13 and
-99.34 mm against 101.62 nominal, errors +2.51 and −2.28, summing to
-+0.24. One landmark displaced, two clean.
+The correction is real physics and worth having, but it is a **minor
+term here, not the explanation**. Roughly 1.7 mm of along-bar offset on
+the round landmark remains unaccounted for. Candidates, none measured:
+specular and shadow bias on the dome — worth 0.74 mm even under the
+best lighting tried — and whatever else displaces a chrome hemisphere's
+apparent centroid. The paper's own punch asymmetry is not a candidate:
+the two gaps differ by 0.074 mm across the ream, two orders of
+magnitude too small.
 
 ### What follows
 
