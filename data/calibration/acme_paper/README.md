@@ -1,4 +1,107 @@
+---
+pretty_name: ACME punch geometry (animation bond)
+license: cc-by-4.0
+annotations_creators:
+- machine-generated
+size_categories:
+- n<1K
+tags:
+- metrology
+- dimensional-measurement
+- animation
+- paper
+- registration
+configs:
+- config_name: canson_ream_0001
+  data_files:
+  - split: train
+    path: canson_ream_0001/*.png
+---
+
 # Canson ACME bond — punch geometry, whole ream
+
+Flatbed scans of hole-punched animation bond, one PNG per sheet, with
+every geometric quantity below derived from the scans rather than
+quoted. The punch is what animation registration is measured against,
+and no published specification for this paper gives these figures.
+
+## Loading
+
+```python
+from acme_paper import load
+ds = load("canson_ream_0001")   # 94 rows: image + 15 measured quantities
+```
+
+`load()` measures each scan on the fly and returns one row per sheet.
+It goes through `Dataset.from_generator`, because `datasets` removed
+loading-script support in 3.0 and will not execute `acme_paper.py` for
+you.
+
+```python
+from datasets import load_dataset
+ds = load_dataset("<repo>", "canson_ream_0001")   # images only
+```
+
+The YAML `configs` block above makes plain `load_dataset` work too, but
+it yields **only the images** — the measurements come from
+`acme_paper.py`.
+
+To regenerate every statistic in this card:
+
+```sh
+python acme_paper.py                   # all reams
+python acme_paper.py --csv rows.csv    # and the per-sheet rows
+```
+
+## Reading the numbers
+
+Two biases matter, and they behave differently.
+
+**Scanner scale.** Everything is expressed in a frame built from each
+sheet's *own* punched edge, which is what makes bed placement
+irrelevant. A flatbed's belt axis is good to a few tenths of a percent
+at best, and that error is identical for every sheet placed in the same
+spot, so it cancels in any spread. Absolute offsets are contaminated;
+spreads are clean.
+
+**Punched rim.** Hole *size* carries a further bias: a thresholded or
+50 %-crossing edge sits inside the true aperture, because the punch
+tears fibres down into the hole and a lit burr over a dark hole reads
+as hole. **Every size mean is a lower bound.** A constant bias cancels
+out of a standard deviation, so size *spreads* stand while size *means*
+do not.
+
+## Source material
+
+| | |
+|---|---|
+| ream | `canson_ream_0001` |
+| product | Canson Animation Paper, 8.5 × 11 in, 20 lb |
+| barcode | **3 148955 732809** (EAN-13, check digit verifies) |
+| sheet | 215.9 × 279.4 mm |
+| thickness | 0.1153 mm, sd 0.005 (10 sheets, depth gauge) |
+
+**The punch is centred on the long edge.** The 203.2 mm span needs the
+11 in edge — 8.5 in is too short to hold it — and the centre hole
+should then sit at 139.70 mm. Measured: **139.262 mm**, off by
+−0.44 mm, or −0.31 %, which is inside the scanner's own absolute scale
+error. So the punch is centred, and the sheet's along-bar dimension is
+11.00 in exactly. That had been an open question: fitting it from a
+single camera view gave 10.63 in, because a rectangle's proportions
+cannot be recovered from one perspective view without intrinsics.
+
+> **Not standard ACME field paper.** The ACME convention is
+> 10.5 × 12.5 in (266.7 × 317.5 mm). Anything fitting a sheet *outline*
+> must be told which it has; the peg geometry is identical either way,
+> the outline is not. In the peg frame the punched edge is the 11 in
+> one, so this paper is 279.4 mm along the bar by 215.9 mm into the
+> sheet — which is **narrower along the bar and shorter into the sheet**
+> than the ACME default, not simply smaller in one axis.
+
+**What these scans cannot give** is the *perpendicular* distance from
+the punched edge to the peg line. Only one perpendicular sheet edge
+lands on the platen, so the along-edge position is measurable and the
+distance-from-edge is not. It remains nominal.
 
 95 sheets scanned at 300 dpi on a legal bed against black card,
 measured 2026-09-18. 94 of 95 yielded all three holes.

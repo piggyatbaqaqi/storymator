@@ -6,8 +6,8 @@
     "centre_spacing_mm": 101.616
   },
   "sheet": {
-    "width_mm": 266.7,
-    "height_mm": 317.5,
+    "width_mm": 279.4,
+    "height_mm": 215.9,
     "punch_offset_mm": 12.0,
     "bar_position": "below"
   },
@@ -70,6 +70,7 @@
     "calibrated": "2026-09-18",
     "frames": 48,
     "rms_px": 0.707,
-    "notes": "Valid ONLY at focus_absolute 134. The V4K reports no USB serial, so identity cannot be checked; verify the controls and frame size instead."
+    "notes": "Valid ONLY at focus_absolute 134. The V4K reports no USB serial, so identity cannot be checked; verify the controls and frame size instead. Sheet is 8.5x11in, NOT the 10.5x12.5in ACME field-paper default the model ships with. punch_offset_mm is the PERPENDICULAR distance from the punched edge to the peg line; the scans cannot measure it, since only one perpendicular sheet edge is on the platen, so 12.0 is still nominal and unmeasured.",
+    "paper": "canson_ream_0001 (Canson Animation Paper 8.5x11in 20lb, EAN 3148955732809)"
   }
 }
