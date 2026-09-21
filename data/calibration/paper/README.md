@@ -57,6 +57,50 @@ also sizes what stage two has to absorb.
   long distance across the sensor; its longest feature is a 6 mm hole.
   See "verifying the scanner" below.
 
+## Round punch size across the ream
+
+94 of 95 sheets, three independent estimators:
+
+| method | mean | **sd** | min | max | range |
+|---|---:|---:|---:|---:|---:|
+| 50 % edge crossing, 720 rays | 6.312 | **0.0394** | 6.271 | 6.423 | 0.153 |
+| thresholded area | 6.292 | 0.0349 | 6.247 | 6.403 | 0.156 |
+| extent + 1 px | 6.341 | 0.0527 | 6.265 | 6.435 | 0.169 |
+
+**Sheet to sheet, the round punch varies by sd 39 µm — 0.62 % of the
+hole.** 95 % of sheets fall in a 0.132 mm band; the full range over 94
+sheets is 0.153 mm. The three methods differ by 49 µm on the *mean* and
+agree on the *spread* within 18 µm, so the spread is the robust number.
+
+### Reading it for a paper review
+
+The honest headline is **consistency, not size**. Put beside the pitch:
+
+| | sd | as % |
+|---|---:|---:|
+| hole pitch (101.6 mm) | 26 µm | **0.026 %** |
+| round hole diameter (6.44 mm) | 39 µm | **0.62 %** |
+
+Relatively, hole *size* is about twenty-five times less consistent than
+hole *spacing* — which is what you would expect and is not a criticism.
+Spacing is set by rigid steel; size is set by where paper fibres tear.
+It also does not matter for registration, because the peg grips: a hole
+40 µm larger does not let the sheet move 40 µm, it just grips slightly
+less.
+
+Two caveats to quote with the numbers.
+
+**The mean is a lower bound, the spread is not.** All three methods
+read *smaller* than the 6.440 mm peg, by 0.128 mm on the principled
+one, which cannot be true of the mechanical hole since the sheet
+mounts. The cause is the punched rim — see below. A constant bias
+cancels out of a standard deviation entirely, so the sd stands as
+measured while the mean does not.
+
+**The sd is itself an upper bound on true hole variation**, because it
+includes any sheet-to-sheet variation in the rim itself. The real
+punch is at least this consistent and possibly more.
+
 ## Hole size: the holes are peg-sized
 
 The first pass reported the holes *undersize*, which is impossible. Two
