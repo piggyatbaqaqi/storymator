@@ -495,3 +495,54 @@ not a registration freedom**. The round peg is a grip fit, so the sheet
 cannot slide along the bar at all; the slots' ~3 mm of length over the
 peg is a humidity allowance that is exercised only when the paper's own
 dimensions change. It does not belong in the error budget.
+
+## Parallax, measured on the rig at last
+
+2026-09-21, from a live `AcmeCapture` frame once the background,
+lighting and the 180-degree outline bug were all out of the way.
+
+**The two rectangular landmarks are not peg tops. They are holes.**
+The rect slots are 15.75 mm against a 12.70 mm peg, so ~3 mm of slot
+stands open; with the light on the lens axis nothing reaches into it,
+and it reads as dark as the peg. Measured blob lengths came out
+**15.96 and 16.38 mm** — the hole, not the peg.
+
+That is a gift, because **a hole lies in the paper plane**, h = 0, and
+carries no parallax whatever. It shows:
+
+| | measured | nominal | error |
+|---|---:|---:|---:|
+| outer span, rect landmark to rect landmark | 203.47 mm | 203.23 | **+0.24** |
+
+**The round peg is the odd one out, precisely because it grips.** With
+no clearance there is no open hole to see, so the only thing to detect
+is the dome itself — and the dome sits 5.567 mm above the paper.
+
+| | |
+|---|---|
+| round landmark off the optical axis | 1026 px = 119 mm |
+| working distance, fx / scale | 306 mm |
+| **predicted** shift, r·h/(Z−h) at h = 5.567 | **2.22 mm** |
+| at the apex instead, h = 8.787 | 3.53 mm |
+| **observed** offset from the midpoint of the rect pair | **2.43 mm** |
+
+Predicted and observed agree within 0.2 mm, and the apex value does
+not. So **h_eff = 5.567 mm is confirmed**: the sphere-centre rule holds,
+which is what the hemispherical dome bought us.
+
+This is the quantity that had been open since the bench work. It is
+also why the split is wrong while the span is right: gaps of 104.13 and
+99.34 mm against 101.62 nominal, errors +2.51 and −2.28, summing to
++0.24. One landmark displaced, two clean.
+
+### What follows
+
+The correction is now fully determined and applies to **the round
+landmark only**: shift it inward, toward the principal point, by
+r·h/(Z−h) with h = 5.567 mm. Every term is known — r from the
+detection, Z from `fx / scale`, h from the profile shot.
+
+The rect landmarks need no correction at all, which is the opposite of
+what the design assumed. They want their *model* position understood as
+the hole centre rather than the peg centre — the same point, since the
+round peg pins the sheet, but a different thing being detected.
