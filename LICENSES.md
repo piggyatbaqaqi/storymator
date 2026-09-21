@@ -89,7 +89,7 @@ a lawyer. They are recorded here rather than guessed at.
 * **Which tier applies.** Selling calibrated cameras reads as
   commercial. Whether an R&D tier covers a DIY system that others build
   themselves depends entirely on how that tier is worded.
-* **Are the calibration frames derivative?** `distortion-*.raw` are
+* **Are the calibration frames derivative?** `distortion-*.jpg` are
   photographs of the printed board. If they are, the CC licence chosen
   for `distortion/` cannot be granted until the target question is
   settled. Regenerating the board (above) resolves this too, since a

@@ -4,7 +4,7 @@ Everything here is a property of **honbay_0001 specifically** and must
 be re-measured for any other bar. Camera captures of it live with the
 camera that took them, in
 [../../distortion/v4k_01/](../../distortion/v4k_01/) —
-`bar_reference.raw` and `peg_profile-*.raw`.
+`bar_reference.jpg` and `peg_profile-*.jpg`.
 
 Digital calipers, three readings per feature, 2026-09-19. Part C of
 [../../../../docs/measuring-punch-tolerance.md](../../../../docs/measuring-punch-tolerance.md),
@@ -319,7 +319,7 @@ matters — how far the *drawing* moves — with the pipeline already built.
 
 ## First profile attempt: refocus, do not retreat
 
-`data/calibration/distortion/v4k_01/peg_profile-*.raw`, 2026-09-19.
+`data/calibration/distortion/v4k_01/peg_profile-*.jpg`, 2026-09-19.
 Frame 4 is the usable one — white card behind, peg silhouetted, peg
 near frame centre. It is out of focus, and the cause is not distance.
 
@@ -341,9 +341,9 @@ v4l2-ctl -d /dev/videoN --set-ctrl=focus_automatic_continuous=0
 for n in $(seq 0 10 250); do
     v4l2-ctl -d /dev/videoN --set-ctrl=focus_absolute=$n
     sleep 0.6
-    <capture> focus-$n.raw
+    <capture> focus-$n.jpg
 done
-bin/score-focus focus-*.raw
+bin/score-focus focus-*.jpg
 ```
 
 **Set `focus_absolute` back to 134 afterwards.** The lens calibration
@@ -381,7 +381,7 @@ will settle it.
 
 ## The dome is hemispherical
 
-`peg_profile-5.raw`, shot at **57 mm with `focus_absolute 635`**. Edge
+`peg_profile-5.jpg`, shot at **57 mm with `focus_absolute 635`**. Edge
 10–90 rise **11 px**, down from 19. Scale from the known 6.440 mm
 shaft: **63.35 px/mm**, 1 px = 15.8 µm.
 
@@ -446,7 +446,7 @@ sd **1.10 px over 230 rows**.
 
 ## Rect peg profiles: flat top confirmed, quantified
 
-`peg_profile_rectangular_{left,right}-*.raw`. Side views along the bar
+`peg_profile_rectangular_{left,right}-*.jpg`. Side views along the bar
 plus overhead views with a sheet mounted.
 
 `left-3` is the clean silhouette. Scaling from the peg's own 12.70 mm

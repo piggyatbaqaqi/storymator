@@ -36,6 +36,39 @@ Technique limits this, not the caliper: six readings gave sd 0.33 mm on
 checker corner is a *virtual* point a jaw cannot seat on. Take six
 readings and treat the scatter as the error.
 
+### Marker size, and why it is not measured
+
+The SVG's viewBox is 1:1 with millimetres, so the design geometry is
+exact: **25.0 mm squares** and marker bits of 2.25 mm. DICT_6X6_250 is
+6×6 data plus a one-bit quiet border, so the marker is 8 × 2.25 =
+**18.0 mm exactly**, matching the printed legend's "25/18 mm".
+
+At the measured print scale of 1.012652:
+
+| | design | as printed |
+|---|---:|---:|
+| square | 25.0 | **25.3163** |
+| marker | 18.0 | **18.2277** |
+| board | 175 × 225 | 177.21 × 227.85 |
+
+The marker figure is **derived, not measured** — design ratio times the
+measured square scale — and that is sufficient, because
+**`markerLength` is not a measurement input.** The markers identify
+which chessboard corner is which; the calibration geometry uses only
+the chessboard corners, whose spacing is `squareLength`. Varying it
+across the real set:
+
+| marker_mm | frames | corners | rms | fx |
+|---:|---:|---:|---:|---:|
+| 18.2277 | 48 | 1590 | 0.7070 | 2625.44 |
+| 18.0 | 48 | 1590 | 0.7072 | 2625.44 |
+| 17.0 | 48 | 1590 | 0.7073 | 2625.39 |
+| 20.0 | 48 | 1590 | 0.7070 | 2625.40 |
+
+**±11 % on the marker moves fx by 0.002 % and detects the same 1590
+corners.** Record it for board identity — reprinting, or telling two
+boards apart — not for accuracy.
+
 ### The print is also anisotropic by +0.15 %
 
 Refitting the 48-frame set with x and y scaled independently, minimum

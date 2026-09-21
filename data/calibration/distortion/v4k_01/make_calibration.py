@@ -12,7 +12,7 @@ det = cv2.aruco.CharucoDetector(board)
 objp = board.getChessboardCorners()
 
 img, objs, size = [], [], None
-for f in sorted(glob.glob(D + "distortion-*.raw")):
+for f in sorted(glob.glob(D + "distortion-*.jpg")):
     g = cv2.imread(f, cv2.IMREAD_GRAYSCALE)
     if g is None: continue
     size = g.shape[::-1]

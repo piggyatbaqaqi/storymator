@@ -70,7 +70,16 @@
     "calibrated": "2026-09-18",
     "frames": 48,
     "rms_px": 0.707,
-    "notes": "Valid ONLY at focus_absolute 134. The V4K reports no USB serial, so identity cannot be checked; verify the controls and frame size instead. Sheet is 8.5x11in, NOT the 10.5x12.5in ACME field-paper default the model ships with. punch_offset_mm is the PERPENDICULAR distance from the punched edge to the peg line; the scans cannot measure it, since only one perpendicular sheet edge is on the platen, so 12.0 is still nominal and unmeasured.",
-    "paper": "canson_ream_0001 (Canson Animation Paper 8.5x11in 20lb, EAN 3148955732809)"
+    "notes": "Valid ONLY at focus_absolute 134. The V4K reports no USB serial, so identity cannot be checked; verify the controls and frame size instead. Sheet is 8.5x11in, NOT the 10.5x12.5in ACME field-paper default the model ships with. punch_offset_mm is the PERPENDICULAR distance from the punched edge to the peg line; the scans cannot measure it, since only one perpendicular sheet edge is on the platen, so 12.0 is still nominal and unmeasured. Board marker size is recorded for board identity only: markerLength identifies corners, it is not a measurement input, and varying it 17-20 mm moves fx by 0.002 % and detects the same 1590 corners.",
+    "paper": "canson_ream_0001 (Canson Animation Paper 8.5x11in 20lb, EAN 3148955732809)",
+    "board_marker_mm": 18.2277,
+    "board_design_square_mm": 25.0,
+    "board_design_marker_mm": 18.0,
+    "board_squares": [
+      7,
+      9
+    ],
+    "board_dictionary": "DICT_6X6_250",
+    "board_print_scale": 1.012652
   }
 }

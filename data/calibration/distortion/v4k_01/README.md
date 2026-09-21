@@ -24,8 +24,8 @@
 * ../../targets/calibrx-charuco-175x225mm.svg
 
 # Files
-* abused_sheet-1.raw - Reference sheet that just lives on the desk. It's bent and water damaged.
-* anisotropy_scan.py - Refits the whole distortion-*.raw set with the
+* abused_sheet-1.jpg - Reference sheet that just lives on the desk. It's bent and water damaged.
+* anisotropy_scan.py - Refits the whole distortion-*.jpg set with the
   board's x and y scaled independently, to ask whether charuco_0001's
   print is anisotropic. Sweeps the anisotropy and reports rms, fx and fy
   for each value; minimum rms and fx=fy both land at +0.15 %, and a
@@ -33,10 +33,10 @@
   rather than a free parameter soaking up noise. Needs no arguments --
   the board parameters are constants at the top.
 * camera_settings.gpfl - These are the camera settings used to calibrate v4k_01.
-* check_mount-*.raw - These images confirm the flatness of charuco_0001.
-* distortion-*.raw - Shots of the calbration target charuco_0001 to calibrate v4k_01.
-* fresh_sheet-1.raw - A new blank sheet for comparison with abused_sheet-1.raw.
-* bar_reference.raw - *(was `glass_reference.raw`.)* You are right that
+* check_mount-*.jpg - These images confirm the flatness of charuco_0001.
+* distortion-*.jpg - Shots of the calbration target charuco_0001 to calibrate v4k_01.
+* fresh_sheet-1.jpg - A new blank sheet for comparison with abused_sheet-1.jpg.
+* bar_reference.jpg - *(was `glass_reference.jpg`.)* You are right that
   it is not the glass reference, and I have no memory that contradicts
   you: the glass shot was numbered into the distortion set during the
   first session and overwritten when the set was re-shot on the foam
@@ -48,10 +48,10 @@
   loose-paper mounting that gave 5.25 px homography residuals, cited in
   `docs/calibrating-a-camera.md` as the largest single error source of
   the exercise. Renamed rather than removed on the first ground.
-* peg_profile-*.raw - Profile pictures of honbay_0001's round peg, to
+* peg_profile-*.jpg - Profile pictures of honbay_0001's round peg, to
   get the effective height that drives the peg-top parallax correction.
   1-4 are at ~190 mm and out of focus, because the camera moved in while
-  `focus_absolute` stayed at 134 (focus for 380 mm). **peg_profile-5.raw
+  `focus_absolute` stayed at 134 (focus for 380 mm). **peg_profile-5.jpg
   is the usable one: 57 mm, `focus_absolute 635`**, edge 10-90 rise
   11 px. It establishes that the dome is hemispherical (b/a = 0.980) and
   so that h_eff = 5.567 mm. Note the non-default focus: these frames are
@@ -59,7 +59,7 @@
   focus 134. That is sound here because the measurement is a *ratio* and
   needs no intrinsics.
   Analysis and results: `../../pegs/honbay_0001/README.md`.
-* peg_profile_rectangular_{left,right}-*.raw - The rectangular pegs of
+* peg_profile_rectangular_{left,right}-*.jpg - The rectangular pegs of
   honbay_0001, side-on and from overhead. `left-3` is the clean side
   silhouette and gives the along-bar profile: rounding confined to
   ~1.2 mm at each end, 81 % of the top flat, and not a circular fillet.

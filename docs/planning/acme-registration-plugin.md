@@ -774,7 +774,7 @@ designed around rather than assumed away.
 ## 11g. The mounted target passes — 2026-09-18
 
 Two frames of the print mounted on foam board,
-`data/calibration/distortion/v4k_01/check_mount-{1,2}.raw`. (The camera
+`data/calibration/distortion/v4k_01/check_mount-{1,2}.jpg`. (The camera
 now has a name, which is right: intrinsics belong to a camera, and a
 second one is on the cards.)
 

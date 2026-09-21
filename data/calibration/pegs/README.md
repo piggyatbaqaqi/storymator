@@ -14,8 +14,8 @@ part C.
 Camera captures of a bar live with the **camera that took them**, under
 `../distortion/<camera>/`, because focus and intrinsics are part of
 what those frames mean. For honbay_0001 that is
-[../distortion/v4k_01/](../distortion/v4k_01/) — `bar_reference.raw`
-and `peg_profile-*.raw`.
+[../distortion/v4k_01/](../distortion/v4k_01/) — `bar_reference.jpg`
+and `peg_profile-*.jpg`.
 
 Paper is measured separately, in [../paper/](../paper/): the punch
 belongs to the ream, not to the bar.
