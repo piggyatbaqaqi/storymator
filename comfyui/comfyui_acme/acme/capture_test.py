@@ -30,11 +30,13 @@ class FakeCamera:
         self.order: List[str] = []
         self.values: Dict[str, float] = {}
         self.reads: List[str] = []
+        self.trace: List[Tuple[str, str]] = []
         self._lies = lies or {}
         self._rejects = rejects
 
     def set_control(self, name: str, value: float) -> bool:
         self.order.append(name)
+        self.trace.append(("set", name))
         if name in self._rejects:
             return False
         self.values[name] = value
@@ -42,8 +44,50 @@ class FakeCamera:
 
     def get_control(self, name: str) -> float:
         self.reads.append(name)
+        self.trace.append(("get", name))
         if name in self._lies:
             return self._lies[name]
+        return self.values.get(name, 0.0)
+
+
+class NegotiatingCamera:
+    """A camera that negotiates the whole format, as V4L2 does.
+
+    Measured on v4k_01 2026-09-21: ``set(width, 3264)`` returns **True**
+    and then reads back **640**, because 3264x480 is not a supported
+    mode and the driver keeps the one it has.  Setting the height
+    completes a supported pair and both read back correctly.
+
+    So a readback taken between the two is real, transient, and
+    meaningless -- which is exactly what the first integration run
+    caught.
+    """
+
+    MODES = ((640, 480), (3264, 2448))
+
+    def __init__(self) -> None:
+        self.order: List[str] = []
+        self.reads: List[str] = []
+        self.values: Dict[str, float] = {}
+        self._want = [640, 480]
+        self._active = (640, 480)
+
+    def set_control(self, name: str, value: float) -> bool:
+        self.order.append(name)
+        if name in ("width", "height"):
+            self._want[0 if name == "width" else 1] = int(value)
+            if tuple(self._want) in self.MODES:
+                self._active = tuple(self._want)   # type: ignore[assignment]
+        else:
+            self.values[name] = value
+        return True
+
+    def get_control(self, name: str) -> float:
+        self.reads.append(name)
+        if name == "width":
+            return float(self._active[0])
+        if name == "height":
+            return float(self._active[1])
         return self.values.get(name, 0.0)
 
 
@@ -109,6 +153,31 @@ def test_a_rejected_set_is_reported_as_a_failure():
     bad = failures(apply_request(cam, FULL))
     assert [r.name for r in bad] == ["focus"]
     assert bad[0].accepted is False
+
+
+def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one():
+    """The bug the first integration run found.
+
+    Verifying each control the instant it is set reports width 3264 as
+    having become 640, which is true at that moment and irrelevant: the
+    format is not finished being described.
+    """
+    cam = NegotiatingCamera()
+    assert failures(apply_request(cam, FULL)) == []
+
+
+def test_nothing_is_read_back_until_everything_has_been_set():
+    """Stated directly, so the ordering cannot drift back.
+
+    A later control can also clobber an earlier one, which a readback
+    taken mid-sequence would miss; what matters is the state the camera
+    is left in.
+    """
+    cam = FakeCamera()
+    apply_request(cam, FULL)
+    kinds = [kind for kind, _ in cam.trace]
+    half = len(kinds) // 2
+    assert kinds == ["set"] * half + ["get"] * half
 
 
 def test_a_request_that_takes_cleanly_has_no_failures():

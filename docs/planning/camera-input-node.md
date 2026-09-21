@@ -71,6 +71,31 @@ precisely the mistake already made once by hand on the peg profiles.
 * **`aperture` does nothing.** `set(1.8)` returns `False`, `get()`
   returns `-1`. Webcams have no aperture control.
 
+### 4a. Postscript: verifying too eagerly is its own bug
+
+Found by the first integration run, 2026-09-21, and worth recording
+because it is the same class of mistake in the opposite direction.
+
+**V4L2 negotiates the format as a unit, not field by field.**
+`set(width, 3264)` returns **True** and then reads back **640**,
+because 3264x480 is not a supported mode and the driver keeps the one
+it has. Setting the height completes a supported pair and both read
+back correctly:
+
+```
+opened      640x480
++fourcc     640x480
++width      set->True  reads 640x480    <-- width alone
++height     set->True  reads 3264x2448  <-- both now
+frame       (2448, 3264, 3)
+```
+
+So verifying each control the instant it is set reports a failure that
+is true at that moment and irrelevant. `apply_request` therefore sets
+everything first and reads the whole lot back afterwards — which is
+also the stricter check, since a later control can silently clobber an
+earlier one and only a final readback catches that.
+
 ### 5. It sets and hopes
 
 `cap.set()` returns a bool that the node discards, and nothing is read

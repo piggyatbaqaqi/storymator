@@ -111,14 +111,26 @@ class ControlResult:
 
 def apply_request(device: ControlDevice,
                   request: CaptureRequest) -> List[ControlResult]:
-    """Apply every control in order and read each one back."""
-    results = []
-    for name, value in request.controls():
-        accepted = bool(device.set_control(name, value))
-        actual = float(device.get_control(name))
-        results.append(ControlResult(name=name, requested=value,
-                                     actual=actual, accepted=accepted))
-    return results
+    """Apply every control in order, then read the whole lot back.
+
+    **Set everything first.** V4L2 negotiates the format as a unit, not
+    field by field: measured on v4k_01, ``set(width, 3264)`` returns
+    True and then reads back 640, because 3264x480 is not a supported
+    mode and the driver keeps the one it has. Setting the height
+    completes a supported pair and both read back correctly. A readback
+    taken between the two is real, transient and meaningless.
+
+    Deferring every readback is also the stricter check, not merely a
+    workaround for geometry: a later control can silently clobber an
+    earlier one, and what matters is the state the camera is left in.
+    """
+    requested = request.controls()
+    accepted = [bool(device.set_control(name, value))
+                for name, value in requested]
+    return [ControlResult(name=name, requested=value,
+                          actual=float(device.get_control(name)),
+                          accepted=took)
+            for (name, value), took in zip(requested, accepted)]
 
 
 def failures(results: Sequence[ControlResult]) -> List[ControlResult]:
