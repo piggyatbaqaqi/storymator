@@ -174,3 +174,55 @@ of the union.
 3.09 mm on the short axis. It is the right idea and the wrong stage —
 useful once something separates the two, useless while they are one
 blob.
+
+## The specular base line: real, one-sided, and the grazing shot backfired
+
+The operator noticed a light-coloured line at the base of each peg and
+shot a frame with the phone held low to enhance it.
+`data/captures/2026-09-21-low-grazing/`.
+
+**Why it is worth wanting.** The base of a peg is where it enters the
+hole, so a landmark there sits at the paper plane — `h ≈ 0`, and the
+parallax term that has cost us 2 mm simply does not arise. And it is
+*bright*, where the shadow is dark, so a threshold separates them with
+no cleverness at all. Every problem this evening has come from peg and
+shadow sharing a polarity.
+
+**What it actually looks like.** Present on all three, and clearly, but
+**one-sided rather than a closed ring**:
+
+* the round peg shows a bright crescent on its lit flank, not a circle;
+* both rect pegs show a bright line along the base of the *near* long
+  edge only.
+
+So it does not give a centre directly — a one-sided feature's centroid
+sits about a peg-radius off the axis. What it does give, precisely, is
+the **near edge's across-bar position**, which is exactly the
+coordinate the dark blob gets wrong: the shadow falls across the bar
+and inflates the short extent 1.6× to 2.9×, while leaving the long axis
+and the angle alone.
+
+That suggests combining them rather than choosing — long axis and
+length from the dark blob, across-bar position from the bright base
+line. Not attempted, and stated as a direction rather than a plan.
+
+**The grazing shot made it worse, measurably.** Holding the light low
+does enhance the specular, and it also blows the paper out:
+
+| | paper p5 | median | p95 | at full white |
+|---|---:|---:|---:|---:|
+| phone beside the lens | 0.600 | 0.839 | 0.953 | 0.0 % |
+| phone low, grazing | 0.741 | 0.969 | 1.000 | **25.9 %** |
+
+A quarter of the sheet is clipped, and the specular — which peaks near
+1.0 — is then indistinguishable from the paper beside it. Searching
+for bright features against the sheet's own median finds **nothing**,
+not because the feature is absent but because the background has
+caught up with it.
+
+Worth noting separately: the paper level varies by **42 %** across the
+sheet under the better of these two lightings. `find_peg_candidates`
+thresholds at a fraction of *one* paper median, which is a reasonable
+design on an evenly lit sheet and is being asked for more than that
+here. A local threshold would be a smaller change than a new landmark
+and might be worth trying first.

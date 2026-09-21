@@ -1,0 +1,65 @@
+{
+  "frames": [
+    {
+      "file": "2026-09-21-low-grazing_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00005_.png",
+      "sha256_16": "ffb96700c4e67122",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T19:46:51",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "2026-09-21-low-grazing_002.png",
+      "kind": "overlay",
+      "source": "ComfyUI_temp_cdpxt_00005_.png",
+      "sha256_16": "c6ebb2b820b05c9e",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:46:51",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.149,
+        "p98": 1.0,
+        "mean": 0.4077,
+        "sd": 0.416
+      }
+    },
+    {
+      "file": "2026-09-21-low-grazing_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00005_.png",
+      "sha256_16": "2226143fb839f061",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T19:46:49",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1569,
+        "p98": 1.0,
+        "mean": 0.4096,
+        "sd": 0.4152
+      }
+    }
+  ],
+  "session": "2026-09-21-low-grazing",
+  "notes": [
+    {
+      "at": "2026-09-21T19:50:34",
+      "note": "Ambient room light, cell phone held LOW above the paper (grazing), white screened monitor. Shot to enhance the specular line the operator noticed at the base of each peg -- circular on the round peg, at the base on both rectangular ones. The base is at the paper plane, so a landmark there carries no parallax."
+    }
+  ]
+}
