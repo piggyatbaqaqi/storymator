@@ -69,12 +69,17 @@ The split is deliberate: the platform is theirs, the output is ours —
 files are therefore released **CC-BY-SA-4.0** with the rest of the
 calibration data.
 
-A dated copy of the terms as they stood when the files were generated
-is kept at
-[docs/licensing/calibrx-terms-2026-09-21.txt](docs/licensing/calibrx-terms-2026-09-21.txt),
-because site terms change and what governs is the version in force at
-the time. Keep the plan page and receipt with it: §3 says features are
-shown at checkout, so the plan is what settles anything specific.
+The licence held is the **Commercial** tier — $149 lifetime, published
+as *"Products for sale"* and *"Full rights, usable across your team."*
+That is the correct tier: the cheaper **R&D** tier is published as
+*"Not for calibrating products you sell"*, which rules out selling
+calibrated cameras explicitly.
+
+Dated copies of both the terms and the pricing page are kept in
+[docs/licensing/](docs/licensing/), because vendor pages change and
+what governs is the version in force when the files were generated.
+§3 defers specifics to what is shown at checkout, so the plan page is
+part of the record, not a footnote to it.
 
 ### Trademark — calibrx.io
 
