@@ -1,0 +1,73 @@
+{
+  "format": "calibrx.calibration",
+  "version": 1,
+  "camera_model": "pinhole",
+  "pattern_type": "charuco",
+  "image_size": [
+    3264,
+    2448
+  ],
+  "intrinsics": {
+    "camera_matrix": [
+      [
+        2624.2266095057607,
+        0,
+        1644.7713320906762
+      ],
+      [
+        0,
+        2626.9566579079315,
+        1203.7021515349659
+      ],
+      [
+        0,
+        0,
+        1
+      ]
+    ],
+    "parameters": {
+      "fx": 2624.2266095057607,
+      "fy": 2626.9566579079315,
+      "cx": 1644.7713320906762,
+      "cy": 1203.7021515349659,
+      "skew": 0
+    },
+    "distortion_model": "opencv_pinhole",
+    "distortion_coefficients": [
+      0.18139559679511383,
+      -0.39367111208922667,
+      0.0006107453640530979,
+      0.005909695302569946,
+      0.23001502003845364
+    ],
+    "distortion_order": [
+      "k1",
+      "k2",
+      "p1",
+      "p2",
+      "k3"
+    ],
+    "distortion_parameters": {
+      "k1": 0.18139559679511383,
+      "k2": -0.39367111208922667,
+      "p1": 0.0006107453640530979,
+      "p2": 0.005909695302569946,
+      "k3": 0.23001502003845364
+    }
+  },
+  "undistortion": {
+    "engine": "opencv",
+    "balance": 0.5,
+    "fov_scale": 1
+  },
+  "quality": {
+    "rms_error": 0.7158082799760672,
+    "n_images_used": 53,
+    "n_images_total": 53,
+    "square_size": 25.3163
+  },
+  "metadata": {
+    "calibration_id": 500,
+    "created_at": "2026-09-21T02:47:43.578349"
+  }
+}

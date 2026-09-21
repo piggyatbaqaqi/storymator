@@ -95,6 +95,14 @@ a lawyer. They are recorded here rather than guessed at.
   settled. Regenerating the board (above) resolves this too, since a
   re-shot set contains only our own target.
 
+### The SDK output
+
+`data/calibration/distortion/v4k_01/calibrx/` holds a calibration
+produced by the calibrx SDK from our frames. The numbers are
+measurements of *our* camera and a tool does not acquire rights in its
+output — but the file carries a server-side `calibration_id`, so check
+the SDK's terms before redistributing it alongside the rest.
+
 ## Decisions still to make
 
 * **`docs/`** — prose under GPL is awkward. CC-BY-4.0 or CC-BY-SA-4.0
