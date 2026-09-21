@@ -66,8 +66,26 @@ operating mode rather than a failure to survive.
 The arithmetic imports neither ComfyUI nor torch:
 
 ```sh
-python -m pytest comfyui/comfyui_acme/tests -q
+python -m pytest comfyui/comfyui_acme -q                 # unit tests
+python -m pytest comfyui/comfyui_acme -q --integration   # and the rig
 ```
 
 Synthetic captures with exact ground truth cover rotation to ±25°,
 keystone, sensor noise, camera moves, and each refusal path.
+
+### Layout
+
+Unit tests live **beside the module they exercise**, as
+`acme/foo_test.py`. `tests/test_*.py` is the older layout and is being
+migrated one module at a time; both are collected meanwhile. Migrating
+the remaining six — `test_geometry`, `test_fit`, `test_register`,
+`test_lens`, `test_charuco`, `test_detect` — is a rename plus a
+`pytest.ini` edit when the last one moves, and is worth doing as its
+own commit rather than mixed into feature work.
+
+### Integration tests
+
+Files named `*_integration_test.py` need **real hardware** and are
+skipped unless `--integration` is passed. They are for late in
+development, not for every run: they open the camera, so they fail if
+ComfyUI or anything else is holding it.
