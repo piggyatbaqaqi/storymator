@@ -226,3 +226,34 @@ def test_gray_is_emitted_for_every_frame_in_the_batch():
         keep = _neutral(img)
         assert np.allclose(img[..., 0][keep], to_gray(rgb[i])[keep],
                            atol=1e-6)
+
+
+# --- the marks the operator actually looks at -------------------------
+
+rect_pending = pytest.mark.xfail(reason="pegs are still drawn as circles")
+
+
+@rect_pending
+def test_the_peg_marks_follow_the_slot_not_a_fixed_circle():
+    """What the operator expects to see.
+
+    A circle says "something is here". An outline says "this is the
+    shape I fitted, at this angle, this long" -- which is checkable at
+    a glance and is the whole reason for fitting rectangles.
+    """
+    cal, _, batch = _scene()
+    poses, _, _, gray = _detect(batch, cal)
+    assert poses[0].accepted, poses[0].reason
+    assert poses[0].peg_rects is not None
+    img = gray[0].numpy()
+    drawn = ~_neutral(img)
+
+    # the marks around each peg must span that peg's fitted length
+    for centre, rect in zip(poses[0].pegs_image, poses[0].peg_rects):
+        x0, y0 = int(centre[0]) - 90, int(centre[1]) - 90
+        near = drawn[max(y0, 0):y0 + 180, max(x0, 0):x0 + 180]
+        ys, xs = np.nonzero(near)
+        assert len(xs), "no marks near this peg"
+        span = max(xs.max() - xs.min(), ys.max() - ys.min())
+        assert span >= rect.long_px - 4, (
+            f"marks span {span} px for a {rect.long_px:.0f} px slot")
