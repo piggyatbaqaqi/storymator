@@ -18,6 +18,7 @@ at +193.9, +194.3 and +191.7. The registration was accepted-looking
 and 180 degrees out.
 """
 
+import numpy as np
 import pytest
 
 from acme.fit import fit_pose
@@ -59,4 +60,74 @@ def test_a_flipped_sheet_is_not_silently_accepted():
     corners = pose.corners_image
     assert corners is not None
     # The punched edge is the short distance from the pegs, always.
+    assert abs(pose.punch_offset_mm) < 20.0
+
+
+# --- artwork on the sheet ---------------------------------------------
+
+pending = pytest.mark.xfail(reason="the peg-line check is a preference, "
+                                   "not a veto")
+
+
+def _with_distractors(cal, image, homography, marks):
+    """Paint dark blobs on the sheet, in peg-frame millimetres."""
+    from acme.geometry import apply_homography
+    out = image.copy()
+    ys, xs = np.mgrid[0:image.shape[0], 0:image.shape[1]]
+    for mm, radius in marks:
+        cx, cy = apply_homography(homography, np.array([mm]))[0]
+        out[((xs - cx) ** 2 + (ys - cy) ** 2) <= radius ** 2] = 0.1
+    return out
+
+
+@pending
+def test_artwork_that_forms_a_false_triple_is_refused_not_fitted():
+    """Measured on real art, 2026-09-21.
+
+    A page of Dr. Boulos's hamster drawing yields 44 to 56 peg
+    candidates against 4 on blank paper, and the fit locks onto a
+    letter in the title, a hamster's belly, and one real peg -- the
+    same three pixels under both lightings, so it looks repeatable.
+    Punch offset came out 120.02 mm against a nominal 12.
+
+    Being confidently wrong is worse than refusing. A refusal is
+    visible; a plausible-looking fit of three drawings is not.
+    """
+    cal = _rig()
+    h = camera_homography(cal, SIZE)
+    image = render(cal, h, SIZE)
+    # three collinear marks the right distance apart, but 120 mm from
+    # the peg line -- which is where the real false positive sat
+    s = cal.peg.centre_spacing_mm
+    art = _with_distractors(cal, image, h, [
+        ((-s, 120.0), 7), ((0.0, 120.0), 7), ((s, 120.0), 7)])
+    pose = fit_pose(art, cal)
+    assert not pose.accepted, (
+        f"fitted artwork at punch offset {pose.punch_offset_mm:.1f} mm")
+    assert "peg_line" in pose.reason or "peg line" in pose.reason
+
+
+@pending
+def test_the_refusal_says_how_far_off_the_pegs_landed():
+    """So the operator can tell 'it found my drawing' from 'the
+    lighting is bad', which are different problems."""
+    cal = _rig()
+    h = camera_homography(cal, SIZE)
+    s = cal.peg.centre_spacing_mm
+    art = _with_distractors(cal, render(cal, h, SIZE), h, [
+        ((-s, 120.0), 7), ((0.0, 120.0), 7), ((s, 120.0), 7)])
+    pose = fit_pose(art, cal)
+    assert "120" in pose.reason or "mm" in pose.reason
+
+
+def test_art_elsewhere_on_the_sheet_does_not_prevent_a_good_fit():
+    """The guard must reject false triples without rejecting real
+    pages. Drawings are the normal case, not the exception."""
+    cal = _rig()
+    h = camera_homography(cal, SIZE)
+    art = _with_distractors(cal, render(cal, h, SIZE), h, [
+        ((-60.0, 90.0), 9), ((20.0, 140.0), 11), ((70.0, 60.0), 8),
+        ((-30.0, 170.0), 6)])
+    pose = fit_pose(art, cal)
+    assert pose.accepted, pose.reason
     assert abs(pose.punch_offset_mm) < 20.0
