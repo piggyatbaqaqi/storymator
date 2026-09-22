@@ -65,22 +65,36 @@ def test_a_flipped_sheet_is_not_silently_accepted():
 
 # --- artwork on the sheet ---------------------------------------------
 
-pending = pytest.mark.xfail(reason="the peg-line check is a preference, "
-                                   "not a veto")
 
-
-def _with_distractors(cal, image, homography, marks):
-    """Paint dark blobs on the sheet, in peg-frame millimetres."""
+def _paint(cal, image, homography, marks, level):
+    """Paint discs on the sheet, positioned in peg-frame millimetres."""
     from acme.geometry import apply_homography
     out = image.copy()
     ys, xs = np.mgrid[0:image.shape[0], 0:image.shape[1]]
     for mm, radius in marks:
         cx, cy = apply_homography(homography, np.array([mm]))[0]
-        out[((xs - cx) ** 2 + (ys - cy) ** 2) <= radius ** 2] = 0.1
+        out[((xs - cx) ** 2 + (ys - cy) ** 2) <= radius ** 2] = level
     return out
 
 
-@pending
+def _art_only(cal, image, homography, y_mm=120.0):
+    """The real failure: pegs NOT found, artwork forming a false trio.
+
+    Painting distractors onto a scene whose real pegs are perfectly
+    visible proves nothing -- the fit simply prefers the real ones,
+    which is what it should do. On the actual art page the blank-paper
+    detector found no valid trio at all, so the drawings won by
+    default. Erasing the pegs reproduces that.
+    """
+    s = cal.peg.centre_spacing_mm
+    erased = _paint(cal, image, homography,
+                    [((-s, 0.0), 14), ((0.0, 0.0), 14), ((s, 0.0), 14)],
+                    level=0.95)
+    return _paint(cal, erased, homography,
+                  [((-s, y_mm), 7), ((0.0, y_mm), 7), ((s, y_mm), 7)],
+                  level=0.1)
+
+
 def test_artwork_that_forms_a_false_triple_is_refused_not_fitted():
     """Measured on real art, 2026-09-21.
 
@@ -98,25 +112,18 @@ def test_artwork_that_forms_a_false_triple_is_refused_not_fitted():
     image = render(cal, h, SIZE)
     # three collinear marks the right distance apart, but 120 mm from
     # the peg line -- which is where the real false positive sat
-    s = cal.peg.centre_spacing_mm
-    art = _with_distractors(cal, image, h, [
-        ((-s, 120.0), 7), ((0.0, 120.0), 7), ((s, 120.0), 7)])
-    pose = fit_pose(art, cal)
+    pose = fit_pose(_art_only(cal, image, h), cal)
     assert not pose.accepted, (
         f"fitted artwork at punch offset {pose.punch_offset_mm:.1f} mm")
     assert "peg_line" in pose.reason or "peg line" in pose.reason
 
 
-@pending
 def test_the_refusal_says_how_far_off_the_pegs_landed():
     """So the operator can tell 'it found my drawing' from 'the
     lighting is bad', which are different problems."""
     cal = _rig()
     h = camera_homography(cal, SIZE)
-    s = cal.peg.centre_spacing_mm
-    art = _with_distractors(cal, render(cal, h, SIZE), h, [
-        ((-s, 120.0), 7), ((0.0, 120.0), 7), ((s, 120.0), 7)])
-    pose = fit_pose(art, cal)
+    pose = fit_pose(_art_only(cal, render(cal, h, SIZE), h), cal)
     assert "120" in pose.reason or "mm" in pose.reason
 
 
@@ -125,9 +132,9 @@ def test_art_elsewhere_on_the_sheet_does_not_prevent_a_good_fit():
     pages. Drawings are the normal case, not the exception."""
     cal = _rig()
     h = camera_homography(cal, SIZE)
-    art = _with_distractors(cal, render(cal, h, SIZE), h, [
+    art = _paint(cal, render(cal, h, SIZE), h, [
         ((-60.0, 90.0), 9), ((20.0, 140.0), 11), ((70.0, 60.0), 8),
-        ((-30.0, 170.0), 6)])
+        ((-30.0, 170.0), 6)], level=0.1)
     pose = fit_pose(art, cal)
     assert pose.accepted, pose.reason
     assert abs(pose.punch_offset_mm) < 20.0

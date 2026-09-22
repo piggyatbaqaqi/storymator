@@ -269,7 +269,26 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
                 _rotation_deg(spec.matrix() @ homography))
 
     accepted_hypotheses.sort(key=_preference)
-    _, _, idx, h, triple = accepted_hypotheses[0]
+    best_score, best_off_line, idx, h, triple = accepted_hypotheses[0]
+
+    # Ranking the implausible last is not enough when EVERY hypothesis
+    # is implausible -- the sort still hands one back.  Measured on a
+    # page of real artwork: 44 to 56 candidates against 4 on blank
+    # paper, and the fit settled on a letter of the title, a drawn
+    # figure, and one real peg, reporting a punch offset of 120 mm
+    # against a nominal 12.  It did that identically under two
+    # lightings, so it looked repeatable.
+    #
+    # Refuse instead.  A refusal is visible; a confident fit of three
+    # drawings is not, and the drawings are the whole point of the rig.
+    if best_off_line > PEG_LINE_TOLERANCE_MM:
+        return Pose(False, (
+            f"peg_line  the best orientation puts the pegs "
+            f"{best_off_line:.0f} mm from the peg line, past the "
+            f"{PEG_LINE_TOLERANCE_MM:.0f} mm limit -- usually artwork "
+            f"forming a false trio, since the punch sits "
+            f"{abs(calibration.sheet.punch_offset_mm):.0f} mm from the "
+            f"punched edge and cannot be anywhere near that far"))
 
     pegs_image = centres[triple]
     # Correct landmarks that stand above the paper, before the rigid
