@@ -234,19 +234,42 @@ a quarter of the sheet:
 > window's border is itself tilted by the gradient, so the comparison
 > was against the wrong baseline.
 
-### Still unresolved: does it stay put?
+### Answered: it does not stay put
 
-The only property that makes something a landmark is that it does not
-move when the lighting does — and a specular reflection is precisely
-the kind of thing that might. **This cannot be answered from the two
-frames we have**: the sheet was moved between them, by 518 to 1403 px
-at the corners, so there is no common frame to compare positions in.
+Tested 2026-09-21 with `stability-light-A` and `-B` — the operator
+shot two lightings with **the sheet and camera untouched**, which was
+confirmed independently below. So the specular's position could be
+compared in raw image pixels, with no homography to go wrong.
 
-The experiment is one pair of frames with **the sheet and camera
-untouched and only the light moved**, both with the paper unclipped
-near the pegs. If the specular's position in sheet coordinates holds
-across that, it is a landmark. If it slides with the light, it is a
-reflection and nothing more.
+| peg | spread within A | within B | **A → B** |
+|---|---:|---:|---:|
+| left | 0.78 px | 0.49 px | **4.94 mm** |
+| round | 0.48 px | 0.62 px | **8.24 mm** |
+| right | 12.0 px | 0.46 px | **6.31 mm** |
+
+**Sub-pixel repeatable within one lighting, and 5 to 8 mm adrift
+between two.** The detected area collapses too — 755 px to 390 on the
+round peg, 1589 to 174 on the right — so it is not even the same
+feature, let alone the same place.
+
+That is worse than the dark blob it was meant to improve on, whose
+centroid moved 2.8–4.4 mm across the same kind of change.
+
+**So the specular is eliminated as a landmark, standalone or
+combined.** A feature that moves with the light is a reflection, and no
+amount of combining rescues it. It looks convincing precisely because
+it is rock-steady in any single frame — which is the trap.
+
+Worth keeping the negative result: the reasoning that made it
+attractive was sound. It *is* at the paper plane, it *is* the opposite
+polarity to the shadow. Those were the right things to want. It simply
+is not attached to the peg.
+
+### Superseded: the earlier open question
+
+The question was whether it stays put when the light moves, which
+could not be answered from the first two frames because the sheet had
+been moved between them. It has now been answered above: it does not.
 
 Worth noting separately: the paper level varies by **42 %** across the
 sheet under the better of these two lightings. `find_peg_candidates`
@@ -254,3 +277,35 @@ thresholds at a fraction of *one* paper median, which is a reasonable
 design on an evenly lit sheet and is being asked for more than that
 here. A local threshold would be a smaller change than a new landmark
 and might be worth trying first.
+
+## A separate finding: clipping wrecks the outline
+
+Falling out of the same two sessions. The sheet did not move, so every
+change in the fitted corners is the detector, not the world:
+
+| frame | sheet clipped | worst corner error |
+|---|---:|---:|
+| B_029 | 5.5 % | 0 px |
+| B_030 | 9.1 % | 10 px |
+| B_031 | 20.3 % | 64 px |
+| B_032 | 20.4 % | 69 px |
+| B_033 | 26.6 % | 84 px |
+| B_034 | 0 % but median 0.078 | 214 px |
+
+Session A, unclipped throughout, holds to **1–5 px across six frames**.
+
+So outline error tracks clipping almost monotonically, and the one
+badly-*dark* frame is worse still. Both ends of the exposure range
+destroy the corner fit, and neither announces itself — the fit returns
+a confident quadrilateral either way.
+
+This is cheap to guard: the fraction of the sheet at full white, and
+its median, are both one line to compute and would have caught every
+bad frame here. `AcmeCapture` already refuses a capture that disagrees
+with its calibration; refusing one that cannot be measured is the same
+idea.
+
+It also explains an earlier mistake of mine. I concluded from these
+frames that "the sheet MOVED", having averaged corner positions over a
+session that included the badly clipped ones. The operator said they
+had not touched it, and they were right.
