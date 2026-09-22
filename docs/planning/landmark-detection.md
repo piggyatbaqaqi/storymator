@@ -456,3 +456,35 @@ the four corners, and a mid-edge bulge moves no corner, so the direct
 cost may be small; the risk is that corner *location* degrades when
 the edges meeting there are curved. Worth measuring against the peg
 residual before anyone builds a correction.
+
+## Reinked: the three pegs are the three largest blue things in the frame
+
+`fresh_ink`, dry erase reapplied to all three crowns. `007` is blank
+paper, `008` is the printed hamster art on the same pegs.
+Thresholding b\* < −8 over the whole frame:
+
+| frame | 1st | 2nd | 3rd | largest non-peg |
+|---|---:|---:|---:|---:|
+| `007` blank | 1781 px left rect | 307 round | 35 right rect | 117 |
+| `008` **art** | 1679 px left rect | 238 round | 52 right rect | 50 |
+
+Top three components in both frames, artwork included. Worth reading
+against the greyscale detector's 44–56 candidates on artwork and its
+3–5 unrankable ones on blank paper.
+
+**The 50× spread between pegs is not coverage.** Crops show all three
+crowns thoroughly blue. Measured against the local paper:
+
+| peg | ink L\* | chroma displacement | direction |
+|---|---:|---:|---:|
+| left rect | 12.7 | 38.0 | −70.4° |
+| round | 6.8 | 24.5 | −87.2° |
+| right rect | 7.2 | 16.1 | −90.7° |
+
+Same ink, same light, same frame, and 2.4× between the ends. a\* and
+b\* scale with L\*, so an absolute chroma threshold is partly a
+brightness threshold and the dimmest peg drops out first. The
+*direction* is the stable quantity; the magnitude needs normalising.
+
+What to build on this is in
+[ink-landmarks.md](ink-landmarks.md).
