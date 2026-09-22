@@ -124,6 +124,89 @@ rough peg locations, reports the direction, the spread and the
 displacement — so onboarding the Dykem is shooting one frame and
 pasting three numbers, not guessing at a colour name.
 
+## How stable is the signature? Measured
+
+The direction is the only colour parameter, so its stability is the
+question that decides whether this is a one-off calibration or a
+per-session chore. Measured across every inked frame in the corpus —
+`blue_008`, `blue_010`, `blue_hamster_003`, `blue_hamster_002`,
+`fresh_ink_007`, `fresh_ink_008`: two days, four lighting setups, blank
+paper and artwork, a bar move, and a re-inking in the middle.
+
+| | mean | sd | range |
+|---|---:|---:|---:|
+| left rect peg | −75.0° | 6.0° | 15.7° |
+| round peg | −89.1° | 3.1° | 8.0° |
+| right rect peg | −92.5° | **1.5°** | 3.5° |
+| all eighteen | −85.5° | 8.6° | 26.8° |
+
+**Lighting is not the dominant variable; peg geometry is.** Each peg
+holds to 1.5–6.0° across everything the corpus throws at it, while the
+three pegs sit 17.5° apart from each other. Splitting the same numbers
+by session instead of by peg gives −87.8° against −84.4° — a 3.4°
+shift, a fifth of the between-peg spread.
+
+That the pegs differ is not a defect. Each crown is a mirror at its
+own angle, reflecting a different part of the room, so the ink-tinted
+reflection mixes with a different background on each. It is geometry,
+and it is why the signature wants one generous tolerance rather than
+per-peg tuning: per-peg numbers would encode *this* bar at *this*
+camera position, and moving the camera between captures is a supported
+operating mode.
+
+**−82° ± 13° covers every peg in every frame**, with no misses. A
+stored ±25° leaves comfortable margin without admitting anything else
+in the corpus, where the nearest competitor — paper — sits about 100°
+away.
+
+### Referencing to the paper is doing half the work
+
+The same eighteen measurements, taken as absolute (a\*, b\*) angles
+rather than relative to the paper in the same window:
+
+| | sd | range |
+|---|---:|---:|
+| paper-relative | **8.6°** | 26.8° |
+| absolute | 15.6° | 46.1° |
+
+Paper b\* runs +12.0 to +19.7 across these sessions — the white
+balance moving — and referencing to it absorbs that. It is not a
+neutral reference (Canson cream sits at a\* +0.5 to +7.4), but it is
+an *in-frame* one, which is what matters when the illuminant is
+whatever was on the desk that evening.
+
+### Will it change with the camera?
+
+Almost certainly, and the corpus cannot say by how much, because every
+frame in it is `v4k_01`. Paper-referencing removes the illuminant, not
+the sensor: a different colour filter array and a different ISP put
+the same ink at a different (a\*, b\*). Treat the signature as a
+property of *camera plus ink*, re-measured with `bin/measure-ink` when
+either changes. That is one frame, which is the right cost.
+
+### Where a colour calibration card helps, and where it does not
+
+It **does not** tighten anything on this rig. The dominant residual is
+the 17.5° between pegs, which is mirror geometry; no colour transform
+changes what a mirror reflects. And the in-frame paper already handles
+the illuminant.
+
+It **does** earn its place for three other things:
+
+1. **Portability.** A card gives camera RGB → device-independent
+   colour, so a signature measured on one camera transfers to the next
+   without reshooting pegs. That matters directly to selling
+   calibrated cameras.
+2. **A reference that does not depend on paper stock.** The white
+   reference is currently a sheet of Canson cream. A different stock
+   moves it, and nothing would announce that.
+3. **Checking an assumption.** Every number above decodes the camera's
+   output as sRGB. That is an assumption about the ISP, not a
+   measurement, and a card is how it gets checked.
+
+Worth shooting once and keeping in the corpus. Not worth blocking on:
+the paper-relative design works today on the camera we have.
+
 ## What is genuinely unsettled
 
 * **The normalisation constant.** Dividing by L\* alone blows up on
