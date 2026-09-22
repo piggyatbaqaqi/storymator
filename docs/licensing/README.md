@@ -44,22 +44,31 @@ locally, so refitting the same frames a dozen ways — which is how the
 board anisotropy was found — costs nothing. CalibrX is the independent
 cross-check, not the working tool.
 
-## Open with CalibrX — asked 2026-09-21
+## Answered by CalibrX — asked 2026-09-21, replied 2026-09-22
 
-Three items are with `support@calibrx.io`. The guidance in
-`LICENSES.md` is our reading pending their reply, not their position.
+Nassim Hammami, CEO of CalibrX, answered all three items.
 
-1. **Redistribution.** Whether the §4/§5 ownership grant is understood
-   as permitting generated output to be released under an open licence.
-2. **Trademark.** Whether the `calibrx.io` mark may stay on
-   redistributed boards, and what they want on modified ones. Our
-   current rule — strip it from modified boards, keep it on unmodified
-   — is a default chosen without their input.
-3. **Anisotropic targets** *(a suggestion).* Their format carries one
+1. **Redistribution.** Yes. The generated targets may be distributed.
+   Our reading of the §4/§5 ownership split was right.
+2. **Trademark.** The targets may carry calibrx.io branding **or
+   not** — our choice — and a mention in our documentation is
+   *welcome but not required*. The conservative rule we had adopted
+   without their input, strip the mark from modified boards, is
+   withdrawn. We keep the boards as generated and credit CalibrX in
+   the documentation.
+3. **Anisotropic targets** *(a suggestion).* Accepted. Support is
+   planned for the next few days. Their format currently carries one
    `square_size` and no second axis, so a print whose x and y scales
-   differ cannot be described. Ours differs by **+0.15 %**, which their
-   own fit pushes into fx/fy as a 0.104 % discrepancy — see
+   differ cannot be described; ours differs by **+0.15 %**, which
+   their own fit pushes into fx/fy as a 0.104 % discrepancy — see
    [../../data/calibration/distortion/v4k_01/calibrx/README.md](../../data/calibration/distortion/v4k_01/calibrx/README.md).
+   Worth re-checking the format when it ships.
 
-A reply affects three files: `LICENSES.md`,
-`data/calibration/targets/README.md`, and this one.
+### Where the permission lives
+
+This reply is an email to the operator, not an amendment to the
+published terms, and it is not in this directory. The dated copies
+here cover what CalibrX published; the permission to redistribute
+their branding rests on that message alone. Archiving it beside
+`calibrx-terms-2026-09-21.txt` would put the whole record in one
+place.

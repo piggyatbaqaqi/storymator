@@ -64,8 +64,12 @@ identity, so a board pushed half out of frame still contributes — and
 the half-out-of-frame views are exactly the ones that pin distortion
 down. A plain checkerboard must be wholly visible or it gives nothing.
 
-Ours is **`charuco_0001`** — `calibrx.io`, 7 × 9 squares,
-`DICT_6X6_250`, nominally 25/18 mm. Name the board, not just the
+Ours is **`charuco_0001`**, generated with
+[CalibrX](https://calibrx.io) — 7 × 9 squares, `DICT_6X6_250`,
+nominally 25/18 mm. CalibrX also served as the independent
+cross-check on our own fit, agreeing to 0.36 px
+([../data/calibration/distortion/v4k_01/calibrx/README.md](../data/calibration/distortion/v4k_01/calibrx/README.md)),
+and gave permission to redistribute the boards as generated. Name the board, not just the
 camera: its measured square size and print anisotropy are properties of
 *that printed sheet*, and a reprint is a different target. **Read the parameters off the board's own printed legend at
 full resolution** — reading them off a downscaled preview cost an

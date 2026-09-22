@@ -5,12 +5,14 @@
 > (§4, reaffirmed in §5). See
 > [../../../LICENSES.md](../../../LICENSES.md).
 >
-> **"calibrx.io" is a trademark of CalibrX and is not licensed here.**
-> *(The rule below is our conservative default; CalibrX was asked
-> directly on 2026-09-21 and their answer supersedes it.)*
-> Each board's printed legend carries that mark. If you redistribute a
-> **modified** board, remove it — a changed target must not imply
-> endorsement CalibrX never gave. Unmodified copies may keep it.
+> **Generated with CalibrX, and distributed with their permission.**
+> CalibrX confirmed on 2026-09-22 that these boards may be
+> redistributed with or without calibrx.io branding. We keep the
+> boards exactly as generated, printed legend and all.
+>
+> **"calibrx.io" remains a trademark of CalibrX**, carried here by
+> that permission rather than by the CC-BY-SA-4.0 grant, which does
+> not cover trademarks (§2(b)(2)).
 
 ## calibrx-charuco-175x225mm — `charuco_0001`, the 7×9 board
 

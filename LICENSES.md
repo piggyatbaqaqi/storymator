@@ -11,7 +11,7 @@ otherwise. The full text is in [LICENSE](LICENSE).
 | `docs/licensing/` | **their respective owners** | see that directory's README for per-file provenance |
 | `data/calibration/acme_paper/` | **CC-BY-4.0** | our own measurements; declared in that dataset's card |
 | `data/calibration/distortion/` — non-code | **CC-BY-SA-4.0** | frames, calibration JSON, cards |
-| `data/calibration/targets/` | **CC-BY-SA-4.0** | ours under the CalibrX terms — **trademark note below** |
+| `data/calibration/targets/` | **CC-BY-SA-4.0** | ours under the CalibrX terms; branding kept with CalibrX's permission |
 | `data/calibration/pegs/` — non-code | **CC-BY-SA-4.0** | caliper readings and analysis of our own bar |
 | `data/**/*.py` | **GPL-3.0-or-later** | code is code wherever it sits; all carry SPDX headers |
 
@@ -88,20 +88,27 @@ what governs is the version in force when the files were generated.
 §3 defers specifics to what is shown at checkout, so the plan page is
 part of the record, not a footnote to it.
 
-### Trademark — calibrx.io
+### Trademark — calibrx.io, and CalibrX's own answer
 
-**"calibrx.io" is a trademark of CalibrX and is not licensed here.**
-§5 reserves their branding, and owning a file is not owning a mark on
-it. Creative Commons licences do not grant trademark rights in any
-case — CC-BY-SA-4.0 §2(b)(2): *"Patent and trademark rights are not
-licensed under this Public License"* — so the mark travels outside the
-grant rather than conflicting with it.
+**Answered 2026-09-22.** Nassim Hammami, CEO of CalibrX, replied to
+the questions put on 2026-09-21: the targets may be distributed
+**with or without** calibrx.io branding, and a mention in our
+documentation is **welcome but not required**.
 
-The printed legend on each board carries that mark. Anyone
-redistributing a **modified** board under the share-alike terms should
-**remove the calibrx.io mark**, so a changed target cannot imply
-endorsement CalibrX never gave. Unmodified copies may keep it; it is
-accurate there.
+So the conservative rule that stood here — strip the mark from
+modified boards — was never CalibrX's position and is withdrawn. We
+keep the boards exactly as CalibrX generated them, mark and all, and
+credit CalibrX in the documentation because it is deserved rather than
+because it is owed.
+
+The mark itself is still not ours to license. §5 reserves their
+branding, and Creative Commons licences do not grant trademark rights
+in any case — CC-BY-SA-4.0 §2(b)(2): *"Patent and trademark rights are
+not licensed under this Public License."* The mark therefore travels
+outside the CC grant, under CalibrX's permission, rather than through
+it. A downstream redistributor relies on that same permission; it is
+recorded here and in `docs/licensing/README.md`, not in the published
+terms.
 
 ### The dependency remains removable
 
@@ -139,31 +146,34 @@ file with its owner, source URL, retrieval date and method. They are
 dated copies of vendor material, kept as evidence of what was in force
 when our files were generated. The grant above stops at that directory.
 
-## Open with CalibrX — asked 2026-09-21, awaiting reply
+## Settled with CalibrX — asked 2026-09-21, answered 2026-09-22
 
-Three questions are with `support@calibrx.io`. **The guidance above is
-our cautious reading pending their answers, not their position.**
+Nassim Hammami, CEO of CalibrX, answered all three. Nothing here is
+provisional any more.
 
-1. **Redistribution.** Whether the §4/§5 ownership grant is understood
-   as permitting output to be released under an open licence — giving
-   files to the public, rather than the team-scoped use the Commercial
-   tier describes.
-2. **Trademark.** Whether the `calibrx.io` mark on a generated board
-   may stay on redistributed copies, and what they want on modified
-   ones. Our current rule — strip it from modified boards, keep it on
-   unmodified — is a conservative default chosen without their input,
-   and their answer supersedes it either way.
-3. **Anisotropic targets** *(a suggestion, not a question).* Their
-   format carries one `square_size` and no second axis, so a print
-   whose x and y scales differ cannot be described. Ours differs by
-   **+0.15 %**, which their own fit pushes into fx/fy as a 0.104 %
-   discrepancy — see
+1. **Redistribution.** Permitted. Our reading of the §4/§5 ownership
+   split was right, and the targets go out under CC-BY-SA-4.0 as
+   stated above.
+2. **Trademark.** The boards may carry calibrx.io branding **or not**,
+   as we prefer, and a mention in our documentation is *welcome but
+   not required*. We keep the boards as generated and credit CalibrX
+   in `docs/calibrating-a-camera.md` because it is deserved. The
+   strip-the-mark-from-modified-boards rule was our own invention and
+   is gone.
+3. **Anisotropic targets** *(a suggestion, not a question).* Accepted;
+   support is planned within days. Their format carries one
+   `square_size` and no second axis, so a print whose x and y scales
+   differ cannot be described. Ours differs by **+0.15 %**, which
+   their own fit pushes into fx/fy as a 0.104 % discrepancy — see
    [data/calibration/distortion/v4k_01/calibrx/README.md](data/calibration/distortion/v4k_01/calibrx/README.md).
-   A second axis in the board spec would let their pipeline recover it.
+   Re-check the board spec when it ships; a second axis there would
+   let their pipeline recover what ours already measures.
 
-If the answers move any of this, update **this file, the notice in
-`data/calibration/targets/README.md`, and the tier notes in
-`docs/licensing/README.md`** — the guidance is stated in all three.
+**The permission is an email, not an amendment.** The published terms
+in `docs/licensing/` say nothing about redistributing their branding;
+that rests on this reply alone, and anyone downstream relies on it
+too. Archiving the message beside the dated terms would put the whole
+record in one place.
 
 ## Decisions still to make
 
