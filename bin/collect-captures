@@ -190,8 +190,8 @@ def main(argv=None) -> int:
     ap.add_argument("--note", default="",
                     help="the lighting and anything else a future "
                          "reader cannot derive from the pixels")
-    ap.add_argument("--kind", action="append", choices=
-                    ["capture", "overlay", "diagnostic"],
+    ap.add_argument("--kind", action="append",
+                    choices=["capture", "overlay", "diagnostic"],
                     help="repeatable; captures only by default")
     ap.add_argument("--since-minutes", type=float, default=None,
                     help="only frames newer than this")
