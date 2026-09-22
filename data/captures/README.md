@@ -31,6 +31,26 @@ the same information twice.
 **The note is the point.** Exposure statistics come out of the pixels;
 where the light was does not, and nobody reconstructs it a week later.
 
+Notes come in two kinds. `--note` describes the *session*; `--frame-note`
+attaches to every frame in that run. Hand-editing a frame's `notes`
+key afterwards works too and is preserved by every tool here — the
+first one in this corpus was written that way, on
+`2026-09-21/2026-09-21_007.png`.
+
+**Collecting twice is safe.** Frames already held in any session are
+skipped by content hash, so shoot, collect, shoot, collect and you
+only ever get what is new. That was not true at first: the tool took
+everything in `temp/`, which only grows, so a second run re-copied the
+whole history. Two sessions ended up sharing 22 frames before
+`fixes/prune-duplicate-captures` sorted them out.
+
+## When frames disappear
+
+ComfyUI clears `temp/` with `shutil.rmtree` at **startup and shutdown**,
+and nowhere else — so frames accumulate indefinitely while it runs and
+vanish the moment it restarts. Shoot as many as you like; **collect
+before restarting.**
+
 ## What is tracked, and what is not
 
 | | |

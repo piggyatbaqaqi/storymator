@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import glob
 import hashlib
 import json
 import os
@@ -83,12 +84,37 @@ def describe(path: str) -> Dict:
     }
 
 
+def already_collected(out_root: str) -> Dict[str, str]:
+    """Every frame already in the corpus, by content hash.
+
+    Collecting is a rescue from a directory that only grows, so the
+    obvious default -- take everything -- re-copies the whole history
+    on every run.  Two sessions here ended up sharing 22 frames that
+    way.  Hashing what is already held makes a second collect pick up
+    only what is genuinely new, which is what anyone actually means.
+    """
+    held = {}
+    for manifest in glob.glob(os.path.join(out_root, "*", "manifest.json")):
+        try:
+            with open(manifest) as fh:
+                data = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        for frame in data.get("frames", []):
+            held.setdefault(frame.get("sha256_16"),
+                            os.path.basename(os.path.dirname(manifest)))
+    return held
+
+
 def collect(temp: str, out_root: str, session: str, note: str,
             keep: List[str], since: Optional[float],
-            dry_run: bool) -> int:
+            dry_run: bool, allow_duplicates: bool = False,
+            frame_note: str = "") -> int:
     if not os.path.isdir(temp):
         print(f"no such directory: {temp}", file=sys.stderr)
         return 1
+    held = {} if allow_duplicates else already_collected(out_root)
+    skipped: Dict[str, int] = {}
     found = []
     for name in sorted(os.listdir(temp)):
         path = os.path.join(temp, name)
@@ -97,10 +123,19 @@ def collect(temp: str, out_root: str, session: str, note: str,
         if since is not None and os.path.getmtime(path) < since:
             continue
         kind = classify(path)
-        if kind in keep:
-            found.append((path, kind))
+        if kind not in keep:
+            continue
+        with open(path, "rb") as fh:
+            digest = hashlib.sha256(fh.read()).hexdigest()[:16]
+        if digest in held:
+            where = held[digest]
+            skipped[where] = skipped.get(where, 0) + 1
+            continue
+        found.append((path, kind))
+    for where, count in sorted(skipped.items()):
+        print(f"skipped {count} frame(s) already held in {where}")
     if not found:
-        print(f"nothing matching {'/'.join(keep)} in {temp}")
+        print(f"nothing new matching {'/'.join(keep)} in {temp}")
         return 1
 
     target = os.path.join(out_root, session)
@@ -111,6 +146,8 @@ def collect(temp: str, out_root: str, session: str, note: str,
         record = {"file": stem + os.path.splitext(path)[1],
                   "kind": kind, "source": os.path.basename(path)}
         record.update(describe(path))
+        if frame_note:
+            record["notes"] = {"note": frame_note}
         entries.append(record)
         e = record["exposure"]
         print(f"   {record['file']:28s} {kind:10s} "
@@ -158,12 +195,20 @@ def main(argv=None) -> int:
                     help="repeatable; captures only by default")
     ap.add_argument("--since-minutes", type=float, default=None,
                     help="only frames newer than this")
+    ap.add_argument("--frame-note", default="",
+                    help="a note attached to every frame in this run, "
+                         "rather than to the session. Survives pruning "
+                         "and re-collection; hand-editing a frame's "
+                         "\"notes\" key later does too.")
+    ap.add_argument("--allow-duplicates", action="store_true",
+                    help="copy frames already held in another session")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
     since = (None if args.since_minutes is None
              else datetime.datetime.now().timestamp() - args.since_minutes*60)
     return collect(args.temp, args.out, args.session, args.note,
-                   args.kind or ["capture"], since, args.dry_run)
+                   args.kind or ["capture"], since, args.dry_run,
+                   args.allow_duplicates, args.frame_note)
 
 
 if __name__ == "__main__":

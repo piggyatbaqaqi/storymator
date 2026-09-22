@@ -1,0 +1,227 @@
+{
+  "frames": [
+    {
+      "file": "stability-light-B_012.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00012_.png",
+      "sha256_16": "188c283400c83c99",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T21:23:17",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "stability-light-B_013.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00013_.png",
+      "sha256_16": "f107e7e0cd088339",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T21:23:21",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "stability-light-B_014.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00014_.png",
+      "sha256_16": "63a40a440bbcb00d",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T21:23:32",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "stability-light-B_015.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00015_.png",
+      "sha256_16": "8c0bfc3a035fe54f",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T21:23:36",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "stability-light-B_016.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00016_.png",
+      "sha256_16": "b50512bab9301b23",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T21:23:47",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "stability-light-B_017.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00017_.png",
+      "sha256_16": "e8476559a3daf033",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T21:23:50",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "stability-light-B_029.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00012_.png",
+      "sha256_16": "17fae1893213ec62",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T21:23:15",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1608,
+        "p98": 0.9961,
+        "mean": 0.3873,
+        "sd": 0.3974
+      }
+    },
+    {
+      "file": "stability-light-B_030.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00013_.png",
+      "sha256_16": "280979deffc9d3c7",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T21:23:19",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1608,
+        "p98": 1.0,
+        "mean": 0.3862,
+        "sd": 0.3951
+      }
+    },
+    {
+      "file": "stability-light-B_031.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00014_.png",
+      "sha256_16": "d50c1aaf7fd99a6b",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T21:23:30",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1569,
+        "p98": 1.0,
+        "mean": 0.3813,
+        "sd": 0.391
+      }
+    },
+    {
+      "file": "stability-light-B_032.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00015_.png",
+      "sha256_16": "bfedc8c46c3461df",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T21:23:33",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1216,
+        "p98": 1.0,
+        "mean": 0.3813,
+        "sd": 0.4072
+      }
+    },
+    {
+      "file": "stability-light-B_033.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00016_.png",
+      "sha256_16": "6ce1452665bf546e",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T21:23:45",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1569,
+        "p98": 1.0,
+        "mean": 0.3916,
+        "sd": 0.4012
+      }
+    },
+    {
+      "file": "stability-light-B_034.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00017_.png",
+      "sha256_16": "fd7a4b231528b026",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T21:23:48",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.0784,
+        "p98": 0.5059,
+        "mean": 0.2037,
+        "sd": 0.2084
+      }
+    }
+  ],
+  "session": "stability-light-B",
+  "notes": [
+    {
+      "at": "2026-09-21T21:24:26",
+      "note": "phone above sheet, sheet untouched, exposure fixed"
+    }
+  ]
+}
