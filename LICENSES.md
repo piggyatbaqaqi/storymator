@@ -90,10 +90,12 @@ part of the record, not a footnote to it.
 
 ### Trademark — calibrx.io, and CalibrX's own answer
 
-**Answered 2026-09-22.** Nassim Hammami, CEO of CalibrX, replied to
-the questions put on 2026-09-21: the targets may be distributed
-**with or without** calibrx.io branding, and a mention in our
-documentation is **welcome but not required**.
+**Answered 2026-09-21.** Nassim Hammami, founder of CalibrX, replied
+the same day the questions were put: the targets may be distributed
+**with or without** calibrx.io branding, and an acknowledgment in our
+documentation is **appreciated but not required**. His reply is
+archived at
+[docs/licensing/calibrx-reply-2026-09-21.eml](docs/licensing/calibrx-reply-2026-09-21.eml).
 
 So the conservative rule that stood here — strip the mark from
 modified boards — was never CalibrX's position and is withdrawn. We
@@ -146,34 +148,31 @@ file with its owner, source URL, retrieval date and method. They are
 dated copies of vendor material, kept as evidence of what was in force
 when our files were generated. The grant above stops at that directory.
 
-## Settled with CalibrX — asked 2026-09-21, answered 2026-09-22
+## Settled with CalibrX — asked 2026-09-21, answered the same day
 
-Nassim Hammami, CEO of CalibrX, answered all three. Nothing here is
-provisional any more.
+Nassim Hammami, founder of CalibrX, answered all three questions.
+His reply is archived at
+[docs/licensing/calibrx-reply-2026-09-21.eml](docs/licensing/calibrx-reply-2026-09-21.eml),
+so what follows can be checked against the source.
 
-1. **Redistribution.** Permitted. Our reading of the §4/§5 ownership
-   split was right, and the targets go out under CC-BY-SA-4.0 as
-   stated above.
-2. **Trademark.** The boards may carry calibrx.io branding **or not**,
-   as we prefer, and a mention in our documentation is *welcome but
-   not required*. We keep the boards as generated and credit CalibrX
-   in `docs/calibrating-a-camera.md` because it is deserved. The
+1. **Redistribution.** Permitted, and he disclaims more than the terms
+   required: *"I don't claim ownership of the underlying ChArUco
+   pattern."* Our reading of the §4/§5 ownership split was right, and
+   the targets go out under CC-BY-SA-4.0 as stated above.
+2. **Trademark.** *"You're welcome to publish them with the CalibrX
+   branding intact or remove it — either is fine with me. An
+   acknowledgment in your documentation is appreciated but not
+   required."* We keep the boards as generated and credit CalibrX in
+   `docs/calibrating-a-camera.md` because it is deserved. The
    strip-the-mark-from-modified-boards rule was our own invention and
    is gone.
-3. **Anisotropic targets** *(a suggestion, not a question).* Accepted;
-   support is planned within days. Their format carries one
-   `square_size` and no second axis, so a print whose x and y scales
-   differ cannot be described. Ours differs by **+0.15 %**, which
-   their own fit pushes into fx/fy as a 0.104 % discrepancy — see
-   [data/calibration/distortion/v4k_01/calibrx/README.md](data/calibration/distortion/v4k_01/calibrx/README.md).
-   Re-check the board spec when it ships; a second axis there would
-   let their pipeline recover what ours already measures.
+3. **Anisotropic targets** *(a suggestion, not a question).* Accepted.
 
 **The permission is an email, not an amendment.** The published terms
-in `docs/licensing/` say nothing about redistributing their branding;
-that rests on this reply alone, and anyone downstream relies on it
-too. Archiving the message beside the dated terms would put the whole
-record in one place.
+say nothing about redistributing CalibrX branding; that rests on this
+message, which is why it sits beside them in `docs/licensing/` rather
+than being summarised here alone. Anyone downstream relies on the same
+message.
 
 ## Decisions still to make
 

@@ -6,9 +6,12 @@
 > [../../../LICENSES.md](../../../LICENSES.md).
 >
 > **Generated with CalibrX, and distributed with their permission.**
-> CalibrX confirmed on 2026-09-22 that these boards may be
-> redistributed with or without calibrx.io branding. We keep the
-> boards exactly as generated, printed legend and all.
+> CalibrX confirmed on 2026-09-21 that these boards may be
+> redistributed with or without calibrx.io branding, and disclaimed
+> any ownership of the ChArUco pattern itself. We keep the boards
+> exactly as generated, printed legend and all. The reply is
+> archived at
+> [../../../docs/licensing/calibrx-reply-2026-09-21.eml](../../../docs/licensing/calibrx-reply-2026-09-21.eml).
 >
 > **"calibrx.io" remains a trademark of CalibrX**, carried here by
 > that permission rather than by the CC-BY-SA-4.0 grant, which does
