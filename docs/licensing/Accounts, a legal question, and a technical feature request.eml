@@ -1,0 +1,294 @@
+Delivered-To: piggy.yarroll@gmail.com
+Received: by 2002:a05:6f02:8906:b0:12a:7c0a:4eed with SMTP id r6csp12778777rci;
+        Mon, 21 Sep 2026 08:59:04 -0700 (PDT)
+X-Received: by 2002:a05:690c:6b01:b0:8a1:17f0:a44a with SMTP id 00721157ae682-8a117f0b633mr6429947b3.46.1790006343771;
+        Mon, 21 Sep 2026 08:59:03 -0700 (PDT)
+ARC-Seal: i=2; a=rsa-sha256; t=1790006343; cv=pass;
+        d=google.com; s=arc-20260327;
+        b=egyb7Km09gUWBpNIr24b+MNKdKaebfFSlXQVoUYxL5AqM03gluaDozB9d6/4DQTtm0
+         5k+I2wjvLYrAElCQ0saIHsMDWgCEDMyTN2SESO/WsoJ3vGawmmf/KJt+qlUWubEH5A4y
+         k9eDCKB7HJTz+gwlBCpO4gclWHX8zn24suu9oUDtf/MDi5DXx+iATzMN/5KrVPMUbSEp
+         HGavkKAxSrmBvFjNF5G81B784s/hmZd+6VAspfm1ycHGoKvPwYaTM2Rwdk0zdneUt0tj
+         KE3m85iG2O2Ba+Wkq8Rfu0wVMm1JULw0QrPBw5He9SbLomn+H7G8lmDwdE+LfK1Ld76a
+         0hng==
+ARC-Message-Signature: i=2; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=+qEW/uA8z557mc4WFRqqALthEinjN7ZP/wJJv18yV/M=;
+        fh=XUxkgASejRJj5gE2TdTY3qDwNGkKzwJUFLYfWnLYPM4=;
+        b=TCJgGQMXZSOIcRWQI0s6R17MWZjM1YpmxhsuomedJgmqyT6zJPcIGQ6FZcRxRNEDJb
+         UV1M1tHPoas2vKDCmsWAYSZQjpmKG1ZzZS/a7uwJ6fly44/BS/UxKQcxnwAC/5m5B2LM
+         P8ZCm/X3eaLXr8YZWG6Cl9qy63TUm6uwyNtfEatHQMsExXwD/HZAXo5upQ4poZhuxYli
+         hLC9LsY2/+/2mTe/ZR4jXHU7XJ7Df2X0xYxik4Q9Lci6GTTuX3aPrjfD9U/kq7r33oEK
+         Ibh6d9hHQibhHaoP3Qxfemn2tAva30QTaeqKWAoV/PAP9rOA2etO4WJ3HEWcAY3VHlLY
+         4hmw==;
+        dara=google.com
+ARC-Authentication-Results: i=2; mx.google.com;
+       dkim=pass header.i=@gmail.com header.s=20251104 header.b=HpKVv6vQ;
+       arc=pass (i=1);
+       spf=pass (google.com: domain of nassimhammemiwork@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=nassimhammemiwork@gmail.com;
+       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=gmail.com;
+       dara=pass header.i=@gmail.com
+Return-Path: <nassimhammemiwork@gmail.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id 00721157ae682-89a3d495453sor42715377b3.0.2026.09.21.08.59.03
+        for <piggy.yarroll@gmail.com>
+        (Google Transport Security);
+        Mon, 21 Sep 2026 08:59:03 -0700 (PDT)
+Received-SPF: pass (google.com: domain of nassimhammemiwork@gmail.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@gmail.com header.s=20251104 header.b=HpKVv6vQ;
+       arc=pass (i=1);
+       spf=pass (google.com: domain of nassimhammemiwork@gmail.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=nassimhammemiwork@gmail.com;
+       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=gmail.com;
+       dara=pass header.i=@gmail.com
+ARC-Seal: i=1; a=rsa-sha256; t=1790006343; cv=none;
+        d=google.com; s=arc-20260327;
+        b=KB6W8X9emO0AOe86VRB5Zld4CP3lvVy7IjCEZejG99mf9WFkUGG9mPdtIIBGmq2TdD
+         pbWoSxGonsI0Hh5lvVWBcapsJBQm85hBi2y9DxChXCFgbkYuDW/s+02Y8wJDXqWd8Zet
+         C1HpwOxfcoqsIJwvaDfZaoO0L107Uuvq1k6Abb0MAl8WvA8HD3Rgv+4uW4f8GfM/WSXV
+         CyWpW6FBwO8JiFTr02QKCMNi1ULwYk3PpMxU+Bi3W8HdBzpIwNHoNdyJyxZgxBbrJyYS
+         AmOmp4hP2KTIhzgwpkBbFLM26pYmF6z9uyQrJ+IAjIDyFQpyKhIg4g4FZchbzex5ndY2
+         uobQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=+qEW/uA8z557mc4WFRqqALthEinjN7ZP/wJJv18yV/M=;
+        fh=XUxkgASejRJj5gE2TdTY3qDwNGkKzwJUFLYfWnLYPM4=;
+        b=EaIavKZoXKz9IrNZAth1tk5+v8rX/ZVnnzut6rX6eiDQ3HC+D5X8Z2OOnStfaeP/Wm
+         hNNtKwpoCMBhJ8oIuedLLdh9HpyFl0WBBBLWc2OC5zFwX8bKg9fDLR0jStnp6aLiy/7c
+         aERtxFhfStTnWWZl5aLPb5ehCXohnSBrUtdX7U4cAWaj5l+g5GNh++Um7w2OIL6SqWPk
+         v0E9kvgjQu4Usong8xID3pvpX06tDmhljfAetK5UiHBi4SgLe1xRidYp+5TUxCAgi1BF
+         2oDVeKId5/tD29VS73jsMatGBPAkPX3olZAdZ3zQRap95Yx+jGU+UvpOUgmRLEiykcLE
+         o+4Q==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20251104; t=1790006343; x=1790611143; dara=google.com;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=+qEW/uA8z557mc4WFRqqALthEinjN7ZP/wJJv18yV/M=;
+        b=HpKVv6vQP2643SlT69YvnobAjbQOsw7rLAH+Z6dNOPzVnk5mvZqs2Bwlsbb8N18eDm
+         /K0gpMwIQ9ww/wiptQJ+gmIYdoeLTRNhKF4UcXI0lR0iBIZ7xYwHFEGgE8uosGvUejV8
+         edidVOnD67OnzlX24hRPTPmYJiLfM/cVnNyyipfIxRAQQXHHZCvrho3EE0lJkzuM+W7N
+         pNPl7bVFXnzcri716xm6DO2gBHDPww8KyJMFHUrlutrFIlPoydCH3dFxpUii5VU9ejVz
+         cJEh0Hy8lMovZm+pZEA0UiFLxBo5f8676vgo6NbjBqTbGs6UMvdQ05RkAj2KZLQqocLH
+         mxvg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1790006343; x=1790611143;
+        h=content-type:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=+qEW/uA8z557mc4WFRqqALthEinjN7ZP/wJJv18yV/M=;
+        b=jcYV3pbOC5ZppCd8PQQcKDtwgUOTS4CPmHnEfmCOei/s4XnyU2XeOXOucqjI0EukKp
+         RLMKsNhKD9btO2E3WpWcw9CWikpyzZY2bJB488ST0jiWNYTPlJ9T+5PHhrc98iyxlJhE
+         iVKllr+OZNCCjK4/G68Y2uGMxDQFQW9lgR3bO1u+JwoL8fEqkzUPEu7jahASFVW15B5k
+         6hqqKxaYFJQhHjYEyqaWlGQeW2yawh6CPiZEUohS/woCEZaTauOvNaoAME7vuhjWW15L
+         vW0ydywqu8erHNqGcIANs99DiieTbEPXRrJqgVo1ldBAVpxXt52ES7jf8UtBOifhlFAW
+         rYYQ==
+X-Gm-Message-State: AFuF++lPBsrD01K0N5d5witf2SOxYWwq2a83QVebr798+q4QEZYhIfrT
+	q5kh6etLnie5akY5OX2YrGx9yjzaog0fJzf/9fMhQv6yn9GbsS57BsuJKiHU5dfAyg3QgR7mvha
+	QqdXx6Ack9H9+stM5JeiA6SoRC6YK6Si9S5mrvyk=
+X-Gm-Gg: AYBFou05uGSXqn5l6zO0gvC1sQ7LEjWjDTLHamBMNnVi/xKfXjANQzDdF260hXCpp67
+	4HavIuGUw2hL1rRsoYmeEA9RoNNaeKa6BpR19EKC/9L04/scNXg76+rMkSStT83jR66c9D9df8C
+	gyiQvyqGbly3M4mY7rLB0muIrSZXnXXM2HQtWtt3dYpU+gHMhN3ogJM3fFR98ZV5pA7FiF4Iv2N
+	Dr3N12UlgjzldH/WhIOwI273cLSYRkj9b0tb3NQ4DOrJlkb2DS53NlPVv0ihmmqPb2ZJnKQbLCg
+	hQnYAueijDjzBVOZD2nkGay17fhEm8IWXqMENjySD9uk3FgVpBQQJ4sJoqWbuwloQPHIDO4lY6x
+	2ryolgEKw3nPxL2rGLWVN/JDnqIbpXiHCoVRQfvSCBtL1XONt
+X-Received: by 2002:a05:690e:4108:b0:66c:bb59:e065 with SMTP id
+ 956f58d0204a3-6717fc64b1fmr3674625d50.2.1790006343190; Mon, 21 Sep 2026
+ 08:59:03 -0700 (PDT)
+MIME-Version: 1.0
+References: <CAL7mBq49rjzHcM+9LCWt-xGDH27PjzJZBZ8f5ixD4sGseBoo8w@mail.gmail.com>
+In-Reply-To: <CAL7mBq49rjzHcM+9LCWt-xGDH27PjzJZBZ8f5ixD4sGseBoo8w@mail.gmail.com>
+From: Nassim Hammemi <nassimhammemiwork@gmail.com>
+Date: Mon, 21 Sep 2026 16:58:52 +0100
+X-Gm-Features: AcwNN1VfA3KuwVTeKqgQMM7MvI1cXyPpJeBY4QIjStvmRwF9_iMZtoIAzG_tqPA
+Message-ID: <CAAV97xw0hpp+0Kt2df5QyZCvH5kGRk6rakD11et_V4eR4bV-BQ@mail.gmail.com>
+Subject: Re: Accounts, a legal question, and a technical feature request
+To: "La Monte H. P. Yarroll" <piggy.yarroll@gmail.com>
+Content-Type: multipart/alternative; boundary="0000000000003b4ea0065c005458"
+
+--0000000000003b4ea0065c005458
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Dear La Monte,
+
+Thank you for your thoughtful feedback and for purchasing a Commercial
+licence! It=E2=80=99s exciting to hear about your animation desk and how yo=
+u=E2=80=99re
+helping artists continue working with their preferred physical materials.
+
+I=E2=80=99m Nassim, the founder of CalibrX and a computer vision engineer.
+Previously, I was the Computer Vision and Machine Learning Lead at Sparrow
+Computing in the US. I recently launched CalibrX as a bootstrapped business
+and am continuously improving the platform, so feedback from people using
+it in real projects is especially valuable.
+
+*Regarding team access*, shared workspaces and member invitations aren=E2=
+=80=99t
+supported yet. However, I=E2=80=99d be happy to activate the same Commercia=
+l
+licence for your collaborator at no additional cost. Once he creates an
+account, please send me the email address he registered with, and I=E2=80=
+=99ll
+arrange that so you can each use your own login.
+
+*For the generated targets*, you=E2=80=99re welcome to publish them with th=
+e
+CalibrX branding intact or remove it=E2=80=94either is fine with me. An
+acknowledgment in your documentation is appreciated but not required. I
+don=E2=80=99t claim ownership of the underlying ChArUco pattern; my contrib=
+ution
+through CalibrX is to make camera calibration accessible through a quick,
+clear workflow.
+
+Thank you also for the suggestion about separate X and Y dimensions. I
+appreciate you taking the time to explain the printing anisotropy and how
+you already account for it in your software. This is a useful improvement,
+and I=E2=80=99ll start working on it over the next few days.
+
+*I=E2=80=99d also love to learn more about your animation desk and the comp=
+uter
+vision challenges involved. If you=E2=80=99re open to a short conversation,=
+ I=E2=80=99d
+enjoy hearing about your setup and exploring where my experience might be
+useful.*
+
+Best regards,
+Nassim
+Founder, CalibrX
+
+On Mon, Sep 21, 2026 at 5:52=E2=80=AFAM La Monte H. P. Yarroll <
+piggy.yarroll@gmail.com> wrote:
+
+> Thank you very much for the ChArUco targets! I needed one for a
+> calibration project and was pleased to find your web site.
+>
+> We're creating an AI-enabled traditional 2D animation desk that allows
+> artists to work with their preferred art supplies instead of working
+> digitally. We're very early days right now--there are only two of us, a
+> professional animator and an AI expert (me). Since we eventually want to
+> sell calibrated cameras, I bought a Commercial license for <
+> piggy.yarroll+calibrx@gmail.com>.
+>
+> Accounts
+> How do I add my collaborator so that he can use your service too? Do we
+> just share the one credential?
+>
+> A Legal Question
+> I really appreciate your generous delegation of ownership for generated
+> materials! We are licensing our calibrations and targets as CC-BY-SA-4.0.
+>
+> One concern I have is that the targets are calibrx.io branded, a
+> trademark for which I do not hold a license. Is it OK to just acknowledge
+> the trademark in our documentation or should I scrub it from the template=
+s
+> I publish?
+>
+> My Technical Request
+> My printer has a small but measurable anisotropy, so my target is not 100=
+%
+> square (+0.15%). It would be great to provide both x and y for the square=
+s
+> and the images so that an anisotropic target can be accounted for. My own
+> software accounts for this so I'm good to go, but I think providing those
+> dimensions would be a valuable addition to your tool.
+>
+>
+
+--=20
+
+
+*    Nassim Hammami*    Computer Vision Research Engineer
+    Medical Imaging =C2=B7 Deep Learning =C2=B7 Visual Intelligence
+
+    LinkedIn <https://www.linkedin.com/in/nassim-hammemi-771015217/>=E2=80=
+=A2 Portfolio
+<https://nassimhammami.com/>=E2=80=A2 Github <https://github.com/Nassimos07=
+>
+
+--0000000000003b4ea0065c005458
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><p>Dear La Monte,</p><p>Thank you for you=
+r thoughtful feedback and for purchasing a Commercial licence! It=E2=80=99s=
+ exciting to hear about your animation desk and how you=E2=80=99re helping =
+artists continue working with their preferred physical materials.</p><p>I=
+=E2=80=99m Nassim, the founder of CalibrX and a computer vision engineer. P=
+reviously, I was the Computer Vision and Machine Learning Lead at Sparrow C=
+omputing in the US. I recently launched CalibrX as a bootstrapped business =
+and am continuously improving the platform, so feedback from people using i=
+t in real projects is especially valuable.</p><p><b>Regarding team access</=
+b>, shared workspaces and member invitations aren=E2=80=99t supported yet. =
+However, I=E2=80=99d be happy to activate the same Commercial licence for y=
+our collaborator at no additional cost. Once he creates an account, please =
+send me the email address he registered with, and I=E2=80=99ll arrange that=
+ so you can each use your own login.</p><p><b>For the generated targets</b>=
+, you=E2=80=99re welcome to publish them with the CalibrX branding intact o=
+r remove it=E2=80=94either is fine with me. An acknowledgment in your docum=
+entation is appreciated but not required. I don=E2=80=99t claim ownership o=
+f the underlying ChArUco pattern; my contribution through CalibrX is to mak=
+e camera calibration accessible through a quick, clear workflow.</p><p>Than=
+k you also for the suggestion about separate X and Y dimensions. I apprecia=
+te you taking the time to explain the printing anisotropy and how you alrea=
+dy account for it in your software. This is a useful improvement, and I=E2=
+=80=99ll start working on it over the next few days.</p><p><i>I=E2=80=99d a=
+lso love to learn more about your animation desk and the computer vision ch=
+allenges involved. If you=E2=80=99re open to a short conversation, I=E2=80=
+=99d enjoy hearing about your setup and exploring where my experience might=
+ be useful.</i></p><p>Best regards,<br>Nassim<br>Founder, CalibrX</p></div>=
+<br><div class=3D"gmail_quote gmail_quote_container"><div dir=3D"ltr" class=
+=3D"gmail_attr">On Mon, Sep 21, 2026 at 5:52=E2=80=AFAM La Monte H. P. Yarr=
+oll &lt;<a href=3D"mailto:piggy.yarroll@gmail.com">piggy.yarroll@gmail.com<=
+/a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:0=
+px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"><=
+div dir=3D"ltr">Thank you very much for the ChArUco targets! I needed one f=
+or a calibration project and was pleased to find your web site.<div><br></d=
+iv><div>We&#39;re creating an AI-enabled traditional 2D animation desk that=
+ allows artists to work with their preferred art supplies instead of workin=
+g digitally. We&#39;re very early days right now--there are only two of us,=
+ a professional animator and an AI expert (me). Since we eventually want to=
+ sell calibrated cameras, I bought a Commercial license for &lt;<a href=3D"=
+mailto:piggy.yarroll%2Bcalibrx@gmail.com" target=3D"_blank">piggy.yarroll+c=
+alibrx@gmail.com</a>&gt;.</div><div><br></div><div>Accounts</div><div>How d=
+o I add my collaborator so that he can use your service too? Do we just sha=
+re the one credential?</div><div><br></div><div>A Legal Question</div><div>=
+I really appreciate your generous delegation of ownership for generated mat=
+erials! We are licensing our calibrations and targets as CC-BY-SA-4.0.</div=
+><div><br></div><div>One concern I have is that the targets are <a href=3D"=
+http://calibrx.io" target=3D"_blank">calibrx.io</a> branded, a trademark fo=
+r which I do not hold a license. Is it OK to just acknowledge the trademark=
+ in our documentation or should I scrub it from the templates I publish?</d=
+iv><div><br></div><div>My Technical Request</div><div>My printer has a smal=
+l but measurable anisotropy, so my target is not 100% square (+0.15%). It w=
+ould be great to provide both x and y for the squares and the images so tha=
+t an anisotropic target can be accounted for. My own software accounts for =
+this so I&#39;m good to go, but I think providing those dimensions would be=
+ a valuable addition to your tool.</div><div><br></div></div>
+</blockquote></div><div><br clear=3D"all"></div><div><br></div><span class=
+=3D"gmail_signature_prefix">-- </span><br><div dir=3D"ltr" class=3D"gmail_s=
+ignature"><div dir=3D"ltr"><table cellspacing=3D"0" cellpadding=3D"0" dir=
+=3D"ltr" border=3D"1" style=3D"table-layout:fixed;font-size:10pt;font-famil=
+y:Arial;width:0px;border-collapse:collapse;border-width:medium;border-style=
+:none;border-color:currentcolor"><colgroup><col width=3D"123"><col width=3D=
+"385"></colgroup><tbody><tr style=3D"height:111px"><td style=3D"width:123px=
+;height:111px;border-width:1px 3px 1px 1px;border-style:solid;border-color:=
+rgb(255,255,255) rgb(153,153,153) rgb(255,255,255) rgb(255,255,255);overflo=
+w:hidden;vertical-align:bottom"><img width=3D"96" height=3D"96" src=3D"http=
+s://ci3.googleusercontent.com/mail-sig/AIorK4xSiMCa120jSdD6aw12UvrX2FDYv0IJ=
+VQmMOyiOF92RPJ--lCVN2-Wc3ETcffySOnoIKrHUCgSd2Cbq"><br></td><td style=3D"bor=
+der-width:1px;border-style:solid;border-color:rgb(255,255,255) rgb(255,255,=
+255) rgb(255,255,255) rgb(204,204,204);overflow:hidden;padding:2px 3px;vert=
+ical-align:bottom"><p><b>=C2=A0 =C2=A0 Nassim Hammami<br></b>=C2=A0 =C2=A0 =
+Computer Vision Research Engineer<br>=C2=A0 =C2=A0 Medical Imaging =C2=B7 D=
+eep Learning =C2=B7 Visual Intelligence<br></p><p>=C2=A0 =C2=A0 <a href=3D"=
+https://www.linkedin.com/in/nassim-hammemi-771015217/" target=3D"_blank">Li=
+nkedIn </a>=E2=80=A2 <a href=3D"https://nassimhammami.com/" target=3D"_blan=
+k">Portfolio </a>=E2=80=A2 <a href=3D"https://github.com/Nassimos07" target=
+=3D"_blank">Github</a></p></td></tr></tbody></table></div></div></div>
+
+--0000000000003b4ea0065c005458--
