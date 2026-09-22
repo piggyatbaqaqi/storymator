@@ -1,0 +1,129 @@
+{
+  "frames": [
+    {
+      "file": "blue_hamster_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00027_.png",
+      "sha256_16": "0ceb5b2c1c52e081",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-22T14:33:52",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.5333,
+        "p98": 0.5333,
+        "mean": 0.3241,
+        "sd": 0.2335
+      },
+      "lost": "overwritten by the second collect run, which renumbered from 001; see bin/collect_captures_test.py"
+    },
+    {
+      "file": "blue_hamster_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00028_.png",
+      "sha256_16": "c2c5a62b7efc0642",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-22T14:35:05",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.5333,
+        "p98": 0.5333,
+        "mean": 0.324,
+        "sd": 0.2335
+      },
+      "lost": "overwritten by the second collect run, which renumbered from 001; see bin/collect_captures_test.py"
+    },
+    {
+      "file": "blue_hamster_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00027_.png",
+      "sha256_16": "2bc099b2df6fb1e5",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-22T14:33:50",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2745,
+        "p98": 0.9765,
+        "mean": 0.3894,
+        "sd": 0.3464
+      }
+    },
+    {
+      "file": "blue_hamster_004.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00028_.png",
+      "sha256_16": "b4ea3e28364ee752",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-22T14:35:03",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2824,
+        "p98": 0.9725,
+        "mean": 0.3937,
+        "sd": 0.3457
+      }
+    },
+    {
+      "file": "blue_hamster_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00029_.png",
+      "sha256_16": "c70c69556244728e",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-22T14:40:46",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.5333,
+        "p98": 0.5333,
+        "mean": 0.324,
+        "sd": 0.2335
+      }
+    },
+    {
+      "file": "blue_hamster_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00029_.png",
+      "sha256_16": "0cafb7cd420a3673",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-22T14:40:44",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.298,
+        "p98": 0.9804,
+        "mean": 0.4066,
+        "sd": 0.3503
+      }
+    }
+  ],
+  "session": "blue_hamster",
+  "notes": [
+    {
+      "at": "2026-09-22T14:36:47",
+      "note": "phone next to lens, exposure fixed"
+    },
+    {
+      "at": "2026-09-22T14:41:35",
+      "note": "phone next to lens, exposure fixed"
+    },
+    {
+      "at": "2026-09-22T00:00:00",
+      "note": "Two collect runs. The second restarted numbering at 001 and overwrote the first run's 001 and 002, both 720x260 diagnostics; their entries are kept and marked \"lost\". Surviving full-size frames: 003 and 004 (first setup, duplicates of each other) and 002 (bar moved right, more black mat showing). The paper's right edge is visibly bowed in all three -- normal for this paper."
+    }
+  ]
+}

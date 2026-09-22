@@ -80,7 +80,22 @@ whole tree, so nothing is lost by leaving them untracked.
 | `hamster-crowbar-A` | 2 | Printed animation art by Dr. Boulos, lighting as `-phone-beside-lens`. Regression case: detection must not be confused by artwork. |
 | `hamster-crowbar-B` | 2 | Same art, lighting as `-low-grazing`. |
 | `blue` | 5 (+5 diagnostics) | Peg crowns coloured with a pen+GEAR dry-erase marker. Exposure alternates frame to frame, medians 0.243/0.067/0.212/0.059/0.220, so half the session is near-black. Note reads "phone next to lens, bar moved, exposure fixed" and that bar move is why 006 shows the tint far more weakly than 008 and 010. Holds `blue_006_round_peg_closeup.png`, a byte-exact crop. |
+| `blue_hamster` | 3 (+1 diagnostic; 2 lost) | Dr. Boulos's printed hamster art on blue-marked pegs, phone next to the lens, exposure fixed. `003`/`004` are one setup; `002` has the bar moved right. **Two frames were destroyed** — see below. The paper's right edge bows 8-11 mm. |
 
 That first row is the argument for the tool. Everything in it would
 have been worth labelling and none of it was, because there was no
 habit and no place to put it.
+
+## A second collect into a live session overwrites it
+
+`collect` numbers frames from 001 on every run, so a second collect
+into a session that already holds frames writes over the low-numbered
+ones. `blue_hamster` lost its first two frames that way; the manifest
+still carries their hashes, and those entries are marked `"lost"`.
+
+The content-hash skip does not help here. It stops the same *frame*
+being copied twice; it says nothing about the *name* a genuinely new
+frame is given.
+
+Until it is fixed, collect once per session, or pass a fresh
+`--session`. Tests are in `bin/collect_captures_test.py`.

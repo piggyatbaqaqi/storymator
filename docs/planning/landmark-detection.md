@@ -382,3 +382,77 @@ mis-registration.
 
 Untested: how long dry-erase ink survives on chrome that gets sheets
 pushed onto it all day.
+
+## Artwork plus blue pegs: the corpus exists, the marking does not hold
+
+Session `blue_hamster`, the day after the marker went on. Dr. Boulos's
+printed hamster art on the pegs, three full-size frames: `003` and
+`004` are one setup, `002` is the same with the bar moved right so
+more of the black mat shows.
+
+**The artwork is still not the problem.** The blue channel does not
+see printed ink — that part of yesterday's result holds.
+
+**The marking is the problem.** A day of sheets going on and off the
+bar has taken the ink off unevenly:
+
+| peg | `blue_010` (day 1, blank) | `blue_hamster_003` | `blue_hamster_002` |
+|---|---:|---:|---:|
+| left rect | 343 px | 871 px | 665 px |
+| round | **299 px** | **52 px** | **20 px** |
+| right rect | 31 px | 21 px | 11 px |
+
+Pixels with b\* < −8 in a 110×110 window on each peg. The round peg
+has lost the ink almost entirely, and a crop shows why: it is bare
+chrome again, a grey mirror with two highlights and no tint. It is
+the peg the paper actually grips — 6.44 mm of peg in a 6.35 mm hole —
+so it is the one that gets scrubbed every time a sheet is mounted.
+
+The right rect peg was never strongly marked; it has been the weakest
+of the three since the first blue frame.
+
+The left rect peg *gained*, which is the mirror effect again rather
+than more ink: the bar moved between sessions and that crown now
+throws back something cooler.
+
+So at present **one peg in three carries a usable mark**, and a fit
+needs all three. Dry erase on unprepped chrome is not durable enough
+to be the answer; the corpus is still worth having, because it is the
+first material with art and colour together.
+
+Whole-frame, `b* < −8` now yields 26–35 components rather than 3, and
+the largest are background: the cable coil and desk at x ≈ 2850–3040
+and the hole punch at x ≈ 60–230, all of it outside the sheet the
+outline stage has already found. Restricting the search to the fitted
+sheet interior disposes of every one of them, which is what a detector
+should do anyway.
+
+## The paper bows, and it is one edge by a lot
+
+The operator's observation, measured. Segment the sheet, fit a quad to
+its outline, rectify that quad onto the nominal 279.4 × 215.9 mm
+rectangle, and measure how far the traced boundary departs from the
+straight chord between each pair of corners:
+
+| frame | punched long edge | far long edge | left short edge | **right short edge** |
+|---|---:|---:|---:|---:|
+| `003` | −0.84 mm | +1.01 mm | −1.49 mm | **+9.04 mm** |
+| `004` | +0.98 mm | +1.01 mm | −1.74 mm | **+10.57 mm** |
+| `002` | +1.04 mm | −1.03 mm | −1.35 mm | **+8.20 mm** |
+
+Three edges hold within ±1.8 mm peak and ≤1.25 mm rms. The right short
+edge — the free end, furthest from the pegs — departs by 8–11 mm, rms
+5.4–7.1 mm. It survives moving the bar, so it is the sheet and not the
+setup.
+
+Two things this measurement cannot tell apart: a sheet curved in its
+own plane, and a flat sheet lifting out of plane near that edge. Both
+project as a curved boundary. The number is still the one registration
+cares about — how far the edge sits from where a flat sheet's edge
+would be — but it is not yet a diagnosis.
+
+Not yet known: what this costs. The outline homography is fitted from
+the four corners, and a mid-edge bulge moves no corner, so the direct
+cost may be small; the risk is that corner *location* degrades when
+the edges meeting there are curved. Worth measuring against the peg
+residual before anyone builds a correction.
