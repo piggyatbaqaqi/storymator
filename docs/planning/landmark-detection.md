@@ -206,19 +206,47 @@ That suggests combining them rather than choosing — long axis and
 length from the dark blob, across-bar position from the bright base
 line. Not attempted, and stated as a direction rather than a plan.
 
-**The grazing shot made it worse, measurably.** Holding the light low
-does enhance the specular, and it also blows the paper out:
+**The grazing shot clips the paper — but not where it matters.**
+Holding the light low does enhance the specular, and it also blows out
+a quarter of the sheet:
 
 | | paper p5 | median | p95 | at full white |
 |---|---:|---:|---:|---:|
 | phone beside the lens | 0.600 | 0.839 | 0.953 | 0.0 % |
 | phone low, grazing | 0.741 | 0.969 | 1.000 | **25.9 %** |
 
-A quarter of the sheet is clipped, and the specular — which peaks near
-1.0 — is then indistinguishable from the paper beside it. Searching
-for bright features against the sheet's own median finds **nothing**,
-not because the feature is absent but because the background has
-caught up with it.
+> **Corrected, same session.** I first read this as the grazing shot
+> having backfired. It has not. The clipping is in the hotspot, which
+> is in the upper-left of the frame, while the pegs sit along the
+> bottom edge where the paper reads **0.72–0.85 and is not clipped at
+> all**. Searching for bright features against the sheet's *global*
+> median found nothing, and that was my threshold being wrong, not the
+> feature being absent.
+>
+> Against a **high-pass** — subtract a 41 px blur, so a lighting
+> gradient vanishes and crisp structure survives — the specular is
+> present at **all three pegs in both frames**: 4 600 to 8 100 pixels
+> above threshold, peak excess 0.30 to 0.66. It is real, it is crisp,
+> and it is there under both lightings.
+>
+> The earlier text also said it was not reliably present at all three.
+> That was the same mistake: a *local* paper level estimated from a
+> window's border is itself tilted by the gradient, so the comparison
+> was against the wrong baseline.
+
+### Still unresolved: does it stay put?
+
+The only property that makes something a landmark is that it does not
+move when the lighting does — and a specular reflection is precisely
+the kind of thing that might. **This cannot be answered from the two
+frames we have**: the sheet was moved between them, by 518 to 1403 px
+at the corners, so there is no common frame to compare positions in.
+
+The experiment is one pair of frames with **the sheet and camera
+untouched and only the light moved**, both with the paper unclipped
+near the pegs. If the specular's position in sheet coordinates holds
+across that, it is a landmark. If it slides with the light, it is a
+reflection and nothing more.
 
 Worth noting separately: the paper level varies by **42 %** across the
 sheet under the better of these two lightings. `find_peg_candidates`
