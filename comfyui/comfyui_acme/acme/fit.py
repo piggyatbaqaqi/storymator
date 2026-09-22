@@ -166,7 +166,8 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
              polarity: str = "dark",
              sheet_threshold: Optional[float] = None,
              peg_contrast: float = 0.6,
-             peg_tolerance_mm: float = 6.0) -> Pose:
+             peg_tolerance_mm: float = 6.0,
+             rgb: Optional[np.ndarray] = None) -> Pose:
     """Register one frame, or say why not."""
     spec = calibration.raster
     peg = calibration.peg
@@ -210,7 +211,8 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
                               * scale_px_mm ** 2),
             max_area_px=float(6.0 * max(round_area, rect_area)
                               * scale_px_mm ** 2),
-            polarity=polarity, contrast=peg_contrast)
+            polarity=polarity, contrast=peg_contrast,
+            ink=calibration.ink, rgb=rgb)
     except ValueError as exc:
         return Pose(False, str(exc))
     if len(blobs) < 3:

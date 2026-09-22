@@ -17,6 +17,7 @@ import numpy as np
 from scipy import ndimage
 
 from .geometry import fit_line, line_intersection
+from .model import InkSignature
 from .rect import fit_rect
 
 
@@ -222,7 +223,9 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
                         min_area_px: float, max_area_px: float,
                         polarity: str = "dark",
                         threshold: Optional[float] = None,
-                        contrast: float = 0.6) -> List[Blob]:
+                        contrast: float = 0.6,
+                        ink: Optional[InkSignature] = None,
+                        rgb: Optional[np.ndarray] = None) -> List[Blob]:
     """Compact regions inside the sheet that could be pegs.
 
     ``polarity`` is a rig property rather than a tuning knob.  A sheet
@@ -238,6 +241,13 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
     """
     if polarity not in ("dark", "bright"):
         raise ValueError("polarity must be 'dark' or 'bright'")
+
+    if ink is not None:
+        if rgb is None:
+            raise ValueError("an InkSignature needs the colour frame; "
+                             "pass rgb= alongside gray")
+        return find_peg_candidates_by_ink(
+            gray, rgb, sheet, ink, min_area_px, max_area_px)
 
     inside = ndimage.binary_erosion(sheet, iterations=2)
     values = gray[inside]
@@ -297,3 +307,26 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
                           long_px=rect.long_px,
                           angle_rad=rect.angle_rad))
     return blobs
+
+
+def find_peg_candidates_by_ink(gray: np.ndarray, rgb: np.ndarray,
+                               sheet: np.ndarray, ink: InkSignature,
+                               min_area_px: float,
+                               max_area_px: float) -> List[Blob]:
+    """Peg candidates proposed by colour, measured on luminance.
+
+    The two stages keep what each is good at.  Colour is what tells a
+    peg from a shadow -- a shadow is the paper at lower luminance and
+    the *same* hue -- and luminance is what shows the whole crown,
+    which is what the rectangle has to be fitted to.  Neither depends
+    on the ink covering the crown evenly, which it does not.
+
+    Raises ``ValueError("ink_not_found ...")`` when the colour channel
+    is empty, rather than falling back to the luminance path.  A crown
+    is a mirror: ``blue_006`` and ``blue_010`` have the same white
+    balance and near-identical exposure, and one shows almost no ink
+    because it happens to be reflecting a warm lamp.  Nothing in the
+    exposure statistics predicts that, so a silent fallback would
+    return the shadow-confused answer with no sign anything was wrong.
+    """
+    raise NotImplementedError

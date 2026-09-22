@@ -33,6 +33,35 @@ MM_PER_INCH = 25.4
 
 
 @dataclass(frozen=True)
+class InkSignature:
+    """What the peg crowns are coloured with, in chroma terms.
+
+    The whole colour specification, so swapping ink is editing a JSON
+    file rather than touching code.  ``direction_deg`` is the angle of
+    (a*, b*) in CIE L*a*b* after the frame is white-balanced against
+    the paper; see :mod:`acme.ink` for why that representation and not
+    another.
+
+    Defaults are the pen+GEAR dry-erase blue measured across the whole
+    inked corpus: -62 degrees, holding to 4.1 degrees of scatter over
+    two days, four lighting setups, artwork, a bar move and a
+    re-inking.  The tolerance is deliberately far wider than that
+    scatter -- the nearest competitor in any frame is the paper
+    itself, about 100 degrees away, so there is nothing to be gained
+    by being tight and a dim peg to be lost by it.
+    """
+
+    direction_deg: float = -62.0
+    tolerance_deg: float = 25.0
+    # C*/(L* + 16).  A floor that rejects grey, not a measurement:
+    # peg crowns are dark enough to reach Lab's linear segment, where
+    # this is no longer scale-invariant (halving the light costs it
+    # 16.5 %), so it is set low and the angle does the deciding.
+    min_chroma: float = 0.30
+    name: str = "pen+GEAR dry erase blue"
+
+
+@dataclass(frozen=True)
 class PegModel:
     """The three pegs, in the peg frame."""
 
@@ -147,6 +176,10 @@ class Calibration:
     # acme.capture.verify_against.  Not geometry, so the fitter
     # ignores it.
     provenance: Optional[dict] = None
+    # Absent means the rig has no coloured pegs and detection runs
+    # on luminance exactly as it always has.  The whole existing
+    # corpus is that case and must keep working.
+    ink: Optional[InkSignature] = None
 
     def __post_init__(self):
         if self.field_spec is None:
@@ -184,6 +217,7 @@ class Calibration:
             "camera_matrix": arr(self.camera_matrix),
             "dist_coeffs": arr(self.dist_coeffs),
             "provenance": self.provenance,
+            "ink": None if self.ink is None else dict(self.ink.__dict__),
         }
 
     @classmethod
@@ -202,4 +236,6 @@ class Calibration:
             # Written as "_provenance" by hand-authored calibration
             # files, "provenance" by to_dict.  Accept both.
             provenance=data.get("provenance", data.get("_provenance")),
+            ink=(None if data.get("ink") is None
+                 else InkSignature(**data["ink"])),
         )
