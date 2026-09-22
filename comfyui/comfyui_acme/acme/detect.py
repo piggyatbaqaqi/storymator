@@ -17,6 +17,7 @@ import numpy as np
 from scipy import ndimage
 
 from .geometry import fit_line, line_intersection
+from .ink import ink_mask, ink_windows
 from .model import InkSignature
 from .rect import fit_rect
 
@@ -301,12 +302,68 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
             rect = fit_rect(window, origin=(box[1].start, box[0].start))
         except ValueError:                  # pragma: no cover - degenerate
             continue
-        blobs.append(Blob(x=float(rect.centre[0]), y=float(rect.centre[1]),
-                          area_px=area,
-                          short_px=rect.short_px,
-                          long_px=rect.long_px,
-                          angle_rad=rect.angle_rad))
+        blob = Blob(x=float(rect.centre[0]), y=float(rect.centre[1]),
+                    area_px=area, short_px=rect.short_px,
+                    long_px=rect.long_px, angle_rad=rect.angle_rad)
+        # Padded windows are allowed to overlap, so one crown can be
+        # proposed twice.  It resolves to the same component and the
+        # same rectangle, so dropping the repeat is exact rather than
+        # a tolerance.
+        if any(np.hypot(b.x - blob.x, b.y - blob.y) < 0.5 * blob.short_px
+               for b in blobs):
+            continue
+        blobs.append(blob)
     return blobs
+
+
+def _crown_from_seed(window: np.ndarray, seed: np.ndarray,
+                     paper: float, max_area_px: float) -> Optional[np.ndarray]:
+    """The dark region the ink sits on, found by where it stops growing.
+
+    A fixed threshold cannot do this.  Set it low and a crown lit from
+    one side loses half of itself; set it high and the crown merges
+    with the shadow it touches, which is the failure this whole line of
+    work has been chasing.
+
+    So sweep the threshold instead and keep the component that contains
+    the ink at whichever level its area is most *stable*.  Crossing the
+    crown's own edge grows it slowly; crossing into the shadow grows it
+    all at once.  The ink is what makes this possible -- it says which
+    component to follow, so there is no ambiguity about which dark
+    thing in the window is the peg.
+    """
+    # Start the sweep from a robust quantile of the ink's own
+    # luminance, never its maximum.  One stray bright pixel in the
+    # mask -- a specular fringe on a chrome crown, which is exactly
+    # where the ink sits -- puts the maximum up at paper level, and
+    # the sweep then starts above where it should end.
+    floor = float(np.percentile(window[seed], 25)) if seed.any() else 0.0
+    ceiling = paper * 0.92
+    if floor >= ceiling:
+        floor = min(float(np.percentile(window, 2)), ceiling * 0.5)
+    levels = np.linspace(floor, ceiling, 24)
+    areas, comps = [], []
+    for level in levels:
+        labels, count = ndimage.label(window <= level)
+        if count == 0:
+            continue
+        hit = np.bincount(labels[seed & (labels > 0)],
+                          minlength=count + 1)[1:]
+        if not hit.any():
+            continue
+        comp = labels == (int(np.argmax(hit)) + 1)
+        area = float(comp.sum())
+        if area > max_area_px:
+            break
+        areas.append(area)
+        comps.append(comp)
+    if not comps:
+        return None
+    if len(comps) < 3:
+        return comps[-1]
+    growth = [(areas[i + 1] - areas[i - 1]) / max(areas[i], 1.0)
+              for i in range(1, len(areas) - 1)]
+    return comps[int(np.argmin(growth)) + 1]
 
 
 def find_peg_candidates_by_ink(gray: np.ndarray, rgb: np.ndarray,
@@ -329,4 +386,40 @@ def find_peg_candidates_by_ink(gray: np.ndarray, rgb: np.ndarray,
     exposure statistics predicts that, so a silent fallback would
     return the shadow-confused answer with no sign anything was wrong.
     """
-    raise NotImplementedError
+    inside = ndimage.binary_erosion(sheet, iterations=2)
+    marked = ink_mask(rgb, ink, inside)
+    # A patch far smaller than a peg is still evidence of one -- the
+    # weakest real peg in the corpus is 35 px against a 1781 px peer --
+    # but a handful of pixels is not.  Uninked frames leave components
+    # of 3 to 9 px in this channel, so the floor sits between the two
+    # populations rather than at either end.
+    boxes = ink_windows(marked, min_area_px=max(12.0, 0.02 * min_area_px),
+                        pad_px=int(np.sqrt(max_area_px)))
+    if not boxes:
+        raise ValueError(
+            f"ink_not_found  no pixels within {ink.tolerance_deg:.0f} deg "
+            f"of {ink.direction_deg:.0f} deg at chroma "
+            f"{ink.min_chroma:.2f} or better; either the pegs are unmarked "
+            f"or their crowns are reflecting something that swamps the "
+            f"ink ({ink.name or 'unnamed ink'})")
+
+    paper = float(np.median(gray[inside]))
+    blobs: List[Blob] = []
+    for box in boxes:
+        window = gray[box]
+        crown = _crown_from_seed(window, marked[box], paper, max_area_px)
+        if crown is None:
+            continue
+        area = float(crown.sum())
+        if not (min_area_px <= area <= max_area_px) or area < 4:
+            continue
+        try:
+            rect = fit_rect(crown, origin=(box[1].start, box[0].start))
+        except ValueError:                  # pragma: no cover - degenerate
+            continue
+        blobs.append(Blob(x=float(rect.centre[0]), y=float(rect.centre[1]),
+                          area_px=area,
+                          short_px=rect.short_px,
+                          long_px=rect.long_px,
+                          angle_rad=rect.angle_rad))
+    return blobs

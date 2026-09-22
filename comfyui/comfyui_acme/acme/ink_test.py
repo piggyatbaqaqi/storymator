@@ -89,7 +89,6 @@ def _blue_for(img: np.ndarray) -> InkSignature:
 
 # --- 1. the gate is doing the work -----------------------------------
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_the_gate_finds_the_pegs_and_the_ink_is_why():
     img = scene()
     found = candidates(img, _blue_for(img))
@@ -103,7 +102,6 @@ def test_the_gate_finds_the_pegs_and_the_ink_is_why():
         candidates(bare, _blue_for(img))
 
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_the_shadow_is_not_a_candidate():
     """The confuser the luminance path cannot reject."""
     img = scene()
@@ -113,7 +111,6 @@ def test_the_shadow_is_not_a_candidate():
 
 # --- 2. a dim peg is still a peg -------------------------------------
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_a_peg_at_half_brightness_is_still_found():
     """The claim the right peg falsifies under an absolute threshold.
 
@@ -126,7 +123,6 @@ def test_a_peg_at_half_brightness_is_still_found():
     assert len(found) == 3, "the dim peg dropped out"
 
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_the_chroma_angle_survives_a_brightness_change():
     bright = srgb_to_lab(BLUE_INK)
     dim = srgb_to_lab(BLUE_INK * 0.5)
@@ -136,7 +132,6 @@ def test_the_chroma_angle_survives_a_brightness_change():
 
 # --- 3. paper-relative, so white balance does not matter -------------
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_a_white_balance_shift_does_not_move_the_mask():
     img = scene()
     sig = _blue_for(img)
@@ -148,19 +143,17 @@ def test_a_white_balance_shift_does_not_move_the_mask():
     assert np.array_equal(plain, cool)
 
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_balance_makes_the_reference_neutral():
     img = scene()
     balanced = balance(img, white_point(img, sheet_mask()))
     lab = srgb_to_lab(balanced)
-    paper = lab[..., 0] > np.percentile(lab[..., 0], 90)
+    paper = lab[..., 0] >= np.percentile(lab[..., 0], 90)
     assert abs(float(lab[..., 1][paper].mean())) < 2.0
     assert abs(float(lab[..., 2][paper].mean())) < 2.0
 
 
 # --- 4. the swap: colour is data, not code ---------------------------
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_a_signature_selects_its_own_colour():
     blue_scene = scene(ink_rgb=BLUE_INK)
     red_scene = scene(ink_rgb=RED_INK)
@@ -175,7 +168,6 @@ def test_a_signature_selects_its_own_colour():
         candidates(blue_scene, red)
 
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_the_two_signatures_differ_only_in_their_numbers():
     blue = measure_signature(scene(ink_rgb=BLUE_INK), PEGS, radius_px=40)
     red = measure_signature(scene(ink_rgb=RED_INK), PEGS, radius_px=40)
@@ -185,12 +177,11 @@ def test_the_two_signatures_differ_only_in_their_numbers():
 
 # --- 5. an empty channel refuses, and says so ------------------------
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_a_frame_with_no_ink_refuses_rather_than_falling_back():
     img = scene(ink_rgb=None)
     calibration = Calibration(ink=BLUE)
     pose = fit_pose(luminance(img), calibration, rgb=img)
-    assert not pose.ok
+    assert not pose.accepted
     assert "ink_not_found" in pose.reason
 
 
@@ -226,7 +217,6 @@ def test_ink_without_the_colour_frame_is_an_error():
 
 # --- 7. the gate proposes, the greyscale fit measures ----------------
 
-@pytest.mark.xfail(strict=True, reason="acme.ink is a skeleton")
 def test_ink_on_a_corner_still_yields_the_whole_crown():
     """The reason not to fit a rectangle to the ink.
 
@@ -241,3 +231,57 @@ def test_ink_on_a_corner_still_yields_the_whole_crown():
             f"long axis {blob.long_px:.1f} px is the ink patch, "
             f"not the 52 px crown")
         assert 14 < blob.short_px < 28
+
+
+# --- the corpus, which is what the synthetic scenes stand in for -----
+
+_CORPUS = [
+    ("fresh_ink/fresh_ink_007", [(1280, 1952), (2001, 1828), (2520, 1737)]),
+    ("fresh_ink/fresh_ink_008", [(1280, 1952), (2001, 1828), (2520, 1737)]),
+    ("blue/blue_010", [(1252, 1920), (1988, 1848), (2512, 1740)]),
+    ("blue/blue_008", [(1252, 1920), (1988, 1848), (2512, 1740)]),
+    ("blue_hamster/blue_hamster_003",
+     [(1343, 1916), (2033, 1815), (2530, 1730)]),
+    ("blue_hamster/blue_hamster_002",
+     [(1340, 2015), (2043, 1832), (2558, 1668)]),
+]
+
+
+def _corpus_frame(stem: str):
+    path = os.path.join(_ROOT, "data", "captures", stem + ".png")
+    if not os.path.exists(path):
+        pytest.skip(f"{stem} is not in the working tree")
+    from PIL import Image
+    return np.asarray(Image.open(path).convert("RGB"), dtype=float)
+
+
+@pytest.mark.parametrize("stem,pegs", _CORPUS)
+def test_every_inked_frame_yields_exactly_the_three_pegs(stem, pegs):
+    """What the synthetic scenes are a stand-in for.
+
+    Two of these have artwork on them, where the luminance path returns
+    34 to 36 candidates and cannot rank them, and two have pegs whose
+    ink had worn for a day.
+    """
+    rgb = _corpus_frame(stem)
+    gray = luminance(rgb)
+    sheet = find_sheet(gray)
+    found = find_peg_candidates(gray, sheet, min_area_px=200.0,
+                                max_area_px=20000.0,
+                                ink=InkSignature(), rgb=rgb)
+    assert len(found) == 3
+    for blob in found:
+        nearest = min(np.hypot(blob.x - px, blob.y - py) for px, py in pegs)
+        assert nearest < 45, (f"a candidate at ({blob.x:.0f}, {blob.y:.0f}) "
+                              f"is {nearest:.0f} px from any peg")
+
+
+@pytest.mark.parametrize("stem,pegs", _CORPUS[:1])
+def test_a_signature_measured_from_a_frame_works_on_it(stem, pegs):
+    rgb = _corpus_frame(stem)
+    signature = measure_signature(rgb, pegs, name="pen+GEAR dry erase blue")
+    assert abs(signature.direction_deg - InkSignature().direction_deg) < 15.0
+    gray = luminance(rgb)
+    found = find_peg_candidates(gray, find_sheet(gray), min_area_px=200.0,
+                                max_area_px=20000.0, ink=signature, rgb=rgb)
+    assert len(found) == 3

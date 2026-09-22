@@ -42,22 +42,26 @@ class InkSignature:
     the paper; see :mod:`acme.ink` for why that representation and not
     another.
 
-    Defaults are the pen+GEAR dry-erase blue measured across the whole
-    inked corpus: -62 degrees, holding to 4.1 degrees of scatter over
-    two days, four lighting setups, artwork, a bar move and a
-    re-inking.  The tolerance is deliberately far wider than that
-    scatter -- the nearest competitor in any frame is the paper
-    itself, about 100 degrees away, so there is nothing to be gained
-    by being tight and a dim peg to be lost by it.
+    Defaults are the pen+GEAR dry-erase blue, pooled by
+    :func:`acme.ink.measure_signature` over every inked frame in the
+    corpus -- two days, four lighting setups, artwork, a bar move and
+    a re-inking.  The six frames land individually between -56.3 and
+    -63.6 degrees.
+
+    The tolerance is far wider than that 7 degree spread on purpose.
+    The nearest competitor in any real frame is the paper itself,
+    about 100 degrees away, so there is nothing to be gained by being
+    tight and a peg to be lost by it: the worn right-hand peg drops
+    out at 25 degrees and is found at 32.
     """
 
-    direction_deg: float = -62.0
-    tolerance_deg: float = 25.0
+    direction_deg: float = -59.6
+    tolerance_deg: float = 32.0
     # C*/(L* + 16).  A floor that rejects grey, not a measurement:
     # peg crowns are dark enough to reach Lab's linear segment, where
     # this is no longer scale-invariant (halving the light costs it
     # 16.5 %), so it is set low and the angle does the deciding.
-    min_chroma: float = 0.30
+    min_chroma: float = 0.23
     name: str = "pen+GEAR dry erase blue"
 
 

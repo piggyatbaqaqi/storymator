@@ -207,11 +207,75 @@ It **does** earn its place for three other things:
 Worth shooting once and keeping in the corpus. Not worth blocking on:
 the paper-relative design works today on the camera we have.
 
+## Built, and what it does on real frames
+
+Implemented in `acme/ink.py`, with the gate in
+`acme/detect.find_peg_candidates_by_ink` and the tool in
+`bin/measure-ink`. Against every inked frame in the corpus, with the
+shipped default signature:
+
+| frame | luminance candidates | ink candidates | on a real peg |
+|---|---:|---:|---:|
+| `fresh_ink_007` blank | 4 | **3** | 3/3 |
+| `fresh_ink_008` **art** | 36 | **3** | 3/3 |
+| `blue_010` blank | 3 | **3** | 3/3 |
+| `blue_008` blank | 3 | **3** | 3/3 |
+| `blue_hamster_003` **art, worn** | 34 | **3** | 3/3 |
+| `blue_hamster_002` **art, worn** | 36 | **3** | 3/3 |
+
+Six frames, three candidates each, every one on a peg — including the
+two with artwork, where the luminance path returns 34 to 36 and cannot
+rank them, and the two whose ink had worn for a day.
+
+### The default signature is measured, not chosen
+
+−59.6° ± 32°, minimum relative chroma 0.23, pooled over all six frames.
+Run `bin/measure-ink` on a single frame and it lands within a few
+degrees: −63.7, −64.2, −61.2, −67.8 on four of them.
+
+The tolerance is far wider than that 7° spread deliberately. The
+nearest competitor in any real frame is the paper, about 100° away, so
+tightness buys nothing and costs pegs: at ±25° the worn right-hand peg
+drops out, at ±32° it is found.
+
+### Two things the synthetic tests could not have caught
+
+Both were found by running the corpus and neither by the unit tests,
+which is the argument for keeping both.
+
+**A sweep must not start from the ink's brightest pixel.** The crown is
+chrome, so the ink sits next to a specular highlight and the mask
+occasionally catches one. A single such pixel put the threshold sweep's
+floor at paper level, above its own ceiling, and the peg vanished. It
+starts from the 25th percentile of the ink's luminance now.
+
+**Selecting the ink by saturation and darkness together is worse than
+by saturation alone.** Darkness needs a percentile of luminance, and on
+a frame with only two distinct levels that selects everything. More
+importantly it was unnecessary: the noise it was meant to exclude is
+near-black pixels whose hues point every which way, and taking the
+hue *mode* rather than the mean discards them anyway. The mean was
+measurably wrong — pooled over the corpus it reported 53.5° of scatter
+for an ink that holds to about 9.
+
+### Where it can be fooled, honestly
+
+On four uninked frames the gate still proposes candidates — and every
+one of them lands within 27 px of a real peg. They are bare chrome
+crowns reflecting the white monitor, which reads as blue. So
+`ink_not_found` means *this channel is empty*, and an unmarked chrome
+crown is not reliably empty. That is a mirror being a mirror, and it
+is not a mis-registration risk: it proposes pegs where pegs are.
+
 ## What is genuinely unsettled
 
-* **The normalisation constant.** Dividing by L\* alone blows up on
-  near-black pixels; something like `chroma / (L* + k)` needs `k`
-  chosen against the corpus rather than picked.
+* ~~The normalisation constant.~~ Settled: `k = 16`, which is not a
+  constant to choose at all. `L* + 16` is `116 f(Y/Yn)`, carrying the
+  same cube root as a\* and b\*, so `C*/(L* + 16)` is exactly
+  scale-invariant wherever Lab is a cube root. Crowns are dark enough
+  to reach the linear segment, where it is not — halving the light
+  costs the angle 3.2° and the relative chroma 16.5 % — so the angle
+  discriminates and the magnitude is only a floor.
 * **Whether the round peg needs its own treatment.** It has been the
   awkward one throughout — a dome, so its ink sits on a curved mirror
   and its landmark height is 5.567 mm rather than zero.

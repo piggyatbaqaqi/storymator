@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+"""Measure an ink signature from one frame of marked pegs.
+
+Onboarding a new ink is shooting one frame and reading three numbers,
+rather than guessing at a colour name.  Give it the frame and roughly
+where the pegs are -- within a few tens of pixels is plenty, the
+window is 140 px across by default:
+
+    bin/measure-ink shot.png --peg 1280,1952 --peg 2001,1828 \
+        --peg 2520,1737 --name "Dykem Steel Blue"
+
+It prints an `ink` block to paste into a calibration JSON, or writes
+it straight into one with --into.
+
+The numbers are a property of *camera plus ink*, not of the ink alone.
+Paper-referencing removes the illuminant but not the sensor, so a
+different camera wants its own frame through here.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from typing import List, Tuple
+
+import numpy as np
+from PIL import Image
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "comfyui", "comfyui_acme"))
+
+from acme.ink import measure_signature          # noqa: E402
+
+
+def peg(text: str) -> Tuple[int, int]:
+    try:
+        x, y = text.split(",")
+        return int(x), int(y)
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"--peg wants x,y in pixels, not {text!r}")
+
+
+def main(argv: List[str] = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("frame", help="a capture with the pegs marked")
+    ap.add_argument("--peg", type=peg, action="append", required=True,
+                    help="x,y of a peg, in pixels; repeat for each")
+    ap.add_argument("--name", default="",
+                    help="what the ink is, for the record")
+    ap.add_argument("--radius", type=int, default=70,
+                    help="half-width of the window around each peg")
+    ap.add_argument("--into", default=None,
+                    help="a calibration JSON to write the block into")
+    args = ap.parse_args(argv)
+
+    rgb = np.asarray(Image.open(args.frame).convert("RGB"), dtype=float)
+    try:
+        signature = measure_signature(rgb, args.peg, name=args.name,
+                                      radius_px=args.radius)
+    except ValueError as exc:
+        print(f"{args.frame}: {exc}", file=sys.stderr)
+        return 1
+
+    block = dict(signature.__dict__)
+    print(json.dumps({"ink": block}, indent=2))
+
+    if args.into:
+        with open(args.into) as fh:
+            data = json.load(fh)
+        data["ink"] = block
+        with open(args.into, "w") as fh:
+            json.dump(data, fh, indent=2)
+        print(f"\nwrote the ink block into {args.into}", file=sys.stderr)
+
+    if signature.tolerance_deg >= 45.0:
+        print("\nTOLERANCE IS AT ITS CEILING.  The pixels in these windows "
+              "do not agree on a hue, which usually means the windows are "
+              "not on the pegs or the ink did not take.",
+              file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
