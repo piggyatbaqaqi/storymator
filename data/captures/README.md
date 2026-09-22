@@ -72,6 +72,15 @@ whole tree, so nothing is lost by leaving them untracked.
 |---|---:|---|
 | `2026-09-21` | 53 | **Not recorded.** Rescued after the fact during rectangle-fitting work; the operator was varying the lighting but the setups were not written down. Exposure medians span 0.141–0.792, so they do cover real variety — it is just unlabelled variety. |
 
+| `2026-09-21-rect-first` | 2 | Ambient room light, cell phone behind the lens, white monitor screen opposite the room light. First frames with rectangle fitting in earnest; the shadows are picked up as features. |
+| `2026-09-21-phone-beside-lens` | 6 | As above but the phone *next* to the lens rather than behind it. Subjectively a much better match. |
+| `2026-09-21-low-grazing` | 2 | Phone held low above the paper, ambient room light, white monitor. Shot to test the specular base line. |
+| `stability-light-A` | 6 | Repeat frames, light held still. The unclipped control: outline error 1-5 px across all six. |
+| `stability-light-B` | 6 | Repeat frames with the sheet increasingly clipped, 5.5 % to 26.6 %. Outline error tracks the clipping to 84 px. |
+| `hamster-crowbar-A` | 2 | Printed animation art by Dr. Boulos, lighting as `-phone-beside-lens`. Regression case: detection must not be confused by artwork. |
+| `hamster-crowbar-B` | 2 | Same art, lighting as `-low-grazing`. |
+| `blue` | 5 (+5 diagnostics) | Peg crowns coloured with a pen+GEAR dry-erase marker. Exposure alternates frame to frame, medians 0.243/0.067/0.212/0.059/0.220, so half the session is near-black. Note reads "phone next to lens, bar moved, exposure fixed" and that bar move is why 006 shows the tint far more weakly than 008 and 010. Holds `blue_006_round_peg_closeup.png`, a byte-exact crop. |
+
 That first row is the argument for the tool. Everything in it would
 have been worth labelling and none of it was, because there was no
 habit and no place to put it.

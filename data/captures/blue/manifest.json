@@ -1,0 +1,191 @@
+{
+  "frames": [
+    {
+      "file": "blue_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00022_.png",
+      "sha256_16": "090c2a67270527e3",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T23:14:17",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "blue_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00023_.png",
+      "sha256_16": "ec6d5a2f0127034e",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T23:14:20",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "blue_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00024_.png",
+      "sha256_16": "7c7965d4c0ef2c95",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T23:15:52",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "blue_004.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00025_.png",
+      "sha256_16": "1e6fcecd1f9f84b0",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T23:15:56",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "blue_005.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_akpyc_00026_.png",
+      "sha256_16": "9b0ee7290dd82ff8",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-21T23:16:30",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "blue_006.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00022_.png",
+      "sha256_16": "80bf50c6fdfd8f5d",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T23:14:14",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.2431,
+        "p98": 0.9333,
+        "mean": 0.3841,
+        "sd": 0.3423
+      }
+    },
+    {
+      "file": "blue_007.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00023_.png",
+      "sha256_16": "c5e624135b3d614f",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T23:14:18",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.0667,
+        "p98": 0.5059,
+        "mean": 0.1962,
+        "sd": 0.2065
+      }
+    },
+    {
+      "file": "blue_008.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00024_.png",
+      "sha256_16": "89429990828fe2dc",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T23:15:50",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.2118,
+        "p98": 0.8824,
+        "mean": 0.3234,
+        "sd": 0.3047
+      }
+    },
+    {
+      "file": "blue_009.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00025_.png",
+      "sha256_16": "b4e58555bf38d5ce",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T23:15:54",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.0588,
+        "p98": 0.498,
+        "mean": 0.1927,
+        "sd": 0.2047
+      }
+    },
+    {
+      "file": "blue_010.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00026_.png",
+      "sha256_16": "ee7e773fcb58cbb0",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-21T23:16:28",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.2196,
+        "p98": 0.9216,
+        "mean": 0.3695,
+        "sd": 0.3375
+      }
+    }
+  ],
+  "session": "blue",
+  "notes": [
+    {
+      "at": "2026-09-21T23:21:10",
+      "note": "phone next to lens, bar moved, exposure fixed"
+    }
+  ]
+}

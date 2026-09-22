@@ -309,3 +309,76 @@ It also explains an earlier mistake of mine. I concluded from these
 frames that "the sheet MOVED", having averaged corner positions over a
 session that included the badly clipped ones. The operator said they
 had not touched it, and they were right.
+
+## The blue marker works, and I said it did not
+
+A pen+GEAR dry-erase marker on the unprepped chrome crowns. Session
+`blue`, five full-size frames.
+
+**I reported it had not taken. That was wrong**, and the operator
+disputed it twice before I looked at the right thing. The measurement
+that produced the wrong answer sampled the *darkest 55 %* of the peg
+and averaged its hue. The crown is a mirror: its body is near-black
+and its hue there is noise, so the average says nothing. The operator
+had already described where the colour actually is — "you can see the
+blue around the two reflections" — which is exactly the annulus that
+sampling excludes.
+
+`blue_006_round_peg_closeup.png` is a byte-exact crop of `blue_006.png`
+at (1909, 1763); the colour is in the captured data, not in the crop.
+
+### What it looks like measured
+
+CIE L\*a\*b\* b\* is the channel: negative is blue, and every other
+surface in the frame — paper, desk, shadow — is strongly positive
+(paper b\* ≈ +16).
+
+Thresholding the whole 8 Mpx frame at **b\* < −8**, opened 3×3 and
+closed 7×7:
+
+| frame | components | pixels | are they pegs? |
+|---|---:|---:|---|
+| `blue_008` | 3 | 364 | **all three, and nothing else** |
+| `blue_010` | 8 | 653 | six peg fragments, two specks on the desk edge |
+| `blue_009` | 1 | 81 | the round peg only — frame is near-black |
+| `blue_006` | 2 | 21 | one peg, marginal |
+| `blue_007` | 0 | 0 | near-black frame |
+
+Against the greyscale detector's 3–5 candidates on blank paper and
+44–56 on artwork, three components for three pegs is a different kind
+of result.
+
+**The shadow is not blue.** In the b\* map the shadows read as *dark
+yellow* — the same hue as the paper they fall on, which is what a
+shadow is. The confuser that has cost the most work this far simply is
+not in this channel.
+
+### False positives across the rest of the corpus
+
+Every unmarked full-size capture, same threshold: 24 of 29 frames give
+under 40 px total, and 13 give nothing at all. The worst three are
+`2026-09-21_007/008/050` at 678–1033 px, and all of that sits at
+x ≈ 3080–3140 — the dark desk at the right frame edge, nowhere near
+the pegs and outside the sheet the outline stage has already found.
+
+Both **hamster-crowbar** artwork frames give 3 px and 0 px. Printed
+artwork does not fire this channel.
+
+### The catch: the crown is a mirror, so the tint is not always visible
+
+`blue_006` and `blue_010` have the same white balance (paper B/G 0.852
+vs 0.848) and near-identical exposure (median 0.243 vs 0.220), yet 006
+barely registers and 010 is unmistakable. The difference is what the
+dome reflects. In 006 it is throwing back the warm room lamp and the
+amber swamps a thin ink layer; in 008 and 010 — after the note "phone
+next to lens, bar moved" — it reflects the phone and the white monitor,
+and the tint shows.
+
+So the marker's signal strength is a property of the *lighting
+geometry*, not of the exposure, and nothing in the exposure statistics
+predicts it. Any detector built on this needs to say so when the
+channel comes up empty rather than fall through to a silent
+mis-registration.
+
+Untested: how long dry-erase ink survives on chrome that gets sheets
+pushed onto it all day.
