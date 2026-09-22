@@ -1,0 +1,47 @@
+{
+  "frames": [
+    {
+      "file": "fresh_ink_007.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00032_.png",
+      "sha256_16": "42c7875809143bab",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-22T16:28:50",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2941,
+        "p98": 0.9608,
+        "mean": 0.4089,
+        "sd": 0.3498
+      }
+    },
+    {
+      "file": "fresh_ink_008.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_qmnab_00033_.png",
+      "sha256_16": "f97fc61602b045a7",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-22T16:29:24",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2941,
+        "p98": 0.9765,
+        "mean": 0.4012,
+        "sd": 0.3447
+      }
+    }
+  ],
+  "session": "fresh_ink",
+  "notes": [
+    {
+      "at": "2026-09-22T16:30:56",
+      "note": "freshly applied dry erase blue, phone next to lens, exposure fixed"
+    }
+  ]
+}
