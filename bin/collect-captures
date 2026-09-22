@@ -33,6 +33,7 @@ import glob
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 from typing import Dict, List, Optional
@@ -106,6 +107,41 @@ def already_collected(out_root: str) -> Dict[str, str]:
     return held
 
 
+def next_index(target: str, session: str) -> int:
+    """The first frame number this session has not used yet.
+
+    Numbering restarted at 1 on every run until 2026-09-22, so a
+    second collect into a live session wrote over the frames the first
+    one had left there. `blue_hamster` lost two that way. The
+    content-hash skip does not cover this: it stops the same *frame*
+    being copied twice and says nothing about the *name* a genuinely
+    new frame is given.
+
+    Both the directory and the manifest are consulted, and a number
+    either has used is spent. Deleting a frame by hand therefore
+    leaves a gap rather than an alias for something the manifest still
+    describes.
+    """
+    pattern = re.compile(re.escape(session) + r"_(\d+)\.[^.]+$")
+    used = [0]
+    names: List[str] = []
+    if os.path.isdir(target):
+        names += os.listdir(target)
+    manifest = os.path.join(target, "manifest.json")
+    if os.path.exists(manifest):
+        try:
+            with open(manifest) as fh:
+                data = json.load(fh)
+        except (OSError, ValueError):
+            data = {}
+        names += [str(f.get("file", "")) for f in data.get("frames", [])]
+    for name in names:
+        match = pattern.match(name)
+        if match:
+            used.append(int(match.group(1)))
+    return max(used) + 1
+
+
 def collect(temp: str, out_root: str, session: str, note: str,
             keep: List[str], since: Optional[float],
             dry_run: bool, allow_duplicates: bool = False,
@@ -141,7 +177,8 @@ def collect(temp: str, out_root: str, session: str, note: str,
     target = os.path.join(out_root, session)
     print(f"{len(found)} frame(s) -> {target}")
     entries = []
-    for index, (path, kind) in enumerate(found, start=1):
+    start = next_index(target, session)
+    for index, (path, kind) in enumerate(found, start=start):
         stem = f"{session}_{index:03d}"
         record = {"file": stem + os.path.splitext(path)[1],
                   "kind": kind, "source": os.path.basename(path)}

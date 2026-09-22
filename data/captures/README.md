@@ -86,16 +86,19 @@ That first row is the argument for the tool. Everything in it would
 have been worth labelling and none of it was, because there was no
 habit and no place to put it.
 
-## A second collect into a live session overwrites it
+## Collecting twice into one session
 
-`collect` numbers frames from 001 on every run, so a second collect
-into a session that already holds frames writes over the low-numbered
-ones. `blue_hamster` lost its first two frames that way; the manifest
-still carries their hashes, and those entries are marked `"lost"`.
+Numbering continues from the highest frame the session has already
+used, counting both the files on disk and the manifest's entries. So a
+second collect appends, and a frame deleted by hand leaves a gap
+rather than an alias for something the manifest still describes.
 
-The content-hash skip does not help here. It stops the same *frame*
-being copied twice; it says nothing about the *name* a genuinely new
-frame is given.
+It did not always. Until 2026-09-22 numbering restarted at 001 on
+every run, so a second collect wrote over the first one's frames;
+`blue_hamster` lost two that way, and their entries survive in its
+manifest marked `"lost"`. The content-hash skip never covered this —
+it stops the same *frame* being copied twice and says nothing about
+the *name* a genuinely new frame is given.
 
-Until it is fixed, collect once per session, or pass a fresh
-`--session`. Tests are in `bin/collect_captures_test.py`.
+Tests are in `bin/collect_captures_test.py`, the first tests for
+anything in `bin/`.
