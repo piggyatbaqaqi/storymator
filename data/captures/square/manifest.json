@@ -1,0 +1,269 @@
+{
+  "frames": [
+    {
+      "file": "square_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00001_.png",
+      "sha256_16": "541e9e861bc25239",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T17:49:17",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00002_.png",
+      "sha256_16": "49e9671ae432a463",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T17:51:25",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00003_.png",
+      "sha256_16": "890089644c461575",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T18:05:06",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_004.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00004_.png",
+      "sha256_16": "d2752f07cd52d05a",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T18:05:26",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_005.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00005_.png",
+      "sha256_16": "4501e537e330b089",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T18:05:36",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_006.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00006_.png",
+      "sha256_16": "d6087ac5f8f1ead2",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T18:06:40",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_007.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00007_.png",
+      "sha256_16": "fe51c813d8da1701",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T18:07:06",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "square_008.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00001_.png",
+      "sha256_16": "ed9c9434f309a118",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T17:49:15",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2275,
+        "p98": 0.8706,
+        "mean": 0.3171,
+        "sd": 0.3054
+      }
+    },
+    {
+      "file": "square_009.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00002_.png",
+      "sha256_16": "145c2ee586864169",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T17:51:23",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2824,
+        "p98": 0.8941,
+        "mean": 0.3513,
+        "sd": 0.3232
+      }
+    },
+    {
+      "file": "square_010.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00003_.png",
+      "sha256_16": "8aba9bdf22cd8664",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T18:05:04",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.0196,
+        "p98": 0.2627,
+        "mean": 0.0885,
+        "sd": 0.0932
+      }
+    },
+    {
+      "file": "square_011.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00004_.png",
+      "sha256_16": "1370d7a8cc2385ba",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T18:05:24",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.1176,
+        "p98": 0.8549,
+        "mean": 0.2536,
+        "sd": 0.2787
+      }
+    },
+    {
+      "file": "square_012.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00005_.png",
+      "sha256_16": "c273ab5152260fa9",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T18:05:34",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2627,
+        "p98": 0.8863,
+        "mean": 0.3522,
+        "sd": 0.3254
+      }
+    },
+    {
+      "file": "square_013.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00006_.png",
+      "sha256_16": "8e8e1e18c1d694af",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T18:06:38",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2588,
+        "p98": 0.8824,
+        "mean": 0.3527,
+        "sd": 0.327
+      },
+      "notes": {
+        "note": "blank sheet, squared, reinked pegs"
+      }
+    },
+    {
+      "file": "square_014.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00007_.png",
+      "sha256_16": "e8a32ff9cb72edba",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T18:07:04",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2314,
+        "p98": 0.9216,
+        "mean": 0.34,
+        "sd": 0.3258
+      },
+      "notes": {
+        "note": "hamster art, squared, reinked pegs"
+      }
+    }
+  ],
+  "session": "square",
+  "notes": [
+    {
+      "at": "2026-09-23T18:10:00",
+      "note": "Bar squared to the frame, pegs freshly reinked. Room light OFF, monitor white, cell phone light next to the lens. 013 is the blank sheet and 014 the printed hamster art -- the pair shot to test the outline fix. 008-012 are earlier tries at squaring; 010 is near-black."
+    }
+  ]
+}
