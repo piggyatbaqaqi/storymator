@@ -172,6 +172,28 @@ def sheet_corners(mask: np.ndarray, gray: Optional[np.ndarray] = None,
     points along the edges over-determine it, and their scatter is
     paper curl and lens distortion made visible.
     """
+    # Delegated to acme.outline.corners_approx_poly, which fits the
+    # quadrilateral to the BOUNDARY.  The local frame this function
+    # used to build from _principal_angle came from the second moments
+    # of the sheet's AREA, and on this rig that is degenerate: 43 of 46
+    # corpus frames project to a mask within 6 % of square, and the
+    # principal axis of a square is arbitrary.  It reported angles
+    # between 1 and 45 degrees with no relation to where the sheet was,
+    # and put all four corners off the paper on every recent frame.
+    #
+    # Measured against the alternative on a near-square scene with
+    # exact ground truth: 0.08 px here, 4.97 px for a minimum-area box,
+    # and the two are indistinguishable everywhere else.  See
+    # acme/outline_test.py, which runs one battery across both.
+    from .outline import corners_approx_poly
+    return corners_approx_poly(mask, gray, return_samples=return_samples)
+
+
+def _sheet_corners_by_area(mask: np.ndarray,
+                           gray: Optional[np.ndarray] = None,
+                           return_samples: bool = False):
+    """The previous corner finder.  Kept only for the test that guards
+    the diagnosis; nothing in the pipeline calls it."""
     eroded = ndimage.binary_erosion(mask, iterations=1)
     ys, xs = np.nonzero(mask & ~eroded)
     pts = np.column_stack([xs, ys]).astype(float)

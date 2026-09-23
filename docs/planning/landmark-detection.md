@@ -572,3 +572,56 @@ where the corners are, rather than from the area; they sit side by
 side in `acme/outline.py` under one battery of tests in
 `acme/outline_test.py`, so the choice is read off a table rather than
 argued.
+
+### Resolved: `approxPolyDP` wins, by 60x on the case that mattered
+
+Both candidates were implemented and run through one battery. On
+synthetic scenes with exact ground truth they are indistinguishable
+everywhere except the degenerate one:
+
+| scene | `minAreaRect` | `approxPolyDP` |
+|---|---:|---:|
+| mild keystone, any rotation | 0.00 px | 0.00 px |
+| **near-square mask (aspect 1.14)** | **4.97 px** | **0.08 px** |
+| worst IoU over six real frames | 0.982 | 0.986 |
+
+`minAreaRect` fits its box to the convex hull, and a keystoned
+quadrilateral is not a rotated rectangle, so the box's angle is a
+compromise between the two pairs of opposite edges and the side
+assignment leaks points across the corners. `approxPolyDP` assumes
+nothing about the shape.
+
+`sheet_corners` now delegates to `acme.outline.corners_approx_poly`.
+The old implementation survives as `_sheet_corners_by_area`, called by
+nothing but the test that guards the diagnosis.
+
+**One approved threshold had to be relaxed, and it was wrong rather
+than strict.** The tests asserted a fitted corner sits within 25 px of
+the mask boundary. A corner is the intersection of two straight-line
+fits and this paper does not have straight edges: measured on these
+frames, three sides of each sheet hold to 3-10 px while the free end
+bows 23 to 90 px, matching the 8-11 mm measured independently.
+`BOW_PX = 100` still catches what the tests exist for -- the old
+finder put corners more than 500 px outside the sheet.
+
+### What is behind it
+
+With the outline fixed the pipeline reaches the residual on every
+frame, so the next two problems are now visible:
+
+| frame | verdict |
+|---|---|
+| `fresh_ink_007` / `_008` | peg residual 32.9 / 27.6 px against a 1.5 px threshold |
+| `blue_010`, `blue_hamster_003` | 47.0 / 32.8 px |
+| `square_013` / `_014` | only **2** peg candidates, need 3 |
+
+The `square` pair miss the right-hand peg, and it is not the ink
+signature -- re-measuring from those frames' own pegs gives
+essentially the stored one and still finds two. The room light was off
+for that session and the right of the frame is very dark. Lighting,
+not colour.
+
+The residual is a separate question and the larger one. It is no
+longer the outline: these are three real pegs fitted against a bar,
+and 30 px at 7.25 px/mm is 4 mm, which is far too much for punch
+tolerance. Worth its own measurement before anything is changed.
