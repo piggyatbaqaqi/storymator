@@ -83,5 +83,11 @@
     ],
     "board_dictionary": "DICT_6X6_250",
     "board_print_scale": 1.012652
+  },
+  "ink": {
+    "direction_deg": -63.4,
+    "tolerance_deg": 31.8,
+    "min_chroma": 0.227,
+    "name": "pen+GEAR dry erase blue"
   }
 }

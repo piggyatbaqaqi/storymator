@@ -19,7 +19,8 @@ from ..acme.model import Calibration, FieldSpec, PegModel, SheetModel
 from ..acme.register import register_image
 from ..acme.report import batch_report
 from ._convert import (batch_to_numpy, draw_overlay, masks_to_tensor,
-                       residual_chart, stack_to_tensor, to_gray)
+                       residual_chart, stack_to_tensor, to_gray,
+                       to_rgb)
 
 AcmeCalibrationType = io.Custom("ACME_CALIBRATION")
 AcmePoseType = io.Custom("ACME_POSE")
@@ -215,10 +216,14 @@ class AcmeDetectSheet(io.ComfyNode):
         diagnostics = []
         for frame in frames:
             gray = to_gray(frame)
+            # The colour frame, not just its luminance: a calibration
+            # carrying an InkSignature finds the pegs by their colour,
+            # and passing only gray would refuse every frame.
             pose = fit_pose(gray, calibration,
                             max_residual_px=max_residual_px,
                             polarity=peg_appearance,
-                            peg_contrast=peg_contrast)
+                            peg_contrast=peg_contrast,
+                            rgb=to_rgb(frame))
             poses.append(pose)
             overlays.append(draw_overlay(
                 frame, pose.corners_image, pose.pegs_image,

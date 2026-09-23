@@ -488,3 +488,57 @@ brightness threshold and the dimmest peg drops out first. The
 
 What to build on this is in
 [ink-landmarks.md](ink-landmarks.md).
+
+## The outline is the blocker now, and it fails on rotation
+
+Found chasing an empty `AcmeDetectSheet.overlay`. The overlay was
+blank because the fit was refused, and a refused `Pose` carries no
+corners and no peg rectangles to draw.
+
+**The pegs are not the problem any more.** With the colour gate
+running, `fresh_ink_007` yields exactly three candidates and all three
+sit on the pegs. What fails is `sheet_corners`.
+
+Its four corners on that frame are (1057, −13), (3106, 623),
+(2100, 2326), (718, 1701). The sheet's own bounding box is
+x 899–2693, y 73–2083. **Every corner is outside it.** Drawn on the
+frame, the quad is visibly skewed off the paper onto the mat.
+
+Across the corpus, sorted by how far the sheet is rotated in frame:
+
+| principal angle | frames | corners outside the sheet bbox |
+|---|---|---|
+| ≤ 3° | `2026-09-21_*`, `rect-first_*` | **0 of 4** |
+| 11–17° | `stability-light-*`, `hamster-crowbar-*` | 1 of 4 |
+| 26–45° | `blue_*`, `blue_hamster_*`, `fresh_ink_*` | **3–4 of 4** |
+
+Every recent frame is in the bottom row. The bar was turned between
+sessions and the outline stage stopped working; the earlier frames
+that registered are all in the top row.
+
+The cause is `_principal_angle`, which takes the sheet's orientation
+from the second moments of its *area*. Under a strong keystone the
+area's principal axis is not the edge direction — 32.1° against a
+sheet rotated nearer 18° on `fresh_ink_007` — and `sheet_corners`
+sorts boundary points into four sides by sign in that frame. Get the
+frame wrong by 14° on a quadrilateral this irregular and whole
+stretches of one edge are filed under another, so each line is fitted
+through a mixed set of points and the intersections land anywhere.
+
+The docstring anticipates rotation and says the image-axis assignment
+"collapses entirely past about 20 degrees". It is right about the
+failure and wrong about the remedy: the principal axis of the area
+does not survive perspective either.
+
+Not yet fixed, and it needs tests first. Two candidates worth
+measuring against each other: take the orientation from
+`cv2.minAreaRect` on the mask, which fits the *boundary* rather than
+the area; or drop the four-way sort entirely and fit the quadrilateral
+with `cv2.approxPolyDP`, which is what the bow measurement in
+[ink-landmarks.md](ink-landmarks.md) already does successfully on
+these very frames — including `fresh_ink_007`.
+
+**Meanwhile there is an operating workaround**: at a principal angle
+within about 3° the outline is sound, and the pipeline runs to
+completion. Squaring the bar to the frame should get registration
+working today without any code change.

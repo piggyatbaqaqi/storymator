@@ -29,6 +29,19 @@ def to_gray(frame: np.ndarray) -> np.ndarray:
     return (frame[..., :len(weights)] * weights).sum(axis=-1) / weights.sum()
 
 
+def to_rgb(frame: np.ndarray) -> Optional[np.ndarray]:
+    """(H, W, 3) colour, or None when the frame carries no colour.
+
+    The ink gate needs chroma, and a greyscale frame has none -- it
+    would white-balance to neutral and match no signature at all. So
+    say None and let the caller refuse with a reason rather than with
+    an empty mask.
+    """
+    if frame.ndim != 3 or frame.shape[2] < 3:
+        return None
+    return np.asarray(frame[..., :3], dtype=float)
+
+
 def stack_to_tensor(frames: List[np.ndarray]) -> torch.Tensor:
     """List of (H, W[, C]) -> (B, H, W, C) float32 tensor."""
     prepared = []
