@@ -538,7 +538,37 @@ with `cv2.approxPolyDP`, which is what the bow measurement in
 [ink-landmarks.md](ink-landmarks.md) already does successfully on
 these very frames — including `fresh_ink_007`.
 
-**Meanwhile there is an operating workaround**: at a principal angle
-within about 3° the outline is sound, and the pipeline runs to
-completion. Squaring the bar to the frame should get registration
-working today without any code change.
+### Correction: it is not rotation, it is degeneracy
+
+The workaround first recorded here — square the bar to the frame — was
+wrong, and the operator acted on it. The `square` session is that
+attempt: the sheet is visibly square in `square_013` and `square_014`,
+and `_principal_angle` still reports −31.5° and −44.4°.
+
+Sorting the corpus by the mask's **aspect ratio** — the square root of
+the ratio of its covariance eigenvalues — explains why:
+
+| corners outside the bbox | aspect ratio |
+|---|---|
+| 3–4 of 4 | 1.00 – 1.29 |
+| 0 of 4 | 1.02 – 1.58 |
+
+The two populations overlap almost entirely, so rotation was never the
+variable. What the corpus does show is that **43 of 46 frames have a
+mask between 1.00 and 1.06** — essentially square. The sheet is 1.29,
+but from this camera angle the long axis foreshortens until the
+projection is square.
+
+The covariance of a square is isotropic, so its principal axis is
+*arbitrary*. That is why the reported angle wanders between 1° and 45°
+with no relation to where the sheet actually is: it is not measuring
+anything. The frames that work are the ones where the arbitrary axis
+happened to land near zero — 1.2°, 2.9°, 1.3°, 3.7° — and that luck
+has been carrying the outline stage all along.
+
+So there is **no operating workaround**. The finder has to be
+replaced. Both candidates take the orientation from the boundary,
+where the corners are, rather than from the area; they sit side by
+side in `acme/outline.py` under one battery of tests in
+`acme/outline_test.py`, so the choice is read off a table rather than
+argued.
