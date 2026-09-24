@@ -202,6 +202,15 @@ class Calibration:
         assert self.field_spec is not None, "__post_init__ sets this"
         return self.field_spec
 
+    def check_raster(self) -> None:
+        """Raise unless the output raster contains the peg positions.
+
+        A raster that misses them produces a registered frame that
+        looks like blank paper rather than like an error, which is
+        exactly how it went unnoticed.
+        """
+        raise NotImplementedError
+
     def with_bar_position(self, where: str) -> "Calibration":
         if where not in ("below", "above"):
             raise ValueError(f"bar_position must be below or above, "

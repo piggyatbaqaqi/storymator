@@ -81,6 +81,17 @@ class Pose:
                 f"punch offset {self.punch_offset_mm:.2f} mm")
 
 
+def default_residual_mm(sheet) -> float:
+    """The peg residual a sound sheet should be held to, in mm.
+
+    Three times the punch tolerance.  A threshold below the scatter of
+    the punch itself cannot be met by any real sheet, which is what
+    1.5 raster pixels -- 129 microns against a measured 268 -- amounted
+    to.
+    """
+    raise NotImplementedError
+
+
 def select_peg_triple(blobs: Sequence[Blob], positions_mm: np.ndarray,
                       spacing_mm: float, tolerance_mm: float,
                       max_candidates: int = 60
