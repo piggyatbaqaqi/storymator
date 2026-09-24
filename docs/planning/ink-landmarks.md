@@ -267,6 +267,27 @@ crowns reflecting the white monitor, which reads as blue. So
 crown is not reliably empty. That is a mirror being a mirror, and it
 is not a mis-registration risk: it proposes pegs where pegs are.
 
+### The swap works on real imagery, not only in tests
+
+Checked by spinning the whole chroma plane of `fresh_ink_007` about
+the neutral axis, which leaves the near-neutral paper where it is and
+moves the ink a long way. Nothing was recoloured by hand, so the
+detector was not handed a mask it had drawn itself.
+
+| simulated ink | measured direction | found | its own signature | the *blue* signature |
+|---|---:|---:|---|---|
+| as shot | −63.4° | 3/3 | — | 3 |
+| rotated +100° | −3.4° | 3/3 | works | **refuses** |
+| rotated −120° | +142.6° | 3/3 | works | 4, none reliable |
+| rotated 180° | +115.6° | 3/3 | works | 2 |
+
+Each colour is measured correctly and finds all three pegs, and the
+blue signature stops working on every one of them — so the selection
+is by colour rather than by the pegs being findable regardless. The
+imperfect refusals in the last two rows are an artefact of rotating
+*everything*, which drags unrelated dark pixels into the blue
+direction; a real ink change moves only the crowns.
+
 ## What is genuinely unsettled
 
 * ~~The normalisation constant.~~ Settled: `k = 16`, which is not a
