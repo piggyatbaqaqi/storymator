@@ -28,7 +28,10 @@ runs the same battery against each.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:            # pragma: no cover
+    from .model import Calibration
 
 import numpy as np
 
@@ -220,3 +223,35 @@ def outline_quality(corners: np.ndarray, mask: np.ndarray):
     worst = max(float(np.min(np.hypot(edge[:, 0] - x, edge[:, 1] - y)))
                 for x, y in quad)
     return iou, worst
+
+
+def predict_peg_windows(gray: np.ndarray,
+                        calibration: "Calibration",
+                        mask: Optional[np.ndarray] = None) -> np.ndarray:
+    """Where the three pegs should be, from the sheet outline alone.
+
+    ``bin/measure-ink`` needs to know where to look before any ink
+    signature exists, so this cannot use colour and does not.  The
+    outline gives a homography, the bar's nominal geometry says where
+    the pegs sit in the sheet's frame, and the inverse puts them back
+    in pixels.
+
+    Returns ``(3, 2)`` image points ordered along the bar, matching
+    :meth:`acme.model.PegModel.positions` -- one rectangular peg, the
+    round peg, the other rectangular peg.
+
+    **The four-fold labelling ambiguity is resolved on luminance.** Two
+    of the four cyclic labellings map the sheet's long edge onto the
+    model's short one and are thrown out by aspect; the remaining pair
+    differ by 180 degrees, which puts the pegs against one long edge or
+    the other. Choosing between those is what pegs are *for*, and
+    :func:`acme.fit.fit_pose` uses the peg line to do it -- but that is
+    not available here, so the darker trio wins. A peg is chrome
+    against paper and reads dark from any angle; the opposite edge is
+    bare paper.
+
+    This is a *proposal*, accurate to roughly the punch tolerance and
+    whatever the outline fit leaves behind, which is why the caller
+    samples a window around each point rather than a pixel.
+    """
+    raise NotImplementedError

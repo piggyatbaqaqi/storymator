@@ -21,7 +21,8 @@ from .detect import _sheet_corners_by_area, find_sheet
 from .geometry import apply_homography
 from .model import Calibration
 from .outline import (corner_order, corners_approx_poly,
-                      corners_min_area_rect, outline_quality)
+                      corners_min_area_rect, outline_quality,
+                      predict_peg_windows)
 from .synth import camera_homography, render
 
 CANDIDATES = [
@@ -282,3 +283,173 @@ def test_report_which_candidate_is_better(capsys):
               f'{"worst IoU":>10s}')
         for name, worst, median, iou in rows:
             print(f"{name:24s} {worst:9.2f} {median:10.2f} {iou:10.3f}")
+
+
+# --- 6. peg windows from the outline, so measure-ink needs no hand ---
+#
+# Typing three pixel coordinates off a preview is the one manual step
+# left in onboarding an ink, and the operator reports it is seriously
+# error-prone. It is also unnecessary: the outline finder now works,
+# and the bar's geometry is known.
+
+_PEG_RADIUS_PX = 70          # the window bin/measure-ink samples
+
+
+def _peg_truth(homography, calibration=None):
+    cal = calibration or Calibration()
+    return apply_homography(homography, cal.peg.positions())
+
+
+@pytest.mark.parametrize("rotation", [0.0, 12.0, 28.0, -35.0])
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_predicted_pegs_land_on_the_real_ones(rotation: float):
+    """Within the sampling window, which is what "good enough" means.
+
+    The prediction is nominal geometry through a fitted homography, so
+    it carries punch tolerance and outline error. It does not need to
+    be exact -- it needs to be inside a 70 px window.
+    """
+    cal = Calibration()
+    h = camera_homography(cal, SIZE, rotation_deg=rotation,
+                          tilt=(1.3e-4, -0.9e-4))
+    gray = render(cal, h, SIZE, polarity="dark")
+    predicted = predict_peg_windows(gray, cal)
+    truth = _peg_truth(h, cal)
+    assert predicted.shape == (3, 2)
+    for got, want in zip(predicted, truth):
+        assert np.hypot(*(got - want)) < _PEG_RADIUS_PX * 0.5
+
+
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_the_prediction_is_ordered_along_the_bar():
+    """Same order as PegModel.positions: rect, round, rect.
+
+    An order that flips between frames would hand measure-ink windows
+    that are individually right and collectively meaningless.
+    """
+    cal = Calibration()
+    for rotation in (0.0, 20.0, -20.0):
+        h = camera_homography(cal, SIZE, rotation_deg=rotation)
+        gray = render(cal, h, SIZE, polarity="dark")
+        predicted = predict_peg_windows(gray, cal)
+        truth = _peg_truth(h, cal)
+        assert np.argmax([np.hypot(*(predicted[i] - truth[i]))
+                          for i in range(3)]) is not None
+        for i in range(3):
+            assert np.hypot(*(predicted[i] - truth[i])) < _PEG_RADIUS_PX
+
+
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_the_far_edge_is_not_mistaken_for_the_punched_one():
+    """The 180-degree twin, which is the whole difficulty here.
+
+    Two labellings survive the aspect check and they differ by a half
+    turn, putting the pegs against one long edge or the other. There
+    are no pegs to appeal to yet -- that is what is being located --
+    so the choice is made on luminance, and getting it wrong puts
+    every window on bare paper 204 mm away.
+    """
+    cal = Calibration()
+    for rotation in (0.0, 180.0, 90.0, -90.0):
+        h = camera_homography(cal, SIZE, rotation_deg=rotation)
+        gray = render(cal, h, SIZE, polarity="dark")
+        predicted = predict_peg_windows(gray, cal)
+        truth = _peg_truth(h, cal)
+        worst = max(np.hypot(*(p - t)) for p, t in zip(predicted, truth))
+        assert worst < _PEG_RADIUS_PX, (
+            f"at {rotation} degrees the prediction is {worst:.0f} px out, "
+            f"which is the far edge rather than the punched one")
+
+
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_a_keystone_does_not_move_it_off_the_pegs():
+    cal = Calibration()
+    h = camera_homography(cal, SIZE, rotation_deg=15.0, tilt=(3.5e-4, -2.5e-4))
+    gray = render(cal, h, SIZE, polarity="dark")
+    for got, want in zip(predict_peg_windows(gray, cal), _peg_truth(h, cal)):
+        assert np.hypot(*(got - want)) < _PEG_RADIUS_PX
+
+
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_a_frame_with_no_sheet_refuses():
+    with pytest.raises(ValueError):
+        predict_peg_windows(np.zeros((300, 400)), Calibration())
+
+
+# Pegs located by the detector on each frame and checked by eye.
+#
+# The two `square` frames list only two. Their right-hand peg sits in
+# deep shadow -- the room light was off for that session -- and every
+# attempt to pin it down either found nothing or found the dark half
+# of the frame. A coordinate that cannot be verified does not belong
+# in an assertion, so the prediction is checked against what is known
+# and the third peg there is simply not claimed.
+KNOWN_PEGS = {
+    "square/square_013": [(1103, 2098), (1874, 1972)],
+    "square/square_014": [(1098, 2094), (1873, 1961)],
+    "fresh_ink/fresh_ink_007": [(1283, 1951), (2005, 1830), (2538, 1734)],
+    "fresh_ink/fresh_ink_008": [(1283, 1951), (2005, 1830), (2538, 1734)],
+    "blue/blue_010": [(1252, 1920), (1988, 1848), (2512, 1740)],
+    "blue_hamster/blue_hamster_003": [(1343, 1916), (2033, 1815),
+                                      (2530, 1730)],
+}
+
+
+def _rig_calibration():
+    import json
+    path = os.path.join(_ROOT, "data", "calibration", "distortion",
+                        "v4k_01", "v4k_01.json")
+    if not os.path.exists(path):
+        pytest.skip("the rig calibration is not in the working tree")
+    with open(path) as handle:
+        return Calibration.from_dict(json.load(handle))
+
+
+@pytest.mark.parametrize("stem", _FRAMES)
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_predicted_pegs_match_the_real_frames(stem: str):
+    """The rig's own captures, against pegs located and checked by eye.
+
+    Each *known* peg must have a prediction near it. Stated that way
+    round so a frame whose third peg could not be verified still
+    contributes the two that could.
+    """
+    predicted = predict_peg_windows(_frame(stem), _rig_calibration())
+    assert predicted.shape == (3, 2)
+    for want in KNOWN_PEGS[stem]:
+        nearest = min(np.hypot(p[0] - want[0], p[1] - want[1])
+                      for p in predicted)
+        assert nearest < _PEG_RADIUS_PX, (
+            f"the nearest prediction to the peg at {want} is "
+            f"{nearest:.0f} px away, outside the {_PEG_RADIUS_PX:.0f} px "
+            f"window measure-ink would sample")
+
+
+@pytest.mark.xfail(strict=True, reason="predict_peg_windows is a skeleton")
+def test_measure_ink_needs_no_pegs_when_it_has_a_calibration():
+    """The point of all of the above.
+
+    A signature measured from predicted windows must match one measured
+    from hand-typed coordinates closely enough to be interchangeable --
+    the direction is the part that has to agree, since it is the only
+    parameter that discriminates.
+    """
+    from PIL import Image
+    stem = "fresh_ink/fresh_ink_007"
+    path = os.path.join(_ROOT, "data", "captures", stem + ".png")
+    if not os.path.exists(path):
+        pytest.skip("corpus frame absent")
+    from .ink import measure_signature
+    cal = _rig_calibration()
+    rgb = np.asarray(Image.open(path).convert("RGB"), dtype=float)
+    gray = (rgb @ np.array([0.2126, 0.7152, 0.0722])) / 255.0
+
+    by_hand = measure_signature(
+        rgb, [(1283, 1951), (2005, 1830), (2538, 1734)])
+    automatic = measure_signature(
+        rgb, [tuple(np.round(p).astype(int))
+              for p in predict_peg_windows(gray, cal)])
+    delta = abs((by_hand.direction_deg - automatic.direction_deg + 180)
+                % 360 - 180)
+    assert delta < 8.0
+    assert abs(by_hand.min_chroma - automatic.min_chroma) < 0.12
