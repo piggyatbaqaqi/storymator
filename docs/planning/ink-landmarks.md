@@ -427,3 +427,51 @@ the existing calibration would detect this ink perfectly well.
 The frame still refuses at the fit, `residual_too_high` at 40.06 px
 against a 1.5 px threshold. That is the outstanding problem and it is
 not about ink: the dry-erase frames refuse the same way at 32.88 px.
+
+## Three media compared: Brite-Mark 84001 wins
+
+| ink | direction | tolerance | min_chroma | ink px per peg | total |
+|---|---:|---:|---:|---|---:|
+| pen+GEAR dry erase | −61.8° | 31.7 | 0.331 | 1885 / 557 / 286 | 2728 |
+| Dykem Steel Blue fluid | −61.2° | 28.6 | 0.280 | 1566 / 567 / 197 | 2336 |
+| **Dykem Brite-Mark 84001** | **−68.0°** | **20.0** | **0.649** | **1948 / 1234 / 609** | **3794** |
+
+The paint marker is better on every axis that matters.
+
+**Twice the saturation.** A chroma floor of 0.649 against 0.28 and
+0.331. It is opaque paint rather than a thin tint over a mirror, so
+what the camera sees is the paint instead of the paint plus whatever
+the chrome is reflecting.
+
+**A hue that holds.** Tolerance 20.0 comes from a 5 degree scatter,
+against 8 to 9 for the other two. Same reason: no mirror underneath to
+mix in the room.
+
+**Coverage where it has always been missing.** The right-hand peg has
+been the weak one since the first blue frame — 286 px with dry erase,
+197 with the fluid, **609** with the paint. The middle peg doubles too.
+
+And by eye the crowns are matte, with the specular reduced from broad
+reflections to pinpoints. That is the mirror problem retired, which
+was the cause of `blue_006` showing almost no ink at the same exposure
+and white balance as `blue_010`.
+
+### The catch, which is not a fault
+
+Each signature detects across the media except the Brite-Mark one,
+which finds only 2 of 3 pegs on the Steel Blue frame. Its 0.649 floor
+is simply above what a thin fluid puts down. The looser signatures are
+general and the tight one is specific, which is the correct trade —
+but it does mean the calibration has to match the ink actually on the
+bar, rather than being assumed interchangeable as the first two were.
+
+| frame | dry erase sig | Steel Blue sig | Brite-Mark sig |
+|---|---|---|---|
+| dry erase | 3/3 | 3/3 | 3/3 |
+| Steel Blue | 3/3 | 3/3 | **2/3** |
+| Brite-Mark | 3/3 | 3/3 | 3/3 |
+
+Durability is still unmeasured for both Dykem products, and it is the
+reason they were bought. Paint on unprepped chrome may or may not
+survive sheets being pushed on and off; the dry erase lost the round
+peg in a day.
