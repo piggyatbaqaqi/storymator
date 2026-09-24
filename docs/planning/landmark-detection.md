@@ -714,3 +714,55 @@ against it before anything else is changed.
 deviation measured from those same scans. No real sheet can pass it.
 The threshold needs to come from the punch tolerance rather than from
 a round number.
+
+### The round landmark is at the apex, not the hemisphere's centre
+
+The operator's inference — the centre peg stands higher, so parallax
+moves its centre off the line through the other two, and only a
+correction down to the paper makes all three collinear — is right, and
+testing it found a wrong constant.
+
+`round_landmark_height_mm` was **5.567 mm**, the projection of the
+hemisphere's *centre*. That was derived when the landmark was the dark
+dome as a whole. What is detected now is the painted disc on top of
+it, and its centroid sits at the **apex**, 8.674 mm, which is *above*
+the 6.404 mm rect crowns rather than below them.
+
+Collinearity, measured in undistorted image pixels — a homography maps
+lines to lines, so this needs no homography, which matters because the
+sheet's is imperfect:
+
+| frame | raw | corrected at 5.567 | corrected at 8.674 |
+|---|---:|---:|---:|
+| `repaint_001` | 7.60 px | 9.31 | **2.51** |
+| `dykem_brite_mark_blue_006` | 6.94 px | 8.48 | **2.32** |
+| `fresh_ink_007` | 8.94 px | 10.24 | **4.85** |
+| `dykem_steel_blue_002` | 8.22 px | 9.59 | **3.99** |
+
+At 5.567 the correction made collinearity **worse** on every frame,
+which is exactly the signature of a wrong height and is how the error
+was found. At the apex it improves threefold.
+
+The fit residual improves too, though only slightly — 2.010 to 1.881
+mm on the Brite-Mark frame — because the dominant error is elsewhere.
+
+### The repaint did not move the spacing, so the paint was not the cause
+
+All three pegs repainted, scraped to size with calipers, the right
+peg's paint extended the full length of its crown. Its patch grew from
+4.69 mm to 6.11 mm and reads evenly. But:
+
+| frame | left→round | round→right | ratio |
+|---|---:|---:|---:|
+| before repaint | 102.26 mm | 105.23 mm | 0.9717 |
+| after repaint | 102.62 mm | 105.38 mm | 0.9738 |
+
+Unmoved. So the asymmetric paint was not what made the round→right
+spacing 3.6 mm long, and the earlier explanation is withdrawn.
+
+**A correct homography maps three equally-spaced collinear world
+points to three equally-spaced millimetre points.** These do not come
+out equal, so the homography is wrong — and the outline it is fitted
+from has a residual of 3.6 to 4.1 mm, on a sheet whose free end bows
+by 3 to 12. The sheet outline, not the pegs, is where the remaining
+error lives.

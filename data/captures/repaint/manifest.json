@@ -1,0 +1,47 @@
+{
+  "frames": [
+    {
+      "file": "repaint_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_sbdfq_00001_.png",
+      "sha256_16": "92ee9e2c781847e4",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T23:34:18",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.1765,
+        "p98": 0.8784,
+        "mean": 0.3859,
+        "sd": 0.3518
+      }
+    },
+    {
+      "file": "repaint_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_tvobr_00001_.png",
+      "sha256_16": "54d6495d8d30555a",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T23:34:21",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.5333,
+        "p98": 0.5333,
+        "mean": 0.324,
+        "sd": 0.2335
+      }
+    }
+  ],
+  "session": "repaint",
+  "notes": [
+    {
+      "at": "2026-09-23T23:40:00",
+      "note": "all three pegs repainted with Brite-Mark 84001, scraped to size with calipers, right peg extended the full length of its crown; cell phone at centre of page, white monitor, room light ON"
+    }
+  ]
+}
