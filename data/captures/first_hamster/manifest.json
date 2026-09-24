@@ -1,0 +1,119 @@
+{
+  "frames": [
+    {
+      "file": "first_hamster_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_iipgb_00001_.png",
+      "sha256_16": "60adb2e6e38846ff",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-24T17:38:26",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.6314,
+        "p98": 0.6314,
+        "mean": 0.3762,
+        "sd": 0.2807
+      }
+    },
+    {
+      "file": "first_hamster_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_iipgb_00002_.png",
+      "sha256_16": "443cdab44625b809",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-24T17:43:07",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.6314,
+        "p98": 0.6314,
+        "mean": 0.3762,
+        "sd": 0.2807
+      }
+    },
+    {
+      "file": "first_hamster_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_yozdo_00001_.png",
+      "sha256_16": "386402989b8a6e9c",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-24T17:38:23",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.2784,
+        "p98": 0.9843,
+        "mean": 0.4288,
+        "sd": 0.3707
+      }
+    },
+    {
+      "file": "first_hamster_004.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_yozdo_00002_.png",
+      "sha256_16": "cc3b8126928baeea",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-24T17:43:03",
+      "exposure": {
+        "p2": 0.0078,
+        "median": 0.3333,
+        "p98": 0.9882,
+        "mean": 0.438,
+        "sd": 0.3623
+      }
+    },
+    {
+      "file": "first_hamster_005.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_zcmyk_00001_.png",
+      "sha256_16": "bbd6bceec86d3097",
+      "size_px": [
+        3296,
+        2558
+      ],
+      "captured": "2026-09-24T17:38:28",
+      "exposure": {
+        "p2": 0.6431,
+        "median": 0.8431,
+        "p98": 0.9882,
+        "mean": 0.8328,
+        "sd": 0.1289
+      }
+    },
+    {
+      "file": "first_hamster_006.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_zcmyk_00002_.png",
+      "sha256_16": "743c26cedc6cb7f9",
+      "size_px": [
+        3296,
+        2558
+      ],
+      "captured": "2026-09-24T17:43:08",
+      "exposure": {
+        "p2": 0.2078,
+        "median": 0.8118,
+        "p98": 0.9882,
+        "mean": 0.7936,
+        "sd": 0.1826
+      }
+    }
+  ],
+  "session": "first_hamster",
+  "notes": [
+    {
+      "at": "2026-09-24T18:18:19",
+      "note": "first registered_images, phone next to camera, exposure fixed"
+    }
+  ]
+}
