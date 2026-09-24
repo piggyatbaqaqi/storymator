@@ -48,7 +48,6 @@ def _frame(stem: str):
 
 # --- 1. the tolerance is a property of the punch ---------------------
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_sheet_model_carries_the_punch_tolerance():
     """Measured, not assumed: 0.268 mm from 95 flatbed scans."""
     sheet = SheetModel()
@@ -56,7 +55,6 @@ def test_the_sheet_model_carries_the_punch_tolerance():
     assert 0.1 < sheet.punch_tolerance_mm < 1.0
 
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_default_threshold_is_derived_from_it():
     """Three standard deviations, so a sound sheet is not refused.
 
@@ -69,13 +67,11 @@ def test_the_default_threshold_is_derived_from_it():
                       3.0 * sheet.punch_tolerance_mm)
 
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_default_is_reachable_by_a_real_sheet():
     """The whole complaint: 129 microns is below the punch's own scatter."""
     assert default_residual_mm(SheetModel()) > SheetModel().punch_tolerance_mm
 
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_a_tighter_punch_gives_a_tighter_threshold():
     """So a better-punched stock is held to a better standard."""
     from dataclasses import replace
@@ -86,7 +82,6 @@ def test_a_tighter_punch_gives_a_tighter_threshold():
 
 # --- 2. and the fit is judged in millimetres -------------------------
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_threshold_is_stated_in_millimetres():
     """Raster pixels per millimetre is an output-resolution choice.
 
@@ -97,7 +92,6 @@ def test_the_threshold_is_stated_in_millimetres():
     assert "max_residual_mm" in inspect.signature(fit_pose).parameters
 
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_verdict_does_not_move_with_the_output_resolution():
     from dataclasses import replace
     from .model import FieldSpec
@@ -114,7 +108,6 @@ def test_the_verdict_does_not_move_with_the_output_resolution():
         f"at another: {verdicts}")
 
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_reason_names_millimetres():
     cal = _rig()
     rgb, gray = _frame("repaint/repaint_001")
@@ -126,7 +119,6 @@ def test_the_reason_names_millimetres():
 
 # --- 3. it must still refuse a fit that is genuinely wrong -----------
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_a_wildly_wrong_fit_is_still_refused():
     """Loosening the threshold must not make it useless.
 
@@ -139,7 +131,6 @@ def test_a_wildly_wrong_fit_is_still_refused():
     assert not pose.accepted
 
 
-@pytest.mark.xfail(strict=True, reason="the threshold is in raster pixels")
 def test_the_measured_frames_land_either_side_of_the_default():
     """Where the corpus actually sits, so the default is not a guess.
 

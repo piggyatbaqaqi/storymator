@@ -87,9 +87,11 @@ def default_residual_mm(sheet) -> float:
     Three times the punch tolerance.  A threshold below the scatter of
     the punch itself cannot be met by any real sheet, which is what
     1.5 raster pixels -- 129 microns against a measured 268 -- amounted
-    to.
+    to.  At one sigma a third of good sheets would be refused; three
+    admits the punch and still catches a fit that has gone somewhere
+    else entirely.
     """
-    raise NotImplementedError
+    return 3.0 * float(sheet.punch_tolerance_mm)
 
 
 def select_peg_triple(blobs: Sequence[Blob], positions_mm: np.ndarray,
@@ -178,13 +180,32 @@ def _orientations(corners: np.ndarray) -> List[List[int]]:
 
 
 def fit_pose(gray: np.ndarray, calibration: Calibration,
-             max_residual_px: float = 1.5,
+             max_residual_px: Optional[float] = None,
              polarity: str = "dark",
              sheet_threshold: Optional[float] = None,
              peg_contrast: float = 0.6,
              peg_tolerance_mm: float = 6.0,
-             rgb: Optional[np.ndarray] = None) -> Pose:
-    """Register one frame, or say why not."""
+             rgb: Optional[np.ndarray] = None,
+             max_residual_mm: Optional[float] = None) -> Pose:
+    """Register one frame, or say why not.
+
+    ``max_residual_mm`` is the threshold, and millimetres are the
+    right unit: raster pixels per millimetre is an output-resolution
+    choice, so judging in them means enlarging the output silently
+    changes what counts as a good fit.  Left unset it comes from the
+    punch tolerance on the sheet -- see :func:`default_residual_mm`.
+
+    ``max_residual_px`` is the older spelling, in raster pixels, kept
+    so existing graphs keep working.  It is converted and loses to
+    ``max_residual_mm`` when both are given.
+    """
+    if max_residual_mm is not None:
+        residual_limit_mm = float(max_residual_mm)
+    elif max_residual_px is not None:
+        residual_limit_mm = (float(max_residual_px)
+                             / calibration.raster.px_per_mm)
+    else:
+        residual_limit_mm = default_residual_mm(calibration.sheet)
     spec = calibration.raster
     peg = calibration.peg
     model_corners = calibration.sheet.corners()
@@ -196,6 +217,12 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
             mask, gray, return_samples=True)
     except ValueError as exc:
         return Pose(False, f"paper_not_found  {exc}")
+    # Keep the landmarks as the frame has them, before straightening.
+    # These are what the overlay marks on the captured picture, and
+    # drawing undistorted points on a distorted frame puts them 13 to
+    # 25 px off the pegs.  No inverse distortion is needed: the
+    # unstraightened points are already here.
+    corners_frame = np.asarray(corners, dtype=float).copy()
 
     # Straighten the landmarks, not the picture.  Correcting a handful
     # of points is exact and free; resampling a 4K frame to correct it
@@ -236,6 +263,7 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
                            f"region(s), need 3")
 
     centres = np.array([b.centre for b in blobs])
+    centres_frame = centres.copy()
     if matrix is not None and coeffs is not None:
         from .lens import undistort_points
         centres = undistort_points(centres, matrix, coeffs)
@@ -344,7 +372,7 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
     outline_rms_px = rms(to_side) * px_mm
 
     pose = Pose(
-        accepted=peg_rms_px <= max_residual_px,
+        accepted=rms(peg_errors) <= residual_limit_mm,
         reason="accepted",
         transform=transform,
         peg_residual_px=peg_rms_px,
@@ -352,9 +380,9 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         outline_residual_px=outline_rms_px,
         peg_residuals_mm=np.asarray(peg_errors, dtype=float),
         punch_offset_mm=float(np.linalg.norm(correction[:2, 2])),
-        corners_image=corners[idx],
-        pegs_image=pegs_image,
-        peg_rects=[Rect(centre=centres[i], long_px=blobs[i].long_px,
+        corners_image=corners_frame[idx],
+        pegs_image=centres_frame[triple],
+        peg_rects=[Rect(centre=centres_frame[i], long_px=blobs[i].long_px,
                         short_px=blobs[i].short_px,
                         angle_rad=blobs[i].angle_rad) for i in triple],
         per_landmark_px={
@@ -366,8 +394,9 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         },
     )
     if not pose.accepted:
-        pose.reason = (f"residual_too_high  {peg_rms_px:.2f} px > "
-                       f"{max_residual_px:.2f} px threshold; check for "
+        pose.reason = (f"residual_too_high  "
+                       f"{rms(peg_errors):.3f} mm > "
+                       f"{residual_limit_mm:.3f} mm threshold; check for "
                        f"paper curl or a mis-detected peg")
         pose.transform = None
     return pose

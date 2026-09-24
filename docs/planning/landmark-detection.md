@@ -766,3 +766,64 @@ out equal, so the homography is wrong — and the outline it is fitted
 from has a residual of 3.6 to 4.1 mm, on a sheet whose free end bows
 by 3 to 12. The sheet outline, not the pegs, is where the remaining
 error lives.
+
+## Three things between the detector and a usable overlay
+
+Found by asking whether a restarted ComfyUI would give usable
+rectangles. It would, but three things stood between the detector's
+output and what the operator sees, and none of them was the detector.
+
+### The overlay was drawn in the wrong coordinates
+
+`Pose.corners_image`, `pegs_image` and `peg_rects` are what
+`draw_overlay` marks on the captured frame. All three were in
+**undistorted** coordinates, because `fit_pose` straightens the
+landmarks before fitting and kept the straightened copies. Drawn on
+the original frame they landed **13 to 25 px off the pegs** and 24 to
+32 px off the sheet corners.
+
+The comment in `fit.py` claimed otherwise — *"pegs_image itself stays
+as DETECTED, so the overlay keeps showing the operator where the blob
+actually was"* — and was simply wrong; it stayed as
+*undistorted*-detected.
+
+The registered product was never affected: the transform is fitted in
+undistorted space throughout and consistently. It is a drawing error
+only, and it needed no inverse distortion to fix — the unstraightened
+points were already in hand.
+
+### The threshold could not be met
+
+`max_residual_px = 1.5` is in **raster** pixels at 11.63 px/mm, so the
+default was **129 µm**, against a punch-to-edge standard deviation of
+**268 µm** measured from 95 flatbed scans. No real sheet could pass
+it, and raster pixels per millimetre is an output-resolution choice,
+so enlarging the output silently changed what counted as a good fit.
+
+The tolerance now lives on `SheetModel` where it was measured, and the
+default is three times it — **0.804 mm**. `fit_pose` takes
+`max_residual_mm`; the pixel spelling still works and is converted.
+
+This does not make today's frames pass: `repaint_001` reports
+`residual_too_high 2.104 mm > 0.804 mm`. That is the honest state of
+the rig. The threshold is now a number that *could* be met rather than
+one that could not.
+
+### The registered output was a patch of blank paper
+
+All three calibrations carried the bare `FieldSpec()` default —
+1024 × 1024 px at origin (0, 0), which in the peg frame is an 88 mm
+square starting *at* the round peg and running into blank paper.
+`Calibration.__post_init__` derives a raster from the sheet, but only
+when there is not one already, and `from_dict` always supplies one, so
+a dataclass default that found its way into a JSON file stayed there.
+
+Registered frames came out wrong in a way that looks like blank paper
+rather than like an error, which is exactly how it went unnoticed.
+Now `FieldSpec.for_sheet`: origin (−141.7, 205.9), 3296 × 2558 px,
+`flip_y` true, with all three pegs landing at y 2395 of 2558.
+
+`Calibration.check_raster` refuses a raster that does not contain the
+pegs. It deliberately allows one that holds the pegs but not the whole
+sheet — cropping to the punched edge is a choice, and the guard is
+about the landmarks registration is *defined by*.

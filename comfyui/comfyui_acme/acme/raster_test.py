@@ -40,7 +40,6 @@ def _peg_pixels(calibration: Calibration) -> np.ndarray:
     return hom[:, :2] / hom[:, 2:3]
 
 
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_a_raster_that_misses_the_pegs_is_rejected():
     """The check itself, on the spec that caused this."""
     bad = FieldSpec()          # 1024x1024 at the origin: x and y 0 to 88 mm
@@ -48,14 +47,12 @@ def test_a_raster_that_misses_the_pegs_is_rejected():
         Calibration(field_spec=bad).check_raster()
 
 
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_a_raster_derived_from_the_sheet_passes():
     sheet = SheetModel()
     Calibration(sheet=sheet,
                 field_spec=FieldSpec.for_sheet(sheet)).check_raster()
 
 
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_the_complaint_names_what_is_missing():
     """A refusal that does not say which way to move is not much use."""
     with pytest.raises(ValueError) as caught:
@@ -65,7 +62,6 @@ def test_the_complaint_names_what_is_missing():
     assert "mm" in message
 
 
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_a_raster_that_holds_the_pegs_but_not_the_sheet_is_allowed():
     """Cropping to the pegs is a choice, not an error.
 
@@ -82,7 +78,6 @@ def test_a_raster_that_holds_the_pegs_but_not_the_sheet_is_allowed():
 # --- and the rig's own files, which is where this came from ----------
 
 @pytest.mark.parametrize("name", _CALIBRATIONS)
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_the_rig_calibrations_register_the_pegs(name: str):
     path = os.path.join(_ROOT, "data", "calibration", "distortion",
                         "v4k_01", name)
@@ -114,7 +109,6 @@ def test_the_rig_calibrations_register_the_whole_sheet(name: str):
         assert -1 <= x <= width + 1 and -1 <= y <= height + 1
 
 
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_round_tripping_a_calibration_keeps_its_raster():
     """The bug was a default surviving a round trip. It must not again."""
     sheet = SheetModel()
@@ -125,7 +119,6 @@ def test_round_tripping_a_calibration_keeps_its_raster():
     revived.check_raster()
 
 
-@pytest.mark.xfail(strict=True, reason="Calibration has no check_raster")
 def test_a_bar_above_sheet_still_holds_its_pegs():
     """`with_bar_position` rebuilds the raster; it must stay valid."""
     flipped = Calibration().with_bar_position("above")

@@ -112,6 +112,13 @@ class SheetModel:
     width_mm: float = 10.5 * MM_PER_INCH               # 266.7
     height_mm: float = 12.5 * MM_PER_INCH              # 317.5
     punch_offset_mm: float = 12.0
+    # Standard deviation of punch placement, measured from 95 flatbed
+    # scans of Canson animation paper: punch-to-edge 0.268 mm, pitch
+    # 0.026.  The larger of the two, because it is the one a fit has
+    # to live with.  This is what a residual threshold has to be
+    # derived from -- a threshold below it cannot be met by any real
+    # sheet, however well the fit is done.
+    punch_tolerance_mm: float = 0.268
     bar_position: str = "below"                        # below | above
 
     def corners(self) -> np.ndarray:
@@ -207,9 +214,36 @@ class Calibration:
 
         A raster that misses them produces a registered frame that
         looks like blank paper rather than like an error, which is
-        exactly how it went unnoticed.
+        exactly how it went unnoticed: the bare ``FieldSpec()``
+        default is an 88 mm square starting at the round peg, and a
+        registered sheet came out as an empty patch of the middle of
+        the page.
+
+        The pegs, not the sheet.  Cropping the output to the punched
+        edge is a legitimate choice; losing the landmarks the
+        registration is *defined by* is not.
         """
-        raise NotImplementedError
+        spec = self.raster
+        width, height = spec.size_px
+        pegs = self.peg.positions()
+        hom = np.column_stack([pegs, np.ones(len(pegs))]) @ spec.matrix().T
+        pixels = hom[:, :2] / hom[:, 2:3]
+        missing = [(mm, px) for mm, px in zip(pegs, pixels)
+                   if not (0 <= px[0] < width and 0 <= px[1] < height)]
+        if not missing:
+            return
+        span_x = (spec.origin_mm[0],
+                  spec.origin_mm[0] + width / spec.px_per_mm)
+        step = -1.0 if spec.flip_y else 1.0
+        span_y = (spec.origin_mm[1],
+                  spec.origin_mm[1] + step * height / spec.px_per_mm)
+        where = ", ".join(f"({mm[0]:.1f}, {mm[1]:.1f})" for mm, _ in missing)
+        raise ValueError(
+            f"raster  {len(missing)} of {len(pegs)} peg(s) fall outside "
+            f"the output raster: {where} mm, while the raster covers x "
+            f"{span_x[0]:.1f} to {span_x[1]:.1f} mm and y {span_y[0]:.1f} "
+            f"to {span_y[1]:.1f} mm. Derive it from the sheet with "
+            f"FieldSpec.for_sheet")
 
     def with_bar_position(self, where: str) -> "Calibration":
         if where not in ("below", "above"):

@@ -57,8 +57,27 @@ def _load(medium: str):
     return rgb, gray, cal
 
 
+def _area_bounds(gray: np.ndarray, calibration: Calibration) -> dict:
+    """The window `fit_pose` itself uses.
+
+    Not 200 and 20000. Those bounds set the window padding, which sets
+    which ink patches merge, which moves a fitted centre -- by 8.95 px
+    on the round peg. A test that reconstructs the detection has to
+    reconstruct its parameters too, or it is comparing two different
+    detections and blaming the difference on the thing under test.
+    """
+    corners = sheet_corners(find_sheet(gray), gray)
+    model = calibration.sheet.corners()
+    scale = (np.linalg.norm(corners[2] - corners[0])
+             / np.linalg.norm(model[2] - model[0]))
+    round_area, rect_area = calibration.peg.nominal_area_mm2()
+    return {
+        "min_area_px": float(0.05 * min(round_area, rect_area) * scale ** 2),
+        "max_area_px": float(6.0 * max(round_area, rect_area) * scale ** 2),
+    }
+
+
 @pytest.mark.parametrize("medium", sorted(FRAMES))
-@pytest.mark.xfail(strict=True, reason="Pose carries undistorted points")
 def test_the_drawn_pegs_land_on_the_ink(medium: str):
     """The strongest statement available: on it, not merely near it.
 
@@ -77,7 +96,6 @@ def test_the_drawn_pegs_land_on_the_ink(medium: str):
 
 
 @pytest.mark.parametrize("medium", sorted(FRAMES))
-@pytest.mark.xfail(strict=True, reason="Pose carries undistorted points")
 def test_the_drawn_corners_are_the_detected_corners(medium: str):
     """`sheet_corners` is what the operator is being shown."""
     rgb, gray, cal = _load(medium)
@@ -92,12 +110,11 @@ def test_the_drawn_corners_are_the_detected_corners(medium: str):
 
 
 @pytest.mark.parametrize("medium", sorted(FRAMES))
-@pytest.mark.xfail(strict=True, reason="Pose carries undistorted points")
 def test_the_drawn_rectangles_are_the_detected_rectangles(medium: str):
     rgb, gray, cal = _load(medium)
     pose = fit_pose(gray, cal, rgb=rgb, max_residual_px=1e9)
-    blobs = find_peg_candidates(gray, find_sheet(gray), min_area_px=200.0,
-                                max_area_px=20000.0, ink=cal.ink, rgb=rgb)
+    blobs = find_peg_candidates(gray, find_sheet(gray), ink=cal.ink, rgb=rgb,
+                                **_area_bounds(gray, cal))
     assert pose.peg_rects is not None
     for rect in pose.peg_rects:
         nearest = min(np.hypot(rect.centre[0] - b.x, rect.centre[1] - b.y)
