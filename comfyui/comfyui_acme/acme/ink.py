@@ -264,11 +264,28 @@ def _dominant_hue(angles: np.ndarray,
 def measure_signature(rgb: np.ndarray,
                       windows: Sequence[Tuple[int, int]],
                       name: str = "",
-                      radius_px: int = 70) -> InkSignature:
+                      radius_px: int = 70,
+                      inside: Optional[np.ndarray] = None,
+                      count: Optional[int] = None) -> InkSignature:
     """Derive a signature from a frame with known peg locations.
 
     What ``bin/measure-ink`` is for: onboarding a new ink is shooting
     one frame, not guessing at a colour name.
+
+    ``inside`` restricts sampling to the sheet.  A window wide enough
+    to absorb the prediction's error reaches past the punched edge --
+    the pegs sit 12 mm in, 87 px on this rig -- and the wooden desk
+    beyond is saturated brown, which wins a chroma selection outright:
+    unclipped, a 300 px window measures +56 degrees for an ink that is
+    near -60.
+
+    ``count`` selects that many of the most chromatic pixels per
+    window instead of the top decile.  A decile is a *fraction*, so a
+    larger window is a larger population of paper and the decile fills
+    with paper texture; the measured chroma floor duly falls from
+    0.216 to 0.036 as the window grows.  A fixed count sized to the
+    peg's own area makes window size stop mattering -- -63.6 degrees
+    at 70 px and -59.6 at 450, against -66.4 and +51.4 before.
 
     The direction is a *circular* mean.  The corpus's blue sits near
     -180 degrees on two pegs and just past +180 on a third, where an

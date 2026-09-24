@@ -456,3 +456,20 @@ def test_measure_ink_needs_no_pegs_when_it_has_a_calibration():
                 % 360 - 180)
     assert delta < 8.0
     assert abs(by_hand.min_chroma - automatic.min_chroma) < 0.12
+
+
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_the_sheet_scale_matches_the_homography():
+    """The count of ink pixels to select is derived from this.
+
+    A number typed into the source would be right for one rig at one
+    working distance and wrong everywhere else.
+    """
+    from .outline import sheet_scale_px_per_mm
+    cal = Calibration()
+    for rotation, tilt in ((0.0, (0.0, 0.0)), (22.0, (2.0e-4, -1.4e-4))):
+        h = camera_homography(cal, SIZE, rotation_deg=rotation, tilt=tilt)
+        gray = render(cal, h, SIZE, polarity="dark")
+        expected = float(abs(np.linalg.det(h[:2, :2]))) ** 0.5
+        got = sheet_scale_px_per_mm(find_sheet(gray), gray, cal)
+        assert abs(got - expected) / expected < 0.05

@@ -285,3 +285,192 @@ def test_a_signature_measured_from_a_frame_works_on_it(stem, pegs):
     found = find_peg_candidates(gray, find_sheet(gray), min_area_px=200.0,
                                 max_area_px=20000.0, ink=signature, rgb=rgb)
     assert len(found) == 3
+
+
+# --- 8. the sampling window: clipped to the sheet, fixed count -------
+#
+# A window wide enough to absorb the peg prediction's error reaches
+# past the punched edge, and what lies beyond is the wooden desk.
+
+def _sheet_frames():
+    return {
+        "blank": "fresh_ink/fresh_ink_007",
+        "art": "fresh_ink/fresh_ink_008",
+    }
+
+
+def _corpus(stem: str):
+    path = os.path.join(_ROOT, "data", "captures", stem + ".png")
+    if not os.path.exists(path):
+        pytest.skip(f"{stem} is not in the working tree")
+    from PIL import Image
+    return np.asarray(Image.open(path).convert("RGB"), dtype=float)
+
+
+def _rig():
+    import json
+    path = os.path.join(_ROOT, "data", "calibration", "distortion",
+                        "v4k_01", "v4k_01.json")
+    if not os.path.exists(path):
+        pytest.skip("the rig calibration is not in the working tree")
+    with open(path) as handle:
+        return Calibration.from_dict(json.load(handle))
+
+
+def _clipped_windows(stem: str):
+    """The frame, its predicted pegs, the sheet interior, and a count."""
+    from scipy import ndimage
+    from .detect import find_sheet
+    from .outline import predict_peg_windows, sheet_scale_px_per_mm
+    rgb = _corpus(stem)
+    gray = (rgb @ np.array([0.2126, 0.7152, 0.0722])) / 255.0
+    cal = _rig()
+    sheet = find_sheet(gray)
+    inside = ndimage.binary_erosion(sheet, iterations=6)
+    pegs = [(int(round(x)), int(round(y)))
+            for x, y in predict_peg_windows(gray, cal, sheet)]
+    scale = sheet_scale_px_per_mm(sheet, gray, cal)
+    count = int(max(cal.peg.nominal_area_mm2()) * scale ** 2)
+    return rgb, pegs, inside, count
+
+
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_the_window_may_not_reach_the_desk():
+    """Unclipped, a 300 px window measures +56 for an ink near -60.
+
+    The desk is saturated brown and wins the chroma selection outright.
+    """
+    rgb, pegs, inside, count = _clipped_windows("fresh_ink/fresh_ink_007")
+    loose = measure_signature(rgb, pegs, radius_px=300)
+    clipped = measure_signature(rgb, pegs, radius_px=300, inside=inside,
+                                count=count)
+    assert abs(_wrap(loose.direction_deg + 60.0)) > 60.0, (
+        "this frame no longer reproduces the unclipped failure")
+    assert abs(_wrap(clipped.direction_deg + 60.0)) < 15.0
+
+
+def _wrap(degrees: float) -> float:
+    return (degrees + 180.0) % 360.0 - 180.0
+
+
+@pytest.mark.parametrize("radius", [70, 120, 160, 300, 450])
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_window_size_stops_mattering_on_a_blank_sheet(radius: int):
+    """The point of the fixed count.
+
+    A decile is a fraction, so a larger window is a larger population
+    of paper and the selection fills with paper texture. A count sized
+    to the peg's own area does not care how much paper is around it.
+    """
+    rgb, pegs, inside, count = _clipped_windows("fresh_ink/fresh_ink_007")
+    got = measure_signature(rgb, pegs, radius_px=radius, inside=inside,
+                            count=count)
+    assert abs(_wrap(got.direction_deg + 61.0)) < 12.0
+
+
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_the_chroma_floor_stops_collapsing_with_window_size():
+    """It fell from 0.216 to 0.036 as the window grew."""
+    rgb, pegs, inside, count = _clipped_windows("fresh_ink/fresh_ink_007")
+    tight = measure_signature(rgb, pegs, radius_px=70, inside=inside,
+                              count=count)
+    wide = measure_signature(rgb, pegs, radius_px=450, inside=inside,
+                             count=count)
+    assert wide.min_chroma > 0.5 * tight.min_chroma
+
+
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_art_is_the_remaining_limit_on_window_width():
+    """Recorded so the limit is explicit rather than incidental.
+
+    With the desk and the decile both dealt with, a drawn sheet is
+    still only good to about 160 px: the nearest mark is 200 px from a
+    peg, and past that the window finds the drawing. This is why an
+    ink is measured on a blank sheet.
+    """
+    rgb, pegs, inside, count = _clipped_windows("fresh_ink/fresh_ink_008")
+    near = measure_signature(rgb, pegs, radius_px=160, inside=inside,
+                             count=count)
+    assert abs(_wrap(near.direction_deg + 62.0)) < 15.0
+    far = measure_signature(rgb, pegs, radius_px=300, inside=inside,
+                            count=count)
+    assert abs(_wrap(far.direction_deg + 62.0)) > 60.0, (
+        "the art no longer reaches a 300 px window; re-read the limit")
+
+
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_inside_excludes_what_is_outside_it():
+    """The real arrangement: the intruder borders *every* window.
+
+    On the rig the punched edge runs past all three pegs and the desk
+    lies beyond it, so a wide window meets the same intruder three
+    times over. One window's worth would not settle anything --
+    `_dominant_hue` takes the mode, and a minority contaminant is
+    supposed to lose to it.
+    """
+    img = scene()
+    intruder = img.copy()
+    mask = sheet_mask()
+    for cx, cy in PEGS:
+        band = (slice(cy - 45, cy - 22), slice(cx - 40, cx + 40))
+        # Dark and saturated: the score is chroma *relative to
+        # lightness*, and a bright colour loses to a dark ink.
+        intruder[band] = np.array([88, 14, 11], dtype=float)
+        mask[band] = False
+
+    unmasked = measure_signature(intruder, PEGS, radius_px=40)
+    clean = measure_signature(img, PEGS, radius_px=40)
+    assert abs(_wrap(unmasked.direction_deg
+                     - clean.direction_deg)) > 20.0, (
+        "the intruder does not sway the result, so this tests nothing")
+
+    masked = measure_signature(intruder, PEGS, radius_px=40, inside=mask)
+    assert abs(_wrap(masked.direction_deg - clean.direction_deg)) < 4.0
+
+
+def test_a_window_with_almost_nothing_inside_is_skipped_not_fatal():
+    """A peg masked away contributes nothing and the rest still works."""
+    img = scene()
+    mask = sheet_mask()
+    mask[:, :PEGS[0][0] + 40] = False        # the leftmost peg, gone
+    got = measure_signature(img, PEGS, radius_px=40, inside=mask)
+    assert isinstance(got, InkSignature)
+    assert abs(_wrap(got.direction_deg
+                     - _blue_for(img).direction_deg)) < 10.0
+
+
+@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
+def test_a_fixed_count_beats_a_percentile_on_a_wide_window():
+    """What `count` is for, on a scene where the difference shows.
+
+    A decile of a wide window is mostly paper, and on this scene that
+    is not a subtle degradation -- there is so little ink in the
+    decile that the measurement refuses outright. A count sized to the
+    ink does not care how much paper surrounds it.
+    """
+    img = scene()
+    mask = sheet_mask()
+    tight = measure_signature(img, PEGS, radius_px=30, inside=mask)
+    with pytest.raises(ValueError, match="no ink found"):
+        measure_signature(img, PEGS, radius_px=110, inside=mask)
+    by_count = measure_signature(img, PEGS, radius_px=110, inside=mask,
+                                 count=20 * 52)
+    assert abs(_wrap(by_count.direction_deg - tight.direction_deg)) < 6.0
+
+
+def test_a_count_larger_than_the_window_is_harmless():
+    img = scene()
+    got = measure_signature(img, PEGS, radius_px=40, inside=sheet_mask(),
+                            count=10 ** 7)
+    assert isinstance(got, InkSignature)
+
+
+def test_the_old_call_still_behaves_as_it_did():
+    """Neither argument given means the percentile, unchanged.
+
+    bin/measure-ink with hand-typed --peg coordinates is that call.
+    """
+    img = scene()
+    before = measure_signature(img, PEGS, radius_px=40)
+    assert abs(_wrap(before.direction_deg
+                     - _blue_for(img).direction_deg)) < 1.0

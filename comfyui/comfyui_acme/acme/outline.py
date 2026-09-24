@@ -353,3 +353,15 @@ def _peg_darkness(gray: np.ndarray, points: np.ndarray,
             continue
         total += (float(np.percentile(window[disc], 10)) - around) / around
     return total
+
+
+def sheet_scale_px_per_mm(mask: np.ndarray, gray: Optional[np.ndarray],
+                          calibration: "Calibration") -> float:
+    """Pixels per millimetre, from the fitted outline.
+
+    What turns a peg's nominal area in square millimetres into the
+    pixel count :func:`acme.ink.measure_signature` should select, so
+    the count is a property of the rig rather than a number someone
+    typed.
+    """
+    raise NotImplementedError
