@@ -456,20 +456,23 @@ reflections to pinpoints. That is the mirror problem retired, which
 was the cause of `blue_006` showing almost no ink at the same exposure
 and white balance as `blue_010`.
 
-### The catch, which is not a fault
+### Withdrawn: the tight signature is not too specific
 
-Each signature detects across the media except the Brite-Mark one,
-which finds only 2 of 3 pegs on the Steel Blue frame. Its 0.649 floor
-is simply above what a thin fluid puts down. The looser signatures are
-general and the tight one is specific, which is the correct trade —
-but it does mean the calibration has to match the ink actually on the
-bar, rather than being assumed interchangeable as the first two were.
+This section said the Brite-Mark signature's 0.649 chroma floor was
+above what a thin layout fluid puts down, so it found two of three
+pegs on the Steel Blue frame and the calibration therefore had to
+match the ink on the bar. That was wrong.
 
-| frame | dry erase sig | Steel Blue sig | Brite-Mark sig |
-|---|---|---|---|
-| dry erase | 3/3 | 3/3 | 3/3 |
-| Steel Blue | 3/3 | 3/3 | **2/3** |
-| Brite-Mark | 3/3 | 3/3 | 3/3 |
+The limit was never the chroma floor. It was a **pixel-count** floor:
+`min_area_px` is sized for a whole peg, five per cent of the smaller
+one, and once the landmark became a patch of paint *on* a peg that
+floor was measuring the wrong thing. The weakest crowns give 159 to
+172 px against a 200 px peg floor. The window stage proposed them at
+its own 12 px floor and the area check then threw them away.
+
+With one floor used throughout the ink path, all nine combinations of
+three signatures and three frames find all three pegs. The inks are
+interchangeable after all, which is the simpler and happier result.
 
 Durability is still unmeasured for both Dykem products, and it is the
 reason they were bought. Paint on unprepped chrome may or may not

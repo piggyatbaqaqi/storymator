@@ -338,56 +338,6 @@ def find_peg_candidates(gray: np.ndarray, sheet: np.ndarray,
     return blobs
 
 
-def _crown_from_seed(window: np.ndarray, seed: np.ndarray,
-                     paper: float, max_area_px: float) -> Optional[np.ndarray]:
-    """The dark region the ink sits on, found by where it stops growing.
-
-    A fixed threshold cannot do this.  Set it low and a crown lit from
-    one side loses half of itself; set it high and the crown merges
-    with the shadow it touches, which is the failure this whole line of
-    work has been chasing.
-
-    So sweep the threshold instead and keep the component that contains
-    the ink at whichever level its area is most *stable*.  Crossing the
-    crown's own edge grows it slowly; crossing into the shadow grows it
-    all at once.  The ink is what makes this possible -- it says which
-    component to follow, so there is no ambiguity about which dark
-    thing in the window is the peg.
-    """
-    # Start the sweep from a robust quantile of the ink's own
-    # luminance, never its maximum.  One stray bright pixel in the
-    # mask -- a specular fringe on a chrome crown, which is exactly
-    # where the ink sits -- puts the maximum up at paper level, and
-    # the sweep then starts above where it should end.
-    floor = float(np.percentile(window[seed], 25)) if seed.any() else 0.0
-    ceiling = paper * 0.92
-    if floor >= ceiling:
-        floor = min(float(np.percentile(window, 2)), ceiling * 0.5)
-    levels = np.linspace(floor, ceiling, 24)
-    areas, comps = [], []
-    for level in levels:
-        labels, count = ndimage.label(window <= level)
-        if count == 0:
-            continue
-        hit = np.bincount(labels[seed & (labels > 0)],
-                          minlength=count + 1)[1:]
-        if not hit.any():
-            continue
-        comp = labels == (int(np.argmax(hit)) + 1)
-        area = float(comp.sum())
-        if area > max_area_px:
-            break
-        areas.append(area)
-        comps.append(comp)
-    if not comps:
-        return None
-    if len(comps) < 3:
-        return comps[-1]
-    growth = [(areas[i + 1] - areas[i - 1]) / max(areas[i], 1.0)
-              for i in range(1, len(areas) - 1)]
-    return comps[int(np.argmin(growth)) + 1]
-
-
 def find_peg_candidates_by_ink(gray: np.ndarray, rgb: np.ndarray,
                                sheet: np.ndarray, ink: InkSignature,
                                min_area_px: float,
@@ -410,12 +360,27 @@ def find_peg_candidates_by_ink(gray: np.ndarray, rgb: np.ndarray,
     """
     inside = ndimage.binary_erosion(sheet, iterations=2)
     marked = ink_mask(rgb, ink, inside)
+    # Close the mask before anything measures it.  A crown is one
+    # patch of paint, but specular pinpoints and brush gaps break it
+    # into several, and fitting a rectangle to the largest fragment
+    # measures the fragment.  The span is set from the smallest peg
+    # worth finding rather than typed in.
+    span = int(np.clip(np.sqrt(max(min_area_px, 1.0)) / 2.0, 3, 15))
+    marked = ndimage.binary_closing(marked, np.ones((span, span)))
     # A patch far smaller than a peg is still evidence of one -- the
     # weakest real peg in the corpus is 35 px against a 1781 px peer --
     # but a handful of pixels is not.  Uninked frames leave components
     # of 3 to 9 px in this channel, so the floor sits between the two
     # populations rather than at either end.
-    boxes = ink_windows(marked, min_area_px=max(12.0, 0.02 * min_area_px),
+    # One floor, used twice.  ``min_area_px`` is sized for a whole peg
+    # -- five per cent of the smaller one -- and the landmark is now a
+    # patch of paint on a peg, which is legitimately much smaller: the
+    # worn crowns in ``blue_010`` and ``blue_hamster_002`` give 172 and
+    # 159 px against a 200 px peg floor.  Proposing a window and then
+    # rejecting what it contains by a different rule loses exactly
+    # those pegs.
+    patch_floor = max(12.0, 0.02 * min_area_px)
+    boxes = ink_windows(marked, min_area_px=patch_floor,
                         pad_px=int(np.sqrt(max_area_px)))
     if not boxes:
         raise ValueError(
@@ -425,15 +390,26 @@ def find_peg_candidates_by_ink(gray: np.ndarray, rgb: np.ndarray,
             f"or their crowns are reflecting something that swamps the "
             f"ink ({ink.name or 'unnamed ink'})")
 
-    paper = float(np.median(gray[inside]))
     blobs: List[Blob] = []
     for box in boxes:
-        window = gray[box]
-        crown = _crown_from_seed(window, marked[box], paper, max_area_px)
-        if crown is None:
-            continue
+        # The patch itself, not a region grown outward from it.
+        #
+        # Growing a dark component from the ink seed was right while
+        # the marking was a thin tint over a dark mirror: the whole
+        # crown read dark, so the sweep recovered it.  Opaque paint
+        # breaks that both ways.  The unpainted chrome shoulders are
+        # *bright*, so the sweep stops at the paint's edge and gains
+        # nothing; and what it does gain on the way is shadow, which
+        # is darker than paper and touches the peg.  On the
+        # Brite-Mark frame the grown region reached 5.74 mm across a
+        # 3.14 mm peg.
+        #
+        # The patch is enough.  The rigid stage uses only the peg
+        # centres, and a crown stands a known height above the paper,
+        # which acme.parallax already corrects for.
+        crown = marked[box]
         area = float(crown.sum())
-        if not (min_area_px <= area <= max_area_px) or area < 4:
+        if not (patch_floor <= area <= max_area_px) or area < 4:
             continue
         try:
             rect = fit_rect(crown, origin=(box[1].start, box[0].start))

@@ -57,6 +57,11 @@ class Pose:
     reason: str
     transform: Optional[np.ndarray] = None
     peg_residual_px: float = float("nan")
+    # Per peg, in millimetres, ordered as PegModel.positions.  An rms
+    # hides which peg is out: 2.0 mm overall on the Brite-Mark frame
+    # is one peg 3.6 mm adrift and two that are fine, and the operator
+    # cannot act on the aggregate.
+    peg_residuals_mm: Optional[np.ndarray] = None
     peg_residual_max_px: float = float("nan")
     outline_residual_px: float = float("nan")
     punch_offset_mm: float = float("nan")
@@ -334,6 +339,7 @@ def fit_pose(gray: np.ndarray, calibration: Calibration,
         peg_residual_px=peg_rms_px,
         peg_residual_max_px=float(peg_errors.max()) * px_mm,
         outline_residual_px=outline_rms_px,
+        peg_residuals_mm=np.asarray(peg_errors, dtype=float),
         punch_offset_mm=float(np.linalg.norm(correction[:2, 2])),
         corners_image=corners[idx],
         pegs_image=pegs_image,

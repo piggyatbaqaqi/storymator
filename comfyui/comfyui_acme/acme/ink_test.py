@@ -216,23 +216,15 @@ def test_ink_without_the_colour_frame_is_an_error():
                             max_area_px=4000.0, ink=BLUE, rgb=None)
 
 
-# --- 7. the gate proposes, the greyscale fit measures ----------------
-
-def test_ink_on_a_corner_still_yields_the_whole_crown():
-    """The reason not to fit a rectangle to the ink.
-
-    The crown is 52 x 20; the ink patch is 14 x 8 in one corner. A fit
-    to the ink would report the patch, and its angle would be noise.
-    """
-    img = scene(ink_corner_only=True)
-    found = candidates(img, _blue_for(scene()))
-    assert len(found) == 3
-    for blob in found:
-        assert blob.long_px > 40, (
-            f"long axis {blob.long_px:.1f} px is the ink patch, "
-            f"not the 52 px crown")
-        assert 14 < blob.short_px < 28
-
+# --- 7. superseded ---------------------------------------------------
+#
+# test_ink_on_a_corner_still_yields_the_whole_crown lived here. It
+# required that ink on one corner of a crown still yield the *whole
+# crown's* rectangle, which was the "chroma gates, greyscale measures"
+# contract. Opaque paint retired it: the unpainted shoulders are
+# bright, so growing a dark region gains no crown and picks up shadow
+# instead. acme/crown_test.py carries the replacement -- the patch is
+# the landmark.
 
 # --- the corpus, which is what the synthetic scenes stand in for -----
 
@@ -517,15 +509,20 @@ def test_each_medium_is_found_by_its_own_signature(medium: str):
         assert nearest < 60
 
 
-def test_the_tight_signature_is_specific_and_the_loose_ones_general():
-    """Pins the cross-detection matrix rather than leaving it in prose.
+def test_every_signature_finds_every_medium():
+    """The cross-detection matrix, pinned.
 
-    Brite-Mark is opaque paint and measures a 0.649 chroma floor, which
-    is above what a thin layout fluid puts down -- so its signature
-    finds only two pegs on the Steel Blue frame. That is the right
-    trade and not a fault, but it does mean the calibration has to
-    match the ink actually on the bar. The first two media were
-    interchangeable and lulled us into assuming the third would be.
+    This asserted the opposite a day earlier: that the Brite-Mark
+    signature, with its 0.649 chroma floor, was too specific to find a
+    thin layout fluid, and so the calibration had to match the ink on
+    the bar. That was wrong, and this test is what caught it.
+
+    The limit was never the chroma floor. It was a *pixel-count* floor
+    sized for a whole peg while the landmark had become a patch of
+    paint on one -- the weakest crowns give 159 to 172 px against a
+    200 px peg floor. Once the ink path used one floor throughout, all
+    nine combinations found all three pegs, and the inks are
+    interchangeable after all.
     """
     results = {}
     for medium, (stem, _, pegs) in _MEDIA.items():
@@ -544,12 +541,7 @@ def test_the_tight_signature_is_specific_and_the_loose_ones_general():
             results[(medium, signature)] = sum(
                 min(np.hypot(b.x - px, b.y - py) for px, py in pegs) < 60
                 for b in found)
-
-    assert results[("steel blue", "brite mark")] == 2, (
-        "the tight signature no longer discriminates; re-read the table")
-    for medium in _MEDIA:
-        for signature in ("dry erase", "steel blue"):
-            assert results[(medium, signature)] == 3, (
-                f"the {signature} signature stopped being general: "
-                f"{results[(medium, signature)]}/3 on {medium}")
-    assert results[("brite mark", "brite mark")] == 3
+    for (medium, signature), hits in sorted(results.items()):
+        assert hits == 3, (
+            f"the {signature} signature finds {hits}/3 pegs on the "
+            f"{medium} frame")
