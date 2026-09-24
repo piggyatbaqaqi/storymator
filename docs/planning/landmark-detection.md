@@ -827,3 +827,31 @@ Now `FieldSpec.for_sheet`: origin (−141.7, 205.9), 3296 × 2558 px,
 pegs. It deliberately allows one that holds the pegs but not the whole
 sheet — cropping to the punched edge is a choice, and the guard is
 about the landmarks registration is *defined by*.
+
+## The first registered hamsters come out mirrored
+
+`data/captures/first_hamster`: two capture-and-register pairs, the
+captures at 3264 × 2448 and the registered frames at 3296 × 2558,
+which is the canonical raster. The art is resampled correctly —
+outline, pegs, pose and warp all did their jobs — and **the lettering
+reads backwards**.
+
+`FieldSpec.matrix()` has determinant **−135.3** when `flip_y` is true,
+so the millimetres-to-output stage reflects. The image-to-millimetres
+stage cannot: `fit_pose` rejects any homography whose linear part has
+a negative determinant, on the grounds that it describes a sheet seen
+from behind, and a comment there records that admitting them once
+"registered two captures of the same sheet into mirror images of each
+other". So the reflection is introduced entirely by the raster, after
+a fit that went to some trouble to avoid one.
+
+`flip_y` exists because `bar_position` is `"below"` and image rows
+increase downward, and its intent — come out the right way up — is
+right. A vertical flip is not what achieves it: the peg frame has +y
+running away from the punched edge, and the output wants the punched
+edge at the bottom, which is a change of origin and row order, not a
+reflection of the plane.
+
+Worth fixing with the round trip pinned in a test: warp a frame to the
+raster, warp it back, and require the result to match the original.
+A reflection cannot survive that, and neither can a 180° error.
