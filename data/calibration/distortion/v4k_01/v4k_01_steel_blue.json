@@ -1,0 +1,93 @@
+{
+  "peg": {
+    "round_diameter_mm": 6.44,
+    "rect_long_mm": 12.72,
+    "rect_short_mm": 3.142,
+    "centre_spacing_mm": 101.616,
+    "round_landmark_height_mm": 5.567,
+    "rect_landmark_height_mm": 0.0
+  },
+  "sheet": {
+    "width_mm": 279.4,
+    "height_mm": 215.9,
+    "punch_offset_mm": 12.0,
+    "bar_position": "below"
+  },
+  "field_spec": {
+    "px_per_mm": 11.63,
+    "origin_mm": [
+      0.0,
+      0.0
+    ],
+    "size_px": [
+      1024,
+      1024
+    ],
+    "flip_y": false
+  },
+  "camera_matrix": [
+    [
+      2625.4404322322125,
+      0.0,
+      1640.211406609222
+    ],
+    [
+      0.0,
+      2625.520527678708,
+      1204.1581412222565
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "dist_coeffs": [
+    0.18226958287017447,
+    -0.3993455124731985,
+    0.0008080109208973704,
+    0.005605521659130803,
+    0.23772767957330931
+  ],
+  "_provenance": {
+    "camera": "v4k_01",
+    "bar": "honbay_0001",
+    "target": "charuco_0001",
+    "usb_id": "1778:d009",
+    "usb_product": "IPEVO V4K",
+    "usb_serial": null,
+    "frame_size_px": [
+      3264,
+      2448
+    ],
+    "focus_absolute": 134,
+    "required_controls": {
+      "white_balance_automatic": 0,
+      "auto_exposure": 1,
+      "focus_automatic_continuous": 0,
+      "focus_absolute": 134
+    },
+    "board_square_mm": 25.3163,
+    "board_anisotropy": 0.0015,
+    "calibrated": "2026-09-18",
+    "frames": 48,
+    "rms_px": 0.707,
+    "notes": "Valid ONLY at focus_absolute 134. The V4K reports no USB serial, so identity cannot be checked; verify the controls and frame size instead. Sheet is 8.5x11in, NOT the 10.5x12.5in ACME field-paper default the model ships with. punch_offset_mm is the PERPENDICULAR distance from the punched edge to the peg line; the scans cannot measure it, since only one perpendicular sheet edge is on the platen, so 12.0 is still nominal and unmeasured. Board marker size is recorded for board identity only: markerLength identifies corners, it is not a measurement input, and varying it 17-20 mm moves fx by 0.002 % and detects the same 1590 corners. Landmark heights measured 2026-09-21: the round landmark is the dome's sphere centre at 5.567 mm; the rect landmarks are HOLES in the paper plane, so 0. The rect value depends on ON-AXIS lighting keeping the open slot dark -- off-axis light lights the slot and the landmark becomes the peg top instead.",
+    "paper": "canson_ream_0001 (Canson Animation Paper 8.5x11in 20lb, EAN 3148955732809)",
+    "board_marker_mm": 18.2277,
+    "board_design_square_mm": 25.0,
+    "board_design_marker_mm": 18.0,
+    "board_squares": [
+      7,
+      9
+    ],
+    "board_dictionary": "DICT_6X6_250",
+    "board_print_scale": 1.012652
+  },
+  "ink": {
+    "direction_deg": -61.2,
+    "tolerance_deg": 28.6,
+    "min_chroma": 0.28,
+    "name": "Dykem Steel Blue"
+  }
+}

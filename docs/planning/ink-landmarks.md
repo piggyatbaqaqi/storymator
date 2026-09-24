@@ -403,3 +403,27 @@ pixels at one chroma: asked for 1600 of them, `>= cut` returned 4944
 punch offset is 117 px, and a 70 px window does not reach the punched
 edge while a 160 px one does. `sheet_scale_px_per_mm` measures it from
 the fitted outline rather than anyone assuming it.
+
+## Dykem Steel Blue measures the same hue as the dry erase
+
+First of the two Dykem products, `data/captures/dykem_steel_blue`,
+blank sheet, phone over the centre of the page.
+
+| ink | direction | tolerance | min_chroma |
+|---|---:|---:|---:|
+| pen+GEAR dry erase | −61.8° | 31.7 | 0.331 |
+| **Dykem Steel Blue** | **−61.2°** | **28.6** | **0.280** |
+
+Six tenths of a degree apart, and the signatures are interchangeable:
+each finds 3 of 3 pegs on the other's frame. So the colour is not what
+a second calibration would be buying. What the layout fluid is for is
+durability — the dry erase lost the round peg in a day — and that
+cannot be read off one frame.
+
+Worth keeping `v4k_01_steel_blue.json` separate anyway, since the two
+will diverge if the fluid ages differently, but on today's evidence
+the existing calibration would detect this ink perfectly well.
+
+The frame still refuses at the fit, `residual_too_high` at 40.06 px
+against a 1.5 px threshold. That is the outstanding problem and it is
+not about ink: the dry-erase frames refuse the same way at 32.88 px.

@@ -1,0 +1,47 @@
+{
+  "frames": [
+    {
+      "file": "dykem_steel_blue_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_gsguj_00008_.png",
+      "sha256_16": "7c5527a2bd9fa3f5",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-23T21:35:13",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.0706,
+        "p98": 0.0706,
+        "mean": 0.0745,
+        "sd": 0.0448
+      }
+    },
+    {
+      "file": "dykem_steel_blue_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00008_.png",
+      "sha256_16": "04f00ef04511892d",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T21:35:10",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.1686,
+        "p98": 0.8863,
+        "mean": 0.3784,
+        "sd": 0.3578
+      }
+    }
+  ],
+  "session": "dykem_steel_blue",
+  "notes": [
+    {
+      "at": "2026-09-23T21:37:28",
+      "note": "dykem steel blue ink, phone over center of page, exposure fixed"
+    }
+  ]
+}
