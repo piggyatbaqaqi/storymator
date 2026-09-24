@@ -855,3 +855,52 @@ reflection of the plane.
 Worth fixing with the round trip pinned in a test: warp a frame to the
 raster, warp it back, and require the result to match the original.
 A reflection cannot survive that, and neither can a 180° error.
+
+### The black wedge at the bottom is the outline error, made visible
+
+The operator noticed mat showing along the bottom of the registered
+frame. It is the clearest diagnostic yet.
+
+`FieldSpec.for_sheet` uses `margin_mm=2.0`, so **23 px of mat should
+show on all four sides**. Measured on `first_hamster_006`:
+
+| edge | mat visible |
+|---|---:|
+| top | **0 px** |
+| left | **0 px** |
+| right | **0 px** |
+| bottom | 1 px at one end, **37 px** at the other |
+
+So the sheet sits about 2 mm low in the raster and its punched edge is
+**tilted**: −42 px across the 3296 px raster on `006` and −45 px on
+`005`, which is 3.6 and 3.9 mm, or 0.79°. Consistent between the two
+frames.
+
+Three explanations ruled out by measurement.
+
+**Not the paper bow.** On these two captures the sheet is flat: max
+departure 2.46 mm on one edge and under 1 mm on three. A 2.5 mm bow
+does not make a 3.9 mm tilt.
+
+**Not the punch.** A 3.9 mm tilt across 283 mm is 2.8 mm of
+punch-to-edge variation between the end holes, against the 0.268 mm
+standard deviation measured from 95 flatbed scans. Ten sigma.
+
+**Not the sheet model.** The peg-spacing ratio is 0.9811 and stays
+0.9811 for widths from 269 to 289 mm, heights from 206 to 226, and
+punch offsets from 0 to 16. That is not a coincidence: changing the
+target rectangle is an *affine* change, and affine maps preserve
+ratios along a line. The model cannot be the cause of a ratio error.
+
+What is left is the **detected corner positions**. A corner in the
+wrong place changes the projective map, and a projective map is
+exactly what does not preserve ratios along a line — which is why the
+two halves of a rigid bar come out 102.75 and 105.39 mm.
+
+Tried and inconclusive: fitting the homography to the four corners
+*and* the three pegs together, over-determining it so corner error
+could be traded against peg error. The quick version diverged, worst
+corner 743 mm, and that is a conditioning failure in an unnormalised
+DLT — image pixels run to 1e3 and model millimetres to 1e2 — not
+evidence about the idea. It wants Hartley normalisation before it
+means anything.
