@@ -70,6 +70,10 @@ _HUE_WINDOW_DEG = 40.0
 # Below this, the "ink" is paper and the hue is noise.
 _MIN_MEASURABLE_CHROMA = 0.05
 
+# Fewer pixels than this inside a window and it is not worth
+# a white point, let alone a hue.
+_MIN_WINDOW_PX = 200
+
 
 def srgb_to_lab(rgb: np.ndarray) -> np.ndarray:
     """(..., 3) sRGB in 0-255 or 0-1 to CIE L*a*b*."""
@@ -261,6 +265,26 @@ def _dominant_hue(angles: np.ndarray,
     return direction, _angular_difference(angles[near], direction)
 
 
+def ink_pixel_count(calibration, px_per_mm: float) -> int:
+    """How many pixels :func:`measure_signature` should select per peg.
+
+    Half the area of the *smaller* landmark, which on an ACME bar is
+    the round peg.  Two reasons for the halving, both measured: the
+    pen reaches only part of a crown -- coverage across the corpus
+    runs from 35 px to 1781 on pegs that all look thoroughly blue --
+    and what it does not reach is bare chrome, which is dark but not
+    coloured and only dilutes the hue.
+
+    Taking the full nominal area instead biases the answer and does
+    not stop biasing it as the window grows: on ``fresh_ink_007``,
+    3768 px gives -73.7 degrees at radius 70 and -66.3 at 450, while
+    1535 px gives -63.8 and -59.6.  Flat is the property being bought
+    here, so the smaller count is the right one.
+    """
+    smaller = min(calibration.peg.nominal_area_mm2())
+    return max(int(0.5 * smaller * px_per_mm ** 2), 16)
+
+
 def measure_signature(rgb: np.ndarray,
                       windows: Sequence[Tuple[int, int]],
                       name: str = "",
@@ -298,10 +322,20 @@ def measure_signature(rgb: np.ndarray,
     angles: List[float] = []
     chromas: List[float] = []
     for cx, cy in windows:
-        patch = arr[max(cy - radius_px, 0):min(cy + radius_px, rows),
-                    max(cx - radius_px, 0):min(cx + radius_px, cols)]
+        box = (slice(max(cy - radius_px, 0), min(cy + radius_px, rows)),
+               slice(max(cx - radius_px, 0), min(cx + radius_px, cols)))
+        patch = arr[box]
         if patch.size == 0:
             continue
+        if inside is not None:
+            keep = np.asarray(inside, dtype=bool)[box]
+            # A window can be mostly off the sheet -- the pegs sit
+            # 12 mm from the punched edge -- and a handful of pixels
+            # cannot say what colour anything is.  Skip it; the other
+            # two pegs still have their say.
+            if keep.sum() < _MIN_WINDOW_PX:
+                continue
+            patch = patch[keep]
         lab = srgb_to_lab(balance(patch, white_point(patch)))
         rel = relative_chroma(lab)
         # The ink is the most saturated thing on a peg: the crown
@@ -313,11 +347,36 @@ def measure_signature(rgb: np.ndarray,
         # darkness here instead was tried and is worse: it needs a
         # percentile of luminance, which on a frame with only two
         # distinct levels selects everything.
-        picked = rel >= np.percentile(rel, 90)
-        if picked.sum() < 4:
-            continue
-        angles.extend(chroma_angle_deg(lab)[picked].tolist())
-        chromas.extend(rel[picked].tolist())
+        hues = chroma_angle_deg(lab)
+        if count is None:
+            picked = rel >= np.percentile(rel, 90)
+            chosen_hues = hues[picked]
+            chosen_rel = rel[picked]
+            if picked.sum() < 4:
+                continue
+        else:
+            # A fixed number, not a fraction.  The ink covers about
+            # one peg however much paper is in shot, so ranking by
+            # quantile lets a wide window dilute it away.
+            #
+            # Selected by index rather than by thresholding at the
+            # count-th value.  Those are not the same thing when
+            # values tie: a flat rendered scene has thousands of
+            # pixels at one chroma, and ">= cut" asked for 1600 of
+            # them returned 4944 -- the whole window, paper included.
+            flat = rel.reshape(-1)
+            # Never more than a quarter of what is there.  A count far
+            # larger than the window would otherwise select nearly
+            # everything, and the caller gets a confident reading of
+            # the paper's hue instead of a refusal.
+            take = int(min(max(count, 1), max(flat.size // 4, 4)))
+            if flat.size < 4:
+                continue
+            index = np.argpartition(flat, -take)[-take:]
+            chosen_hues = hues.reshape(-1)[index]
+            chosen_rel = flat[index]
+        angles.extend(chosen_hues.tolist())
+        chromas.extend(chosen_rel.tolist())
     if not angles:
         raise ValueError("no ink found in any of the given windows")
     # Selecting the most saturated pixels always returns *something*,

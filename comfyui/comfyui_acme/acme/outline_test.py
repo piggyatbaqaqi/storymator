@@ -458,7 +458,6 @@ def test_measure_ink_needs_no_pegs_when_it_has_a_calibration():
     assert abs(by_hand.min_chroma - automatic.min_chroma) < 0.12
 
 
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_the_sheet_scale_matches_the_homography():
     """The count of ink pixels to select is derived from this.
 

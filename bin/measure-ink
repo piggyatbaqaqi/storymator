@@ -35,15 +35,19 @@ from typing import List, Tuple
 
 import numpy as np
 from PIL import Image
+from scipy import ndimage
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "comfyui", "comfyui_acme"))
 
-from acme.ink import measure_signature          # noqa: E402
+from acme.ink import (ink_pixel_count,           # noqa: E402
+                      measure_signature)
 from acme.model import Calibration               # noqa: E402
 from acme.outline import (PREDICTED_RADIUS_PX,   # noqa: E402
-                          predict_peg_windows)
+                          predict_peg_windows,
+                          sheet_scale_px_per_mm)
+from acme.detect import find_sheet                # noqa: E402
 
 
 def peg(text: str) -> Tuple[int, int]:
@@ -79,6 +83,7 @@ def main(argv: List[str] = None) -> int:
 
     rgb = np.asarray(Image.open(args.frame).convert("RGB"), dtype=float)
     pegs, radius = args.peg, args.radius
+    inside, count = None, None
     if pegs is None:
         source = args.calibration or args.into
         if source is None:
@@ -89,12 +94,22 @@ def main(argv: List[str] = None) -> int:
             calibration = Calibration.from_dict(json.load(fh))
         gray = (rgb @ np.array([0.2126, 0.7152, 0.0722])) / 255.0
         try:
-            found = predict_peg_windows(gray, calibration)
+            sheet = find_sheet(gray)
+            found = predict_peg_windows(gray, calibration, sheet)
+            scale = sheet_scale_px_per_mm(sheet, gray, calibration)
         except ValueError as exc:
             print(f"{args.frame}: could not locate the pegs: {exc}",
                   file=sys.stderr)
             return 1
         pegs = [(int(round(x)), int(round(y))) for x, y in found]
+        # The window has to be wide enough to absorb the prediction's
+        # error, which carries the paper's bow -- and a wide window
+        # reaches past the punched edge onto the desk, which is
+        # saturated brown and would win the chroma selection outright.
+        # So sample only inside the sheet, and take a fixed count
+        # rather than a quantile of however much paper is in shot.
+        inside = ndimage.binary_erosion(sheet, iterations=6)
+        count = ink_pixel_count(calibration, scale)
         if radius is None:
             radius = PREDICTED_RADIUS_PX
         print(f"pegs predicted from the sheet outline at "
@@ -103,7 +118,8 @@ def main(argv: List[str] = None) -> int:
         radius = 70
     try:
         signature = measure_signature(rgb, pegs, name=args.name,
-                                      radius_px=int(radius))
+                                      radius_px=int(radius),
+                                      inside=inside, count=count)
     except ValueError as exc:
         print(f"{args.frame}: {exc}", file=sys.stderr)
         return 1

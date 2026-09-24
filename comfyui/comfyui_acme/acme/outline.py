@@ -362,6 +362,17 @@ def sheet_scale_px_per_mm(mask: np.ndarray, gray: Optional[np.ndarray],
     What turns a peg's nominal area in square millimetres into the
     pixel count :func:`acme.ink.measure_signature` should select, so
     the count is a property of the rig rather than a number someone
-    typed.
+    typed -- which would be right at one working distance and wrong at
+    every other.
     """
-    raise NotImplementedError
+    from .geometry import homography_from_points
+
+    corners = corners_approx_poly(mask, gray)
+    model = np.asarray(calibration.sheet.corners(), dtype=float)
+    # Any labelling gives the same scale: a cyclic relabelling is a
+    # rotation, and rotations do not change area.
+    h = homography_from_points(corner_order(corners), model)
+    mm_per_px = float(abs(np.linalg.det(h[:2, :2]))) ** 0.5
+    if mm_per_px <= 1e-9:
+        raise ValueError("the outline gives a degenerate scale")
+    return 1.0 / mm_per_px

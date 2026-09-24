@@ -17,7 +17,8 @@ import pytest
 
 from .detect import find_peg_candidates, find_sheet
 from .fit import fit_pose
-from .ink import (balance, chroma_angle_deg, ink_mask, measure_signature,
+from .ink import (balance, chroma_angle_deg, ink_mask, ink_pixel_count,
+                  measure_signature,
                   relative_chroma, srgb_to_lab, white_point)
 from .model import Calibration, InkSignature
 
@@ -330,11 +331,16 @@ def _clipped_windows(stem: str):
     pegs = [(int(round(x)), int(round(y)))
             for x, y in predict_peg_windows(gray, cal, sheet)]
     scale = sheet_scale_px_per_mm(sheet, gray, cal)
-    count = int(max(cal.peg.nominal_area_mm2()) * scale ** 2)
+    # The helper rather than an expression written out here. The first
+    # version of this used the full area of the LARGER peg, and that
+    # count is biased and stays biased as the window grows -- -73.7
+    # degrees at radius 70 against -63.8 for the right one. Which
+    # count to use is a property of the rig, so it belongs in the code
+    # under test and not in its fixture.
+    count = ink_pixel_count(cal, scale)
     return rgb, pegs, inside, count
 
 
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_the_window_may_not_reach_the_desk():
     """Unclipped, a 300 px window measures +56 for an ink near -60.
 
@@ -354,7 +360,6 @@ def _wrap(degrees: float) -> float:
 
 
 @pytest.mark.parametrize("radius", [70, 120, 160, 300, 450])
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_window_size_stops_mattering_on_a_blank_sheet(radius: int):
     """The point of the fixed count.
 
@@ -368,7 +373,6 @@ def test_window_size_stops_mattering_on_a_blank_sheet(radius: int):
     assert abs(_wrap(got.direction_deg + 61.0)) < 12.0
 
 
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_the_chroma_floor_stops_collapsing_with_window_size():
     """It fell from 0.216 to 0.036 as the window grew."""
     rgb, pegs, inside, count = _clipped_windows("fresh_ink/fresh_ink_007")
@@ -379,7 +383,6 @@ def test_the_chroma_floor_stops_collapsing_with_window_size():
     assert wide.min_chroma > 0.5 * tight.min_chroma
 
 
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_art_is_the_remaining_limit_on_window_width():
     """Recorded so the limit is explicit rather than incidental.
 
@@ -398,7 +401,6 @@ def test_art_is_the_remaining_limit_on_window_width():
         "the art no longer reaches a 300 px window; re-read the limit")
 
 
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_inside_excludes_what_is_outside_it():
     """The real arrangement: the intruder borders *every* window.
 
@@ -439,7 +441,6 @@ def test_a_window_with_almost_nothing_inside_is_skipped_not_fatal():
                      - _blue_for(img).direction_deg)) < 10.0
 
 
-@pytest.mark.xfail(strict=True, reason="measure_signature ignores inside and count")
 def test_a_fixed_count_beats_a_percentile_on_a_wide_window():
     """What `count` is for, on a scene where the difference shows.
 

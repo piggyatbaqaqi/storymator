@@ -365,3 +365,41 @@ So the answer to the question is: measure on a **blank** sheet. Not as
 a precaution against a hazard that might exist, but because it is the
 one remaining limit on how wide the window may be, and the window has
 to be wide because the prediction carries the paper's bow.
+
+### Built, and the radius now costs nothing
+
+`measure_signature` takes `inside` and `count`; `bin/measure-ink`
+passes the eroded sheet and a count from `ink_pixel_count`. The same
+sweep as above, through the tool:
+
+| radius | direction | tolerance | min_chroma |
+|---|---:|---:|---:|
+| 70 px | −63.8° | 30.9 | 0.292 |
+| 160 px | −61.8° | 31.7 | 0.331 |
+| 300 px | −62.3° | 33.0 | 0.327 |
+| 450 px | −59.6° | 31.0 | 0.355 |
+
+Against −66.4° drifting to **+51.4°** before, with the chroma floor
+collapsing from 0.216 to 0.107. A predicted window is now as good as a
+hand-typed one, so the manual step is gone with nothing given up.
+
+Three things the tests found that reading would not have.
+
+**The count wants half the *smaller* peg's area, not the larger's.**
+The pen reaches only part of a crown, and what it misses is bare
+chrome -- dark but not coloured, so it only dilutes the hue. The full
+area of the larger peg gives −73.7° at radius 70 and −66.3° at 450:
+biased, and still biased as the window grows. Half the round peg's
+gives −63.8° and −59.6°. Flat was the property being bought, so the
+smaller count is the right one. That judgement lives in
+`ink_pixel_count` rather than in the test fixture where it started.
+
+**Select by index, not by thresholding at the count-th value.** They
+differ when values tie, and a flat rendered scene has thousands of
+pixels at one chroma: asked for 1600 of them, `>= cut` returned 4944
+-- the whole window, paper included.
+
+**The scale is 9.71 px/mm, not the 7.25 assumed earlier.** So 12 mm of
+punch offset is 117 px, and a 70 px window does not reach the punched
+edge while a 160 px one does. `sheet_scale_px_per_mm` measures it from
+the fitted outline rather than anyone assuming it.
