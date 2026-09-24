@@ -321,3 +321,47 @@ direction; a real ink change moves only the crowns.
 7. The gate proposes, the greyscale fit measures: a peg whose ink
    covers a corner of the crown still yields the *crown's* rectangle,
    not the ink patch's.
+
+## Sampling window: the percentile was the fault, not the border
+
+Prompted by "does it make sense to calibrate ink on art images?", and
+by the discovery that a predicted 160 px window already reaches past
+the punched edge -- the pegs sit 12 mm in, which is 87 px on this rig.
+
+Direction measured from the same predicted windows at growing radii:
+
+| radius | unclipped | clipped to the sheet | clipped, fixed count |
+|---|---:|---:|---:|
+| 70 px | −66.4° | −66.3° | −63.6° |
+| 120 px | −62.5° | −75.1° | −61.8° |
+| 160 px | −57.1° | −73.2° | −61.5° |
+| 300 px | **+56.2°** | −60.9° | −61.9° |
+| 450 px | **+51.4°** | **+155.8°** | −59.6° |
+
+Three separate things were going wrong and only the third is the real
+one.
+
+**The desk.** Unclipped, a window past 300 px reaches the wooden desk,
+which is strongly saturated brown and wins the chroma selection
+outright. Clipping to the sheet fixes that, and yes it leans on the
+black mat -- but only through `find_sheet`, and the fitted outline
+already in hand is the more precise boundary.
+
+**The percentile.** Clipping alone is not enough: at 450 px it still
+fails, and the measured `min_chroma` falls from 0.216 to 0.036 as the
+window grows. `measure_signature` took the **top decile** of relative
+chroma, which is a *fraction* -- so a larger window is a larger
+population of paper and the decile fills up with paper texture. Taking
+a fixed **count** instead, sized to the peg's own area through the
+homography (about 1500 px here), makes window size stop mattering:
+−63.6° at 70 px and −59.6° at 450.
+
+**The art, which is what is left.** With both fixed, blank sheets are
+stable across the whole range and art sheets are stable only to
+160 px, flipping to +73° and +79° at 300 -- exactly where the window
+reaches the drawing, whose nearest mark is 200 px from a peg.
+
+So the answer to the question is: measure on a **blank** sheet. Not as
+a precaution against a hazard that might exist, but because it is the
+one remaining limit on how wide the window may be, and the window has
+to be wide because the prediction carries the paper's bow.
