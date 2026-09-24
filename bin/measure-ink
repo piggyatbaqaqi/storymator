@@ -6,8 +6,16 @@ rather than guessing at a colour name.  Give it the frame and roughly
 where the pegs are -- within a few tens of pixels is plenty, the
 window is 140 px across by default:
 
-    bin/measure-ink shot.png --peg 1280,1952 --peg 2001,1828 \
-        --peg 2520,1737 --name "Dykem Steel Blue"
+    bin/measure-ink shot.png --calibration v4k_01.json \
+        --name "Dykem Steel Blue"
+
+With a calibration it finds the pegs itself, from the sheet outline
+and the bar's geometry. Give --peg only to override that.
+
+**Shoot a blank sheet.** The ink is on the pegs, so the drawing on the
+paper adds nothing and can only mislead: the windows are sized for a
+prediction rather than a measurement, and a drawn line inside one is
+more saturated than a dark ink on chrome.
 
 It prints an `ink` block to paste into a calibration JSON, or writes
 it straight into one with --into.
@@ -33,6 +41,9 @@ sys.path.insert(0, os.path.join(
     "comfyui", "comfyui_acme"))
 
 from acme.ink import measure_signature          # noqa: E402
+from acme.model import Calibration               # noqa: E402
+from acme.outline import (PREDICTED_RADIUS_PX,   # noqa: E402
+                          predict_peg_windows)
 
 
 def peg(text: str) -> Tuple[int, int]:
@@ -47,20 +58,52 @@ def peg(text: str) -> Tuple[int, int]:
 def main(argv: List[str] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("frame", help="a capture with the pegs marked")
-    ap.add_argument("--peg", type=peg, action="append", required=True,
-                    help="x,y of a peg, in pixels; repeat for each")
+    ap.add_argument("--peg", type=peg, action="append",
+                    help="x,y of a peg, in pixels; repeat for each. "
+                         "Omit it and give --calibration instead, which "
+                         "is less error-prone and the recommended way")
+    ap.add_argument("--calibration", default=None,
+                    help="a calibration JSON, used to locate the pegs "
+                         "from the sheet outline when --peg is absent")
     ap.add_argument("--name", default="",
                     help="what the ink is, for the record")
-    ap.add_argument("--radius", type=int, default=70,
-                    help="half-width of the window around each peg")
+    ap.add_argument("--radius", type=int, default=None,
+                    help="half-width of the window around each peg; "
+                         "defaults to 70 with --peg and to "
+                         f"{PREDICTED_RADIUS_PX} when the pegs are "
+                         "predicted, which is wider because a prediction "
+                         "carries the paper's bow")
     ap.add_argument("--into", default=None,
                     help="a calibration JSON to write the block into")
     args = ap.parse_args(argv)
 
     rgb = np.asarray(Image.open(args.frame).convert("RGB"), dtype=float)
+    pegs, radius = args.peg, args.radius
+    if pegs is None:
+        source = args.calibration or args.into
+        if source is None:
+            print("give --peg, or --calibration so the pegs can be found "
+                  "from the sheet outline", file=sys.stderr)
+            return 2
+        with open(source) as fh:
+            calibration = Calibration.from_dict(json.load(fh))
+        gray = (rgb @ np.array([0.2126, 0.7152, 0.0722])) / 255.0
+        try:
+            found = predict_peg_windows(gray, calibration)
+        except ValueError as exc:
+            print(f"{args.frame}: could not locate the pegs: {exc}",
+                  file=sys.stderr)
+            return 1
+        pegs = [(int(round(x)), int(round(y))) for x, y in found]
+        if radius is None:
+            radius = PREDICTED_RADIUS_PX
+        print(f"pegs predicted from the sheet outline at "
+              f"{', '.join(f'{x},{y}' for x, y in pegs)}", file=sys.stderr)
+    if radius is None:
+        radius = 70
     try:
-        signature = measure_signature(rgb, args.peg, name=args.name,
-                                      radius_px=args.radius)
+        signature = measure_signature(rgb, pegs, name=args.name,
+                                      radius_px=int(radius))
     except ValueError as exc:
         print(f"{args.frame}: {exc}", file=sys.stderr)
         return 1

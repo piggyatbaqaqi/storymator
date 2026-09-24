@@ -250,8 +250,106 @@ def predict_peg_windows(gray: np.ndarray,
     against paper and reads dark from any angle; the opposite edge is
     bare paper.
 
-    This is a *proposal*, accurate to roughly the punch tolerance and
-    whatever the outline fit leaves behind, which is why the caller
-    samples a window around each point rather than a pixel.
+    This is a *proposal*, and the caller samples a window around each
+    point rather than a pixel.  Measured against pegs located by hand
+    on six rig captures, it lands **41 to 139 px** from the real thing,
+    and the error tracks the paper's bow: the outline fit assumes a
+    flat rectangle, and this sheet's free end departs from one by 3 to
+    12 mm.  ``PREDICTED_RADIUS_PX`` is sized from that.
+
+    Refining each point onto the darkest compact spot nearby was tried
+    and rejected.  It helps on blank paper -- 110 px to 21 on
+    ``square_013`` -- and it fails on artwork, where a drawn line is
+    darker and more compact than a chrome crown: on ``square_014`` it
+    got 139 px only as far as 117, having snapped onto the drawing.
+    Anything that keys on darkness alone is confusable by art, which
+    is the failure this project keeps rediscovering.
     """
-    raise NotImplementedError
+    from .detect import find_sheet
+    from .geometry import apply_homography, homography_from_points
+
+    gray = np.asarray(gray, dtype=float)
+    if mask is None:
+        mask = find_sheet(gray)
+    corners = corners_approx_poly(mask, gray)
+    model = np.asarray(calibration.sheet.corners(), dtype=float)
+    pegs_mm = np.asarray(calibration.peg.positions(), dtype=float)
+
+    best, best_score = None, np.inf
+    for shift in range(4):
+        order = np.roll(np.arange(4), -shift)
+        try:
+            h = homography_from_points(corners[order], model)
+        except (ValueError, np.linalg.LinAlgError):
+            continue
+        # A reflected labelling fits a mirrored sheet, which cannot
+        # happen to paper viewed from one side.
+        if np.linalg.det(h[:2, :2]) <= 0:
+            continue
+        try:
+            points = apply_homography(np.linalg.inv(h), pegs_mm)
+        except np.linalg.LinAlgError:       # pragma: no cover - degenerate
+            continue
+        # Millimetres per pixel is the square root of the linear
+        # part's determinant, since h maps image to mm.
+        mm_per_px = float(abs(np.linalg.det(h[:2, :2]))) ** 0.5
+        if mm_per_px <= 1e-9:               # pragma: no cover - degenerate
+            continue
+        radius = 0.5 * calibration.peg.round_diameter_mm / mm_per_px
+        score = _peg_darkness(gray, points, radius)
+        if score < best_score:
+            best, best_score = points, score
+    if best is None:
+        raise ValueError(
+            "no usable sheet labelling: every orientation of the outline "
+            "was degenerate or mirrored")
+    return best
+
+
+# How wide a window a caller should sample around each predicted
+# point.  Set from the prediction's measured accuracy over the corpus
+# -- worst 139 px -- with a little margin.  The pegs are 101.6 mm
+# apart, about 737 px on this rig, so windows this size do not meet.
+PREDICTED_RADIUS_PX = 160
+
+
+def _peg_darkness(gray: np.ndarray, points: np.ndarray,
+                  radius_px: float) -> float:
+    """How much darker than its surroundings each point is, summed.
+
+    Lower is better, and a labelling pointing at bare paper scores
+    about zero.
+
+    **Sized to the peg, and read at a low percentile.** A fixed window
+    read at its median fails at both ends: on a rendered test scene the
+    round peg is 16 px across, so a 28 px disc is mostly paper and its
+    median says "paper" even when centred exactly on the peg. Taking
+    the tenth percentile instead asks whether anything dark is in
+    there, which is the actual question, and survives the peg filling
+    only part of the disc.
+
+    The comparison is local — disc against surrounding annulus,
+    normalised by the annulus — because illumination across this sheet
+    varies by 42 %, and an absolute threshold would just be measuring
+    which end of the bar is better lit.
+    """
+    rows, cols = gray.shape[:2]
+    inner = max(3.0, radius_px)
+    outer = max(inner * 3.0, inner + 6.0)
+    reach = int(np.ceil(outer))
+    ys, xs = np.ogrid[-reach:reach + 1, -reach:reach + 1]
+    distance = np.hypot(xs, ys)
+    disc = distance <= inner
+    annulus = (distance > inner * 1.6) & (distance <= outer)
+
+    total = 0.0
+    for x, y in points:
+        cx, cy = int(round(x)), int(round(y))
+        if not (reach <= cx < cols - reach and reach <= cy < rows - reach):
+            continue
+        window = gray[cy - reach:cy + reach + 1, cx - reach:cx + reach + 1]
+        around = float(np.median(window[annulus]))
+        if around <= 1e-6:
+            continue
+        total += (float(np.percentile(window[disc], 10)) - around) / around
+    return total

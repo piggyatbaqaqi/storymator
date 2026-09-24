@@ -85,3 +85,30 @@ def test_windows_with_no_ink_fail_rather_than_inventing_a_colour(
     Image.fromarray(flat).save(path)
     assert mi.main([str(path), "--peg", "60,60", "--radius", "30"]) == 1
     assert "no ink found" in capsys.readouterr().err
+
+
+def test_it_finds_the_pegs_itself_given_a_calibration(tmp_path, capsys):
+    """The manual step the operator called seriously error-prone."""
+    import json
+    import os
+    root = os.path.dirname(_HERE)
+    frame = os.path.join(root, "data", "captures", "fresh_ink",
+                         "fresh_ink_007.png")
+    calibration = os.path.join(root, "data", "calibration", "distortion",
+                               "v4k_01", "v4k_01.json")
+    if not (os.path.exists(frame) and os.path.exists(calibration)):
+        pytest.skip("corpus frame or rig calibration absent")
+    argv = [frame, "--calibration", calibration,
+            "--name", "auto"]
+    assert mi.main(argv) == 0
+    out = capsys.readouterr()
+    block = json.loads(out.out)["ink"]
+    assert "predicted from the sheet outline" in out.err
+    # the same ink the hand-typed coordinates give, within the scatter
+    # the ink itself shows across the corpus
+    assert abs(block["direction_deg"] - (-59.6)) < 10.0
+
+
+def test_neither_pegs_nor_calibration_is_an_error(frame, capsys):
+    assert mi.main([frame]) == 2
+    assert "--calibration" in capsys.readouterr().err
