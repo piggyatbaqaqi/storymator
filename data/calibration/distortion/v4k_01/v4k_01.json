@@ -5,7 +5,7 @@
     "rect_short_mm": 3.142,
     "centre_spacing_mm": 101.616,
     "round_landmark_height_mm": 5.567,
-    "rect_landmark_height_mm": 0.0
+    "rect_landmark_height_mm": 6.404
   },
   "sheet": {
     "width_mm": 279.4,

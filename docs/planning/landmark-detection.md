@@ -625,3 +625,92 @@ The residual is a separate question and the larger one. It is no
 longer the outline: these are three real pegs fitted against a bar,
 and 30 px at 7.25 px/mm is 4 mm, which is far too much for punch
 tolerance. Worth its own measurement before anything is changed.
+
+## The crown is the landmark, and its height was missing
+
+The operator's question — "do we really need to locate the entire peg?
+Isn't it sufficient to locate the crown?" — was right, and it exposed
+a stale constant.
+
+### First, a retraction
+
+I had reported the fitted boxes as undersized by 11–52 %, measured
+against a "whole crown" mask built by thresholding *anything unlike
+the paper*. That reference is worse than what it was judging: on the
+right peg it merged the **shadow**, and on the round peg it swept in
+the **collar** below the dome. The 0.74–2.38 mm "centre shifts" quoted
+from it are not evidence the paint patch is wrong.
+
+The rigid stage uses only the peg **centres** — the angle enters just
+as a tie-break in triple selection — so a paint patch symmetric about
+the peg axis is a good landmark, and better than the whole crown
+because it cannot merge with a shadow.
+
+### The stale constant
+
+`rect_landmark_height_mm` was **0.0**, which was right when the rect
+landmarks were the *slots*: holes at paper level, dark because on-axis
+light does not reach into them. A painted crown top is not at paper
+level, so the parallax correction was being skipped for two of the
+three pegs.
+
+Measured with calipers against a mounted sheet:
+
+| peg | n | mean | sd |
+|---|---:|---:|---:|
+| left rect | 6 | 6.427 mm | 0.140 |
+| right rect | 7 | 6.384 mm | 0.189 |
+| **both rect pooled** | 13 | **6.404 mm** | 0.163 |
+| round (dome apex) | 5 | 8.674 mm | 0.312 |
+
+The two rect pegs agree to **0.042 mm**. And the round peg gives a
+free cross-check: apex 8.674 less the 3.220 mm dome radius puts the
+hemisphere's centre at **5.454 mm**, against the 5.567 mm already in
+the calibration from an entirely different derivation. Agreement to
+0.11 mm, which is worth 0.4 px of parallax and changes nothing.
+
+The bar's waviness explains most of the scatter: a 1.05 mm bar
+measuring 1.33 mm peak to peak is a ±0.14 mm surface excursion, whose
+sd as a sine is 0.099 mm against the 0.140 and 0.189 measured.
+
+### What it was worth
+
+Setting `rect_landmark_height_mm = 6.404`:
+
+| frame | before | after |
+|---|---:|---:|
+| Brite-Mark | 39.56 px | **23.38** |
+| Steel Blue | 40.06 px | **23.71** |
+| dry erase, blank | 32.88 px | **19.05** |
+| dry erase, art | 27.62 px | **14.18** |
+
+A 40–50 % cut on every frame, from one number that had quietly stopped
+being true when the marking method changed.
+
+### What is left, in millimetres
+
+Residuals are reported in **raster** pixels, at 11.63 px/mm, which is
+worth stating because it makes the numbers legible:
+
+| frame | peg residual | worst peg | outline residual | punch offset |
+|---|---:|---:|---:|---:|
+| Brite-Mark | 2.010 mm | 2.754 | 3.933 mm | 6.20 mm |
+| Steel Blue | 2.039 mm | 2.765 | 4.071 mm | 6.43 mm |
+| dry erase, blank | 1.638 mm | 2.138 | 4.021 mm | 6.25 mm |
+| dry erase, art | 1.219 mm | 1.475 | 3.564 mm | 5.03 mm |
+
+Two things stand out and neither is the pegs.
+
+**The fitted punch offset is 5.0–6.4 mm against a model of 12.0.** The
+sheet model says the peg line sits 12 mm from the punched edge and
+every frame says about half that. That is a 6 mm error in the geometry
+the outline stage is fitted to, and it is the largest single
+discrepancy left anywhere in the pipeline. The operator has punch
+geometry measured from 95 flatbed scans; this should be checked
+against it before anything else is changed.
+
+**The default threshold is unreachable.** `max_residual_px = 1.5` at
+11.63 px/mm is **129 µm** — below the 268 µm punch-to-edge standard
+deviation measured from those same scans. No real sheet can pass it.
+The threshold needs to come from the punch tolerance rather than from
+a round number.
