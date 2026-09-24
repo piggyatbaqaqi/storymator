@@ -1,0 +1,29 @@
+{
+  "frames": [
+    {
+      "file": "dykem_brite_mark_blue_006.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_lacru_00011_.png",
+      "sha256_16": "7f2d1d490a4d319f",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-23T21:59:27",
+      "exposure": {
+        "p2": 0.0118,
+        "median": 0.1686,
+        "p98": 0.8157,
+        "mean": 0.3557,
+        "sd": 0.3287
+      }
+    }
+  ],
+  "session": "dykem_brite_mark_blue",
+  "notes": [
+    {
+      "at": "2026-09-23T22:00:36",
+      "note": "dykem blue paint marker 84001, phone over center of page, exposure fixed"
+    }
+  ]
+}
