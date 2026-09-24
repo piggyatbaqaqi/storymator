@@ -16,14 +16,14 @@
   "field_spec": {
     "px_per_mm": 11.63,
     "origin_mm": [
-      0.0,
-      0.0
+      -141.7,
+      205.9
     ],
     "size_px": [
-      1024,
-      1024
+      3296,
+      2558
     ],
-    "flip_y": false
+    "flip_y": true
   },
   "camera_matrix": [
     [
