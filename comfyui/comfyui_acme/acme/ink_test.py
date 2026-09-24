@@ -475,3 +475,81 @@ def test_the_old_call_still_behaves_as_it_did():
     before = measure_signature(img, PEGS, radius_px=40)
     assert abs(_wrap(before.direction_deg
                      - _blue_for(img).direction_deg)) < 1.0
+
+
+# --- 9. the three marking media, each with its own signature ---------
+
+_MEDIA = {
+    "dry erase": ("fresh_ink/fresh_ink_007", "v4k_01.json",
+                  [(1283, 1951), (2005, 1830), (2538, 1734)]),
+    "steel blue": ("dykem_steel_blue/dykem_steel_blue_002",
+                   "v4k_01_steel_blue.json",
+                   [(1111, 1966), (1850, 1817), (2404, 1705)]),
+    "brite mark": ("dykem_brite_mark_blue/dykem_brite_mark_blue_006",
+                   "v4k_01_blue_84001.json",
+                   [(1098, 2041), (1841, 1900), (2397, 1794)]),
+}
+
+
+def _calibration(name: str) -> Calibration:
+    import json
+    path = os.path.join(_ROOT, "data", "calibration", "distortion",
+                        "v4k_01", name)
+    if not os.path.exists(path):
+        pytest.skip(f"{name} is not in the working tree")
+    with open(path) as handle:
+        return Calibration.from_dict(json.load(handle))
+
+
+@pytest.mark.parametrize("medium", sorted(_MEDIA))
+def test_each_medium_is_found_by_its_own_signature(medium: str):
+    stem, calibration, pegs = _MEDIA[medium]
+    rgb = _corpus(stem)
+    gray = luminance(rgb) if rgb.max() <= 1.0 else (
+        rgb @ np.array([0.2126, 0.7152, 0.0722])) / 255.0
+    ink = _calibration(calibration).ink
+    assert ink is not None, f"{calibration} carries no ink block"
+    found = find_peg_candidates(gray, find_sheet(gray), min_area_px=200.0,
+                                max_area_px=20000.0, ink=ink, rgb=rgb)
+    assert len(found) == 3
+    for blob in found:
+        nearest = min(np.hypot(blob.x - px, blob.y - py) for px, py in pegs)
+        assert nearest < 60
+
+
+def test_the_tight_signature_is_specific_and_the_loose_ones_general():
+    """Pins the cross-detection matrix rather than leaving it in prose.
+
+    Brite-Mark is opaque paint and measures a 0.649 chroma floor, which
+    is above what a thin layout fluid puts down -- so its signature
+    finds only two pegs on the Steel Blue frame. That is the right
+    trade and not a fault, but it does mean the calibration has to
+    match the ink actually on the bar. The first two media were
+    interchangeable and lulled us into assuming the third would be.
+    """
+    results = {}
+    for medium, (stem, _, pegs) in _MEDIA.items():
+        rgb = _corpus(stem)
+        gray = (rgb @ np.array([0.2126, 0.7152, 0.0722])) / 255.0
+        sheet = find_sheet(gray)
+        for signature, (_, calibration, _) in _MEDIA.items():
+            ink = _calibration(calibration).ink
+            try:
+                found = find_peg_candidates(
+                    gray, sheet, min_area_px=200.0, max_area_px=20000.0,
+                    ink=ink, rgb=rgb)
+            except ValueError:
+                results[(medium, signature)] = 0
+                continue
+            results[(medium, signature)] = sum(
+                min(np.hypot(b.x - px, b.y - py) for px, py in pegs) < 60
+                for b in found)
+
+    assert results[("steel blue", "brite mark")] == 2, (
+        "the tight signature no longer discriminates; re-read the table")
+    for medium in _MEDIA:
+        for signature in ("dry erase", "steel blue"):
+            assert results[(medium, signature)] == 3, (
+                f"the {signature} signature stopped being general: "
+                f"{results[(medium, signature)]}/3 on {medium}")
+    assert results[("brite mark", "brite mark")] == 3
