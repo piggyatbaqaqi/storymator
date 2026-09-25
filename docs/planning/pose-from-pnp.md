@@ -210,3 +210,71 @@ both are bolted to the same disc. Measure that once and peg detection
 becomes a *check* rather than a requirement — which would make
 registration survive a sheet whose pegs are hidden under artwork, a
 failure mode the corpus already contains.
+
+
+## Four corners cut from one board: what to watch
+
+The plan — scale `calibrx-charuco-175x225mm.svg` to 50 %, cut the four
+3 x 3 corners out, glue them at N, S, E and W — is sound in its
+essentials and has one serious problem.
+
+**What works.** The four corner blocks carry disjoint marker ids —
+NW `{0,3,4,7}`, NE `{2,5,6,9}`, SW `{21,24,25,28}`, SE
+`{23,26,27,30}` — so a detector can always tell which piece it is
+looking at, and a piece is never mistaken for another. Each 3 x 3
+block has four chessboard corners, so the set gives **16 precise
+points** spread to the compass. At 50 % the square is 12.5 mm, which
+at the rig's 9.8 px/mm is 123 px, with about **11 px per marker
+module** — workable, though it would get tight if the camera ever
+moved further back.
+
+**The serious problem: cutting the board destroys its geometry.** The
+reason a printed target is a calibration target is that the relative
+positions of its features are manufactured to the print's accuracy.
+Cut it into four and glue them down separately and that is gone: what
+remains is four pieces whose *internal* geometry is known and whose
+*relative* geometry is whatever the glue did.
+
+Three ways out, in increasing order of appeal.
+
+*Measure the placement.* Four pieces, each needing two coordinates and
+a rotation, to a tenth of a millimetre, by hand. Possible; tedious;
+easy to get subtly wrong.
+
+*Print the whole layout on one sheet.* Removes the problem entirely,
+because the geometry is printed rather than glued — but the disc has
+to hold a 279 x 216 mm sheet plus targets outside it, which is bigger
+than the printer.
+
+*Bootstrap from the pegs.* The peg spacing is now known to about
+0.05 mm. Shoot a set of frames in which pegs and targets are both
+visible, solve once for each piece's placement in the peg frame, and
+store it in the rig. After that the targets carry the pose on their
+own — including on frames where artwork hides a peg, which is the
+failure this whole line of work is trying to survive.
+
+The third is the one that needs no new hardware and no careful
+handwork, and it reuses the multi-view machinery already in
+`acme/lens.py`.
+
+**Three smaller things.**
+
+`cv2.aruco.CharucoBoard` describes a **regular grid**. Four pieces at
+the compass points are not one, so `find_charuco` as written will not
+see them. Either detect each piece as its own small board and combine
+the results, or build a generic `cv2.aruco.Board` with explicit object
+points — which is the tool for exactly this and is what the bootstrap
+above would produce.
+
+**The print must be re-measured.** The existing board came out 1.27 %
+oversize with a +0.15 % anisotropy between its axes. A 50 % rescale
+and a fresh print has its own scale error, and it will not be the same
+one.
+
+**The pieces have to be coplanar to about 0.1 mm** — glued flat, no
+trapped bubble, no ridge of adhesive. Non-coplanar targets reintroduce
+precisely the error the disc is being built to remove.
+
+And one placement note: the bar occupies one edge of the disc, so one
+of the four compass points is already spoken for. Three targets plus
+the bar may be the real layout.
