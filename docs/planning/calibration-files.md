@@ -165,18 +165,84 @@ single assembled thing. Nothing in `acme/fit.py` or `acme/detect.py`
 should need to know that the peg geometry arrived from a different
 file than the lens model.
 
-## Open questions
+## Decided
 
-* **Does the rig file belong in the repository or beside the graph?**
-  A rig is a statement about one physical desk. Two people with
-  different hardware want different rigs, and neither wants the
-  other's in their tree.
-* **Should a session record the rig, or a copy of it?** The hash makes
-  a reference sufficient *if the referenced file is still there*.
-  Copying the resolved values into the manifest makes an old session
-  readable even after a rig file is deleted, at the cost of a much
-  larger manifest.
-* **What names the paper?** `canson_ream_0001` names a *ream*, which
-  is right for punch statistics — a different ream is a different
-  punch. It may be wrong for sheet dimensions, which are a property of
-  the product.
+**Rig files live in the repository, and a rig has an owner.** The
+images are here, so the rigs that explain them belong here too. A rig
+is an *assembly*, not a permanent grouping: cameras and bars are
+expected to move between rigs, and if there is ever an office, other
+equipment will too. So a rig carries `owner` and a date, and the same
+camera may appear in two rigs across time without either being wrong.
+
+```json
+{
+  "kind": "rig",
+  "name": "desk",
+  "owner": "piggy",
+  "assembled": "2026-09-25",
+  "camera": "../distortion/v4k_01/v4k_01.json",
+  "pegs":   "../pegs/honbay_0001/honbay_0001.json",
+  "paper":  "../paper/canson_animation_8.5x11_20lb.json",
+  "ink":    "../ink/v4k_01-brite_mark_84001.json",
+  "raster": { "px_per_mm": 11.63 }
+}
+```
+
+**A session records the rig by name, by hash, and by value.** Both,
+because they answer different questions: the name says which desk, the
+hash says which *version* of it, and the copy says what the numbers
+actually were once the referenced files have moved on.
+
+One caveat on the hash. A **git commit** hash only means anything if
+the tree was clean when the shutter fired, and during an experiment it
+usually is not — today's peg spacing went through three values before
+settling. So the durable identifier is a **content hash per part**,
+with the commit hash recorded alongside when it happens to be
+meaningful.
+
+A rig is small. Copying it whole into every session manifest costs
+nothing and makes an old capture readable after the rig file it names
+has been edited, renamed or deleted.
+
+**Paper splits into a product and a ream.**
+
+`data/calibration/paper/canson_animation_8.5x11_20lb.json` — the
+product: vendor, product name, the EAN **3 148955 732809** whose check
+digit verifies, nominal sheet 215.9 x 279.4 mm, and the summary
+statistics that turned out to be properties of the product rather than
+of one ream. This is what a rig references and what a fitter reads.
+
+`data/calibration/acme_paper/canson_ream_0001/canson_ream_0001.json`
+— the ream: a link back to the product, the 95-scan statistics, and
+the scans themselves, which already live in that directory.
+
+**Experiments name the product, and note the ream.** Two different
+standings on purpose.
+
+The *product* supplies the numbers, because the ream measured well
+enough to believe Canson's process: pitch 26 microns, span 39, a punch
+squareness of 0.060 degrees. A second ream would be a nice cross-check
+and is not needed before trusting the product identifier.
+
+The *ream* is provenance only — optional, and understood as a claim
+about what the operator believes rather than a measurement. Punch
+geometry is a property of the punching run, not of the catalogue
+number, and paper is hygroscopic, so the ream is the unit of storage
+history. It costs one string and it is **impossible to recover
+later**: a sheet in a stack carries no label, and for anyone who has
+been animating for years the datum is already gone.
+
+The argument against recording it is real and is why it stays
+provenance. Reams get mixed, and a confidently wrong label is worse
+than none; and if the product really is consistent, a ream field
+invites someone to calibrate per ream and treat variation inside
+measurement error as signal. Keeping it out of the calibration path
+means nothing downstream can take a dependency on it.
+
+## Still open
+
+* **What `rect_long` actually is.** Today's readings imply about
+  11.79 mm along the bar against a modelled 12.72, and it has never
+  been measured directly. It sizes detection windows rather than the
+  fit, so it is not urgent, but the model should not go on claiming a
+  number nobody took.
