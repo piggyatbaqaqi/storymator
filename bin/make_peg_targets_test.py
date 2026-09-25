@@ -49,7 +49,6 @@ def _sheet(count: int = 4, **kw):
 
 # --- 1. the pieces must be distinguishable once they are on the disc --
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_each_board_gets_its_own_ids():
     ranges = mt.marker_ids(4, per_board=4)
     assert len(ranges) == 4
@@ -60,14 +59,12 @@ def test_each_board_gets_its_own_ids():
         seen |= set(int(v) for v in block)
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_the_ids_start_where_they_are_told_to():
     ranges = mt.marker_ids(2, per_board=4, first=40)
     assert sorted(int(v) for v in ranges[0]) == [40, 41, 42, 43]
     assert sorted(int(v) for v in ranges[1]) == [44, 45, 46, 47]
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_running_out_of_dictionary_is_an_error():
     with pytest.raises(ValueError, match="dictionary|ids"):
         _sheet(count=80)
@@ -76,7 +73,6 @@ def test_running_out_of_dictionary_is_an_error():
 # --- 2. what the detector sees, at the scale the rig sees it ---------
 
 @pytest.mark.parametrize("index", range(4))
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_every_board_is_found_at_rig_scale(index: int):
     """Rendered at 508 dpi, resampled to 9 px/mm, with sensor noise.
 
@@ -102,7 +98,6 @@ def test_every_board_is_found_at_rig_scale(index: int):
     assert corners is not None and len(corners) == 4
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_a_board_is_not_confused_with_its_neighbours():
     """Disjoint ids are only useful if the detector honours them."""
     sheet = _sheet()
@@ -124,7 +119,6 @@ def test_a_board_is_not_confused_with_its_neighbours():
 
 # --- 3. the sheet is the size it says it is --------------------------
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_the_sheet_is_the_requested_size():
     sheet = _sheet()
     assert sheet.shape == (int(round(SHEET[1] * PPM)),
@@ -132,7 +126,6 @@ def test_the_sheet_is_the_requested_size():
     assert sheet.dtype == np.uint8
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_the_squares_are_the_requested_size_in_millimetres():
     """Measured off the pixels, not taken from the arithmetic.
 
@@ -152,7 +145,6 @@ def test_the_squares_are_the_requested_size_in_millimetres():
         assert abs(gap / PPM - SQUARE_MM) < 0.1
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_the_scale_bar_is_the_length_it_claims():
     """It exists to catch the print's scale error, so it must be true."""
     sheet = _sheet()
@@ -161,13 +153,11 @@ def test_the_scale_bar_is_the_length_it_claims():
 
 # --- 4. refuse rather than clip --------------------------------------
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_a_sheet_too_small_for_the_boards_is_refused():
     with pytest.raises(ValueError, match="fit|room|sheet"):
         _sheet(count=4, sheet_mm=(60.0, 60.0))
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_the_boards_do_not_overlap_their_cut_margins():
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
     centres = mt.layout(4, side, 8.0, SHEET)
@@ -179,7 +169,6 @@ def test_the_boards_do_not_overlap_their_cut_margins():
                 "two cut boxes overlap, so cutting one damages another")
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_every_board_lies_wholly_on_the_sheet():
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
     half = side / 2 + 8.0
@@ -188,7 +177,6 @@ def test_every_board_lies_wholly_on_the_sheet():
         assert half <= y <= SHEET[1] - half
 
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_board_side_is_squares_times_square():
     assert mt.board_side_mm(3, 12.5) == pytest.approx(37.5)
     assert mt.board_side_mm(4, 10.0) == pytest.approx(40.0)
@@ -196,7 +184,6 @@ def test_board_side_is_squares_times_square():
 
 # --- 5. the command line ---------------------------------------------
 
-@pytest.mark.xfail(strict=True, reason="make-peg-targets is a skeleton")
 def test_it_writes_a_png_with_the_dpi_in_it(tmp_path):
     out = tmp_path / "targets.png"
     assert mt.main(["--out", str(out)]) == 0

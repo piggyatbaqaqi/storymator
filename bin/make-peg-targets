@@ -38,12 +38,16 @@ def marker_ids(count: int, per_board: int,
     mixes them up produces a confident wrong pose rather than a
     failure.
     """
-    raise NotImplementedError
+    if count < 1 or per_board < 1:
+        raise ValueError("count and per_board must be positive")
+    return [np.arange(first + i * per_board,
+                      first + (i + 1) * per_board, dtype=np.int32)
+            for i in range(count)]
 
 
 def board_side_mm(squares: int, square_mm: float) -> float:
     """How big one board is, edge to edge."""
-    raise NotImplementedError
+    return float(squares) * float(square_mm)
 
 
 def layout(count: int, side_mm: float, margin_mm: float,
@@ -54,7 +58,82 @@ def layout(count: int, side_mm: float, margin_mm: float,
     silently clipped at the edge is worse than no sheet at all,
     because it looks fine until something measures it.
     """
-    raise NotImplementedError
+    box = side_mm + 2.0 * margin_mm
+    width, height = sheet_mm
+    # Keep off the page edges, leave room above each board for its
+    # label, and reserve the foot of the sheet for the scale bar.
+    # Spreading boards to the extreme corners satisfies "wholly on the
+    # sheet" and is still unusable: the labels run off the top and the
+    # bottom row lands on the bar.
+    left = min(PAGE_MARGIN_MM, max(0.0, (width - box) / 2.0))
+    top = min(PAGE_MARGIN_MM + LABEL_SPACE_MM,
+              max(0.0, (height - box) / 2.0))
+    foot = min(BAR_SPACE_MM, max(0.0, (height - box) / 2.0))
+    usable_w = width - 2.0 * left
+    usable_h = height - top - foot
+    across = int(usable_w // box)
+    down = int(usable_h // box)
+    if across * down < count:
+        raise ValueError(
+            f"no room on the sheet: {width:.1f} x {height:.1f} mm holds "
+            f"{across} x {down} = {across * down} boards of {box:.1f} mm "
+            f"including their cut margins, and {count} were asked for")
+
+    columns = min(across, int(np.ceil(np.sqrt(count))))
+    rows = int(np.ceil(count / columns))
+    half = side_mm / 2.0 + margin_mm
+
+    def spread(n: int, lo: float, hi: float) -> List[float]:
+        if n == 1:
+            return [(lo + hi) / 2.0]
+        step = (hi - lo - 2.0 * half) / (n - 1)
+        return [lo + half + i * step for i in range(n)]
+
+    xs = spread(columns, left, width - left)
+    ys = spread(rows, top, height - foot)
+    centres = [(x, y) for y in ys for x in xs]
+    return centres[:count]
+
+
+# Page furniture, in millimetres: clear of the edges, room above each
+# board for its label, and the foot of the sheet left for the bar.
+PAGE_MARGIN_MM = 15.0
+LABEL_SPACE_MM = 8.0
+BAR_SPACE_MM = 48.0
+
+# How long the printed scale bar is.  Long enough that a one per cent
+# error is a whole millimetre, which a caliper reads without argument.
+SCALE_BAR_MM = 100.0
+
+
+def scale_bar_mm(sheet: np.ndarray, px_per_mm: float) -> float:
+    """Measure the drawn scale bar back off the rendered sheet.
+
+    The bar exists to catch the *print's* scale error, so a bar that
+    is not the length it claims would quietly corrupt the correction
+    it is there to enable.  Measuring it rather than trusting it costs
+    one pass over the pixels.
+    """
+    dark = np.asarray(sheet) < 128
+    best = 0
+    for row in dark:
+        run = 0
+        for value in row:
+            run = run + 1 if value else 0
+            best = max(best, run)
+    return best / float(px_per_mm)
+
+
+def _font(size_px: int):
+    from PIL import ImageFont
+    for path in ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                 "/usr/share/fonts/TTF/DejaVuSans.ttf",
+                 "/Library/Fonts/Arial.ttf"):
+        try:
+            return ImageFont.truetype(path, size_px)
+        except OSError:
+            continue
+    return ImageFont.load_default()
 
 
 def render(squares: int, square_mm: float, marker_mm: float, count: int,
@@ -62,7 +141,82 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
            margin_mm: float, dictionary: str,
            first_id: int = 0) -> np.ndarray:
     """The whole sheet, as an 8-bit greyscale array."""
-    raise NotImplementedError
+    import cv2
+    from PIL import Image, ImageDraw
+
+    if not hasattr(cv2.aruco, dictionary):
+        raise ValueError(f"unknown ArUco dictionary {dictionary!r}")
+    known = cv2.aruco.getPredefinedDictionary(
+        getattr(cv2.aruco, dictionary))
+    per_board = (squares * squares) // 2
+    wanted = first_id + count * per_board
+    available = len(known.bytesList)
+    if wanted > available:
+        raise ValueError(
+            f"not enough ids in the dictionary: {count} boards of "
+            f"{squares}x{squares} need {count * per_board} markers from "
+            f"{first_id}, and {dictionary} holds {available}")
+
+    side = board_side_mm(squares, square_mm)
+    centres = layout(count, side, margin_mm, sheet_mm)
+
+    def px(value: float) -> int:
+        return int(round(value * px_per_mm))
+
+    sheet = Image.new("L", (px(sheet_mm[0]), px(sheet_mm[1])), 255)
+    draw = ImageDraw.Draw(sheet)
+    font = _font(max(8, px(4.0)))
+    rule = max(1, px(0.15))
+
+    for (name, ids), (cx, cy) in zip(
+            enumerate(marker_ids(count, per_board, first_id)), centres):
+        index, block = name, ids
+        board = cv2.aruco.CharucoBoard((squares, squares), square_mm,
+                                       marker_mm, known, block)
+        image = board.generateImage((px(side), px(side)))
+        sheet.paste(Image.fromarray(image),
+                    (px(cx - side / 2), px(cy - side / 2)))
+        # The cut line sits outside the board, never on it.  Cutting
+        # along the board's own boundary is harmless -- the chessboard
+        # corners are interior -- but cutting *inside* it destroys the
+        # contrast a corner is made of, and a line drawn on the edge
+        # invites exactly that.
+        draw.rectangle([(px(cx - side / 2 - margin_mm),
+                         px(cy - side / 2 - margin_mm)),
+                        (px(cx + side / 2 + margin_mm),
+                         px(cy + side / 2 + margin_mm))],
+                       outline=128, width=rule)
+        draw.text((px(cx - side / 2 - margin_mm),
+                   px(cy - side / 2 - margin_mm) - px(5.5)),
+                  f"#{index}   ids {int(block[0])}-{int(block[-1])}   "
+                  f"{side:.1f} mm",
+                  fill=0, font=font)
+
+    # Drawn as a filled rectangle of an exact pixel count, not as a
+    # line between two points.  A stroked line adds its own width at
+    # each cap, which put this bar 0.2 mm long -- and 0.2 mm in 100 is
+    # a sixth of the 1.27 % print error the bar exists to measure.
+    bar_y = sheet_mm[1] - BAR_SPACE_MM / 2.0
+    bar_x = (sheet_mm[0] - SCALE_BAR_MM) / 2.0
+    length_px = int(round(SCALE_BAR_MM * px_per_mm))
+    thickness = max(1, px(0.3))
+    x0, y0 = px(bar_x), px(bar_y)
+    draw.rectangle([(x0, y0), (x0 + length_px - 1, y0 + thickness - 1)],
+                   fill=0)
+    # Ticks stop one pixel short of the bar, so they cannot join it and
+    # lengthen the run that measures it.
+    for tick in range(0, int(SCALE_BAR_MM) + 1, 10):
+        tx = x0 + int(round(tick * px_per_mm))
+        draw.rectangle([(tx, y0 - px(3.0)), (tx + max(0, px(0.2)) - 1,
+                                             y0 - 2)], fill=0)
+    draw.text((px(bar_x), px(bar_y + 3.0)),
+              f"{SCALE_BAR_MM:.1f} mm -- measure this and record what you get",
+              fill=0, font=font)
+    draw.text((px(bar_x), px(bar_y + 11.0)),
+              f"square {square_mm} mm, marker {marker_mm} mm, {dictionary}, "
+              f"{px_per_mm * 25.4:.0f} dpi",
+              fill=0, font=font)
+    return np.asarray(sheet, dtype=np.uint8)
 
 
 def main(argv=None) -> int:
