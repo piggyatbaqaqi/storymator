@@ -3,7 +3,7 @@
     "round_diameter_mm": 6.44,
     "rect_long_mm": 12.72,
     "rect_short_mm": 3.142,
-    "centre_spacing_mm": 101.616,
+    "centre_spacing_mm": 103.185,
     "round_landmark_height_mm": 8.674,
     "rect_landmark_height_mm": 6.404
   },
@@ -82,7 +82,8 @@
       9
     ],
     "board_dictionary": "DICT_6X6_250",
-    "board_print_scale": 1.012652
+    "board_print_scale": 1.012652,
+    "peg_centre_spacing": "Measured 2026-09-25 with digital calipers as the clear gaps between pegs: left rect to round 93.60 mm, round to right rect 93.61. Centre to centre is the gap plus half of each peg along the bar, so 93.60 + 12.72/2 + 6.44/2 = 103.180 and 93.61 + 6.44/2 + 12.72/2 = 103.190. Mean 103.185 mm = 4.0624 in, not the nominal 4.0000. The two halves agree to 0.010 mm."
   },
   "ink": {
     "direction_deg": -61.8,

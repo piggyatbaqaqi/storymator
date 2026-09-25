@@ -1005,3 +1005,45 @@ inches. Cut paper is usually within a millimetre, so a 2.8 mm error
 there would be surprising — but it has not been measured either.
 
 Both are a caliper measurement away, and one of them is wrong.
+
+### The bar is 4.0624 inches, and that was the whole 1 %
+
+Measured with calipers as the clear gaps between pegs:
+
+| | gap | centre to centre |
+|---|---:|---:|
+| left rect to round | 93.60 mm | 93.60 + 12.72/2 + 6.44/2 = **103.180** |
+| round to right rect | 93.61 mm | 93.61 + 6.44/2 + 12.72/2 = **103.190** |
+
+Mean **103.185 mm = 4.0624 in**, against a model of 101.616 = 4.0000.
+Full span 206.37 mm, 8.1248 in.
+
+**The two halves agree to 0.010 mm.** So the 0.47 mm asymmetry seen in
+the image is not the bar at all — it is paint placement and detection
+error. The bar is excellent, and the earlier worry about its bend can
+be closed: the only measurable thing wrong with it was that nobody had
+measured it.
+
+Substituting the measured spacing, with nothing else changed and no
+threshold loosened:
+
+| capture | at 101.616 | at 103.185 | verdict |
+|---|---:|---:|---|
+| centred | 0.825 mm | **0.509 mm** | **ACCEPTED** |
+| `first_hamster_004` | 1.158 mm | **0.555 mm** | **ACCEPTED** |
+| from right | 2.032 mm | 1.004 mm | refused |
+| `repaint_001` | 2.104 mm | 0.969 mm | refused |
+| `dykem_brite_mark_blue_006` | — | 1.041 mm | refused |
+
+Every frame roughly halves, and two of them pass the 0.804 mm
+threshold derived from punch tolerance. That is the first time
+anything has passed a principled threshold rather than a relaxed one.
+
+The three still refused are the three oblique ones, at 0.97 to 1.04
+mm, which is consistent with the camera-angle finding above and leaves
+the bowed mat as the next thing to fix.
+
+This is the convention the project already had — *"every dimension
+here is a default, not a constant; the bar in the room is the ground
+truth"* — applied to the one dimension that had been taken on faith
+because it was the roundest number.

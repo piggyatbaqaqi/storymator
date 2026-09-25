@@ -8,6 +8,13 @@ Defaults are the standard ACME bar as confirmed by the operator
 2026-09-17: rectangular pegs 1/2" x 1/8", a 1/4" round peg, centres 4"
 apart, so 8" rect-to-rect.
 
+**Do not trust the peg spacing default on a real rig.** The first bar
+measured here, honbay_0001, has its centres 103.185 mm apart -- 4.0624
+inches, 1.54 % over nominal -- and that error is systematic, so it
+scales everything downstream: using 4" flat doubled the peg residual on
+every frame in the corpus. The bar is symmetric to 0.010 mm between
+its halves, so this is the manufacturer's spacing and not a defect.
+
 The **peg frame** is the project's canonical coordinate system:
 
     origin   centre of the round peg

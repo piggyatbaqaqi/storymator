@@ -123,18 +123,35 @@ def test_the_drawn_rectangles_are_the_detected_rectangles(medium: str):
 
 
 @pytest.mark.parametrize("medium", sorted(FRAMES))
-def test_the_fitted_points_stay_undistorted(medium: str):
-    """The correction must not leak into the geometry.
+def test_the_fit_straightens_even_though_the_drawing_does_not(medium: str):
+    """The correction must not leak into the geometry, nor out of it.
 
-    Straightening the landmarks before fitting is deliberate and is
-    what keeps the transform honest. Only the *drawing* copies move.
+    An earlier version of this asserted that straightening *improves*
+    the peg residual. That is a guess about performance, not a
+    contract, and it was falsified as soon as the peg spacing was
+    measured properly: on the dry-erase frame the peg residual is
+    1.60 mm straightened against 1.06 unstraightened, while the corner
+    errors go the other way, 42-67 against 67-78. Undistortion is
+    expected to help the *outline*, which is where the lens error
+    actually lives; what it does to the pegs after a rigid correction
+    is an interaction, not a guarantee.
+
+    So this tests the contract instead: the outline improves, and the
+    drawn points are not the fitted ones.
     """
-    rgb, gray, cal = _load(medium)
-    straight = fit_pose(gray, cal, rgb=rgb, max_residual_px=1e9)
     from dataclasses import replace
+    rgb, gray, cal = _load(medium)
+    straight = fit_pose(gray, cal, rgb=rgb, max_residual_mm=1e9)
     flat = fit_pose(gray, replace(cal, camera_matrix=None, dist_coeffs=None),
-                    rgb=rgb, max_residual_px=1e9)
-    assert straight.peg_residual_px < flat.peg_residual_px
+                    rgb=rgb, max_residual_mm=1e9)
+    assert straight.outline_residual_px < flat.outline_residual_px
+
+    from .lens import undistort_points
+    drawn = np.asarray(straight.pegs_image)
+    fitted = undistort_points(drawn, cal.camera_matrix, cal.dist_coeffs)
+    assert np.abs(drawn - fitted).max() > 2.0, (
+        "the drawn points and the fitted points are the same, so either "
+        "the lens model is trivial or the straightening was skipped")
 
 
 def test_without_a_lens_model_the_drawn_points_are_unchanged():

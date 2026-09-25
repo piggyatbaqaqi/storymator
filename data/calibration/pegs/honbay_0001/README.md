@@ -1,5 +1,19 @@
 # ACME peg bar honbay_0001 — caliper measurements
 
+> **Centre spacing measured 2026-09-25: 103.185 mm = 4.0624 in**, not
+> the nominal 4.0000. From the clear gaps between pegs — left rect to
+> round 93.60 mm, round to right rect 93.61 — plus half of each peg
+> along the bar. The two halves agree to **0.010 mm**, so this is the
+> manufacturer's spacing and not a bend.
+>
+> Arithmetic below that uses ±101.6 mm as the rect pegs' lever arm
+> predates this and is 1.5 % light; the conclusions it draws are
+> unaffected in direction, but the magnitudes want redoing.
+>
+> The machine-readable copy lives in the **camera** calibrations,
+> `data/calibration/distortion/v4k_01/*.json`, which is the wrong
+> place for it — see this directory's `README.md`.
+
 Everything here is a property of **honbay_0001 specifically** and must
 be re-measured for any other bar. Camera captures of it live with the
 camera that took them, in

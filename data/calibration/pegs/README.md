@@ -19,3 +19,25 @@ and `peg_profile-*.jpg`.
 
 Paper is measured separately, in [../paper/](../paper/): the punch
 belongs to the ream, not to the bar.
+
+
+## The geometry is stored in the wrong place
+
+A bar's measurements are written up here, but the numbers the code
+actually reads live in `data/calibration/distortion/v4k_01/*.json` —
+a directory named after a **camera**. Three of them, each carrying its
+own copy of the same `peg` block.
+
+So measuring the bar means editing three files that have nothing to do
+with the bar, and this directory, which is named after the bar, holds
+no machine-readable record at all. Correcting the centre spacing on
+2026-09-25 touched all three.
+
+The bar and the camera are independent pieces of hardware: either can
+be replaced without the other. A `honbay_0001.json` here, referenced
+by the camera calibrations rather than copied into them, would put
+each measurement in one place and make "which bar was this shot with?"
+a question the file can answer.
+
+Not done yet, because it changes the calibration file format and
+`Calibration.from_dict` with it.
