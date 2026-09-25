@@ -121,3 +121,129 @@ that is an assumption.
 between the corners named above, and six on the solid bar outside to
 outside. If the bar agrees with the corners, it is usable after all
 and only needs labelling. If it does not, it should go.
+
+---
+
+# Revisited 2026-09-25: the bars are gone, and the diagonals only bound the skew
+
+**Verdict.** The scale bars have been removed from
+`bin/make-peg-targets` rather than relabelled, and the four boards
+have been pulled together so a 152.71 mm caliper reaches every point
+on the sheet. The sheet now prints its own nominals:
+
+| span | from | to | nominal |
+|---|---|---|---:|
+| across | board #0's furthest corner | board #1's | **83.92 mm** |
+| down | board #0's furthest corner | board #2's | **83.92 mm** |
+| diagonal | board #0 | board #3 | **117.35 mm** |
+| diagonal | board #1 | board #2 | **117.35 mm** |
+
+Six readings each. The anisotropy is the ratio of the across and down
+fractional errors, as before.
+
+## Diagonals do not cross-check anisotropy
+
+The operator asked whether they would. They do not, and the reason is
+that a diagonal is symmetric in the two axes it crosses.
+
+Under a scaling of `sx` across and `sy` down, a diagonal vector
+`(W, H)` becomes `(sx·W, sy·H)`. With `W = H`, **both** diagonals
+change by the same factor `sqrt((sx² + sy²)/2)`. An isotropic 1.0134
+and an anisotropic 1.0127 × 1.0142 give the identical pair of
+diagonals — 1.01345 either way, a difference of 5 parts per million
+against a 0.4 % reading error. Only the axis-aligned spans separate
+them, which is why both are advertised.
+
+## What the diagonals do catch is shear, as a bound
+
+A shear `x' = x + k·y` is the one distortion the axis spans miss
+entirely: it leaves both `W` and `H` unchanged and moves the two
+diagonals in opposite directions.
+
+    d₁ − d₂ ≈ 2·k·W·H / hypot(W, H) = k·W·√2   (for W = H)
+
+At `W = 82.98 mm` that is 117.35 mm of lever arm per radian. The floor
+is set by the corner-reading scatter, **sd 0.33 mm** measured on 6
+readings across 5 squares (`data/calibration/targets/README.md`):
+
+| readings each | sd of the difference | 2σ floor | as an angle | inside one 37.5 mm board |
+|---|---:|---:|---:|---:|
+| 1 | 0.467 mm | 0.933 mm | 0.456° | 0.298 mm |
+| 6 | 0.191 mm | 0.381 mm | 0.186° | 0.122 mm |
+
+So a diagonal difference under 0.381 mm means nothing, and 0.381 mm
+means 0.122 mm of corner displacement inside a cut board — **15 % of
+the 0.804 mm threshold**. The diagonals can therefore *confirm* that
+shear is harmless; they cannot detect one that matters. They are worth
+taking because they are two more readings at the same jaw setting, not
+because they are a sensitive test. Anything this instrument can see in
+them is already a print fault worth investigating for other reasons.
+
+The page-scale figure is the misleading one and is recorded here so it
+does not get reused: `k = 0.00325` over the sheet's 279.4 mm height is
+0.907 mm, which looks alarming and is irrelevant — the boards are cut
+apart and glued down individually, so only the shear *within* one
+37.5 mm board survives the scissors.
+
+## The layout constraint, and what it cost
+
+The binding distance is the diagonal between the two furthest printed
+corners of the 2 × 2 block, `(step + 37.5) × √2`. Setting that equal
+to 152.71 mm gives a centre step of **70.48 mm**, and guarantees that
+every pair of points on the four boards is reachable — no reading the
+operator chooses to take can fall out of range.
+
+That guarantee is paid for in baseline:
+
+| layout | span measured | one reading | mean of six | over the 203.232 mm peg span |
+|---|---:|---:|---:|---:|
+| previous | 132.40 mm | 0.249 % | 0.102 % | 0.208 mm (26 % of threshold) |
+| now | 83.92 mm | 0.393 % | 0.161 % | 0.327 mm (41 %) |
+| corner-capped | 108.70 mm | 0.304 % | 0.124 % | 0.252 mm (31 %) |
+
+The middle row is what shipped. The third is the alternative — cap on
+the *corner* diagonal rather than the printed edge, allowing a 95.48 mm
+step — and it was not taken because it reinstates the thing that made
+the previous layout awkward: some readings fit and some do not.
+
+The previous layout bought its precision with two different rules,
+corresponding corners across and innermost corners down, because
+corresponding corners were 154.90 mm apart and did not fit. Two rules
+for one measurement is exactly how the 0.40 % tick ambiguity got in.
+
+## What this supersedes
+
+The `## What should change` section above offered "either remove them,
+or relabel them". Removed. `test_the_scale_bar_is_the_length_it_claims`
+and five sibling tests are deleted from
+`bin/make_peg_targets_test.py`, along with `scale_bar_mm`,
+`scale_bar_boxes`, `SCALE_BAR_MM`, `TICK_MM` and `BAR_SPACE_MM`.
+
+One of the deleted tests,
+`test_the_bars_recover_an_anisotropy_that_was_applied`, was testing a
+feature that should not exist — it proved the bars worked, which was
+never the question.
+
+The nominals in the verdict at the top of this document — 132.40 mm
+across and 129.90 mm down — describe the **old** layout and no longer
+apply. **Superseded reading above.** Use the table at the head of this
+section.
+
+## Status
+
+**Measured**: the 0.33 mm corner-reading scatter, six readings across
+five squares, from `data/calibration/targets/README.md`. The 0.20 mm
+tick width and the three bar readings, off the rendered PNG at a known
+20 px/mm.
+
+**Computed**: every figure in this section — the diagonal identity,
+the shear lever arm, the detection floors, the layout cap and the
+precision table are formulae evaluated at this sheet's geometry and at
+the rig's 203.232 mm peg span and 0.804 mm threshold.
+
+**Not measured**: this print's actual anisotropy and skew. The sheet
+has not been printed yet.
+
+**The cheapest test**: print it and take six readings on each of the
+four advertised spans. If the two diagonals agree within 0.381 mm,
+shear is settled and can be ignored from then on.
