@@ -33,18 +33,15 @@ _CALIBRATIONS = ("v4k_01.json", "v4k_01_steel_blue.json",
 
 # --- 1. the field exists and says what it means ----------------------
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_sheet_has_bottom_pegs_by_default():
     assert SheetModel().peg_position == "bottom"
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_sheet_can_have_top_pegs():
     assert SheetModel(peg_position="top").peg_position == "top"
 
 
 @pytest.mark.parametrize("bad", ["below", "above", "up", "", "Bottom"])
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_sheet_refuses_anything_else(bad: str):
     """Including the old spellings, which mean something now.
 
@@ -55,7 +52,6 @@ def test_a_sheet_refuses_anything_else(bad: str):
         SheetModel(peg_position=bad)
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_raster_carries_it_too():
     assert FieldSpec().peg_position == "top"
     assert FieldSpec.for_sheet(SheetModel()).peg_position == "bottom"
@@ -64,7 +60,6 @@ def test_a_raster_carries_it_too():
 
 
 @pytest.mark.parametrize("bad", ["below", "above", True, False])
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_raster_refuses_anything_else(bad):
     with pytest.raises(ValueError, match="peg_position"):
         FieldSpec(peg_position=bad)
@@ -72,7 +67,6 @@ def test_a_raster_refuses_anything_else(bad):
 
 # --- 2. it still does what flip_y did --------------------------------
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_bottom_pegs_turn_the_output_through_180_degrees():
     matrix = FieldSpec.for_sheet(SheetModel(peg_position="bottom")).matrix()
     near = apply_homography(matrix, np.array([[0.0, 0.0]]))[0]
@@ -81,7 +75,6 @@ def test_bottom_pegs_turn_the_output_through_180_degrees():
     assert np.linalg.det(matrix[:2, :2]) > 0
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_top_pegs_do_not_turn_it():
     matrix = FieldSpec.for_sheet(SheetModel(peg_position="top")).matrix()
     near = apply_homography(matrix, np.array([[0.0, 0.0]]))[0]
@@ -90,7 +83,6 @@ def test_top_pegs_do_not_turn_it():
     assert np.linalg.det(matrix[:2, :2]) > 0
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_with_peg_position_rebuilds_the_raster():
     moved = Calibration().with_peg_position("top")
     assert moved.sheet.peg_position == "top"
@@ -98,7 +90,6 @@ def test_with_peg_position_rebuilds_the_raster():
     moved.check_raster()
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_with_peg_position_refuses_the_old_words():
     with pytest.raises(ValueError, match="peg_position"):
         Calibration().with_peg_position("above")
@@ -106,7 +97,6 @@ def test_with_peg_position_refuses_the_old_words():
 
 # --- 3. files written before the rename must still open --------------
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_legacy_dict_still_loads():
     """`bar_position: below` and `flip_y: true` are bottom pegs."""
     base = Calibration().to_dict()
@@ -120,7 +110,6 @@ def test_a_legacy_dict_still_loads():
     assert revived.raster.peg_position == "bottom"
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_the_other_legacy_spelling_loads_too():
     base = Calibration().to_dict()
     legacy = json.loads(json.dumps(base))
@@ -133,7 +122,6 @@ def test_the_other_legacy_spelling_loads_too():
     assert revived.raster.peg_position == "top"
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_legacy_file_registers_the_same_way_it_used_to():
     """The rename must not move a single pixel.
 
@@ -153,7 +141,6 @@ def test_a_legacy_file_registers_the_same_way_it_used_to():
 
 # --- 4. what gets written from now on --------------------------------
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_new_files_use_the_new_spelling():
     written = Calibration().to_dict()
     assert written["sheet"]["peg_position"] == "bottom"
@@ -162,7 +149,6 @@ def test_new_files_use_the_new_spelling():
     assert "flip_y" not in written["field_spec"]
 
 
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_a_calibration_survives_a_round_trip():
     original = Calibration().with_peg_position("top")
     revived = Calibration.from_dict(original.to_dict())
@@ -171,7 +157,6 @@ def test_a_calibration_survives_a_round_trip():
 
 
 @pytest.mark.parametrize("name", _CALIBRATIONS)
-@pytest.mark.xfail(strict=True, reason="the fields are bar_position and flip_y")
 def test_the_rig_calibrations_load_and_have_bottom_pegs(name: str):
     path = os.path.join(_ROOT, "data", "calibration", "distortion",
                         "v4k_01", name)

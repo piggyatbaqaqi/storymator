@@ -17,7 +17,7 @@ Both the captured frame and the output raster are y-down rasters of
 the same scene, photographed from one side. Nothing physical happens
 between them, so the composition must be orientation-preserving.
 
-`flip_y` exists for a real reason -- the bar is below, image rows
+`flip_y` existed for a real reason -- the pegs are at the bottom, rows
 increase downward, and the punched edge should come out at the bottom
 of the output -- but a flip in y alone is not what achieves that. In
 the captured frame +x along the bar points *left* and +y into the
@@ -67,27 +67,27 @@ def _load(stem: str, name: str):
 
 # --- 1. the raster stage, on its own ---------------------------------
 
-@pytest.mark.parametrize("where", ["below", "above"])
+@pytest.mark.parametrize("where", ["bottom", "top"])
 def test_the_raster_never_reflects(where: str):
-    """Whichever side of the sheet the bar is on.
+    """Whichever side of the sheet the pegs are on.
 
     A raster is a choice of output pixels. No choice about where to
     put the origin should turn the picture over.
     """
-    sheet = SheetModel(bar_position=where)
+    sheet = SheetModel(peg_position=where)
     spec = FieldSpec.for_sheet(sheet)
     assert np.linalg.det(spec.matrix()[:2, :2]) > 0
 
 
-def test_a_bar_below_still_rotates_the_output():
-    """The reason flip_y was there in the first place.
+def test_bottom_pegs_still_rotate_the_output():
+    """The reason the flip was there in the first place.
 
-    With the bar below, the peg frame's +y runs away from the punched
+    With bottom pegs, the peg frame's +y runs away from the punched
     edge, and the output wants that edge at the bottom. So increasing
     peg y must give a *decreasing* output row -- a rotation, since the
     x axis turns with it, not a reflection.
     """
-    sheet = SheetModel(bar_position="below")
+    sheet = SheetModel(peg_position="bottom")
     matrix = FieldSpec.for_sheet(sheet).matrix()
     near = apply_homography(matrix, np.array([[0.0, 0.0]]))[0]
     far = apply_homography(matrix, np.array([[0.0, 100.0]]))[0]
@@ -95,8 +95,8 @@ def test_a_bar_below_still_rotates_the_output():
     assert np.linalg.det(matrix[:2, :2]) > 0
 
 
-def test_a_bar_above_does_not_rotate():
-    sheet = SheetModel(bar_position="above")
+def test_top_pegs_do_not_rotate():
+    sheet = SheetModel(peg_position="top")
     matrix = FieldSpec.for_sheet(sheet).matrix()
     near = apply_homography(matrix, np.array([[0.0, 0.0]]))[0]
     far = apply_homography(matrix, np.array([[0.0, 100.0]]))[0]
@@ -104,10 +104,10 @@ def test_a_bar_above_does_not_rotate():
     assert np.linalg.det(matrix[:2, :2]) > 0
 
 
-@pytest.mark.parametrize("where", ["below", "above"])
+@pytest.mark.parametrize("where", ["bottom", "top"])
 def test_the_sheet_still_fits_the_raster(where: str):
     """Rotating must not push the sheet off the page."""
-    sheet = SheetModel(bar_position=where)
+    sheet = SheetModel(peg_position=where)
     spec = FieldSpec.for_sheet(sheet)
     width, height = spec.size_px
     corners = apply_homography(spec.matrix(), sheet.corners())
@@ -159,9 +159,9 @@ def test_a_chiral_mark_keeps_its_handedness(stem: str, name: str):
 
 @pytest.mark.parametrize("stem,name", FRAMES)
 def test_the_pegs_come_out_along_the_bottom(stem: str, name: str):
-    """Bar below means the punched edge is nearest the operator.
+    """Bottom pegs mean the punched edge is nearest the operator.
 
-    An output with the bar along the top is upside down even if it is
+    An output with the pegs along the top is upside down even if it is
     not mirrored, and the two faults are easy to confuse by eye.
     """
     _, _, cal = _load(stem, name)

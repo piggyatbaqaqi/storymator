@@ -11,7 +11,8 @@
     "width_mm": 279.4,
     "height_mm": 215.9,
     "punch_offset_mm": 12.0,
-    "bar_position": "below"
+    "punch_tolerance_mm": 0.268,
+    "peg_position": "bottom"
   },
   "field_spec": {
     "px_per_mm": 11.63,
@@ -23,7 +24,7 @@
       3296,
       2558
     ],
-    "flip_y": true
+    "peg_position": "bottom"
   },
   "camera_matrix": [
     [
@@ -49,6 +50,12 @@
     0.005605521659130803,
     0.23772767957330931
   ],
+  "ink": {
+    "direction_deg": -61.8,
+    "tolerance_deg": 31.7,
+    "min_chroma": 0.331,
+    "name": "pen+GEAR dry erase blue"
+  },
   "_provenance": {
     "camera": "v4k_01",
     "bar": "honbay_0001",
@@ -85,12 +92,7 @@
     "board_print_scale": 1.012652,
     "peg_centre_spacing": "Calipers 2026-09-25. Measured twice per pair so the peg sizes cancel: outer span (left edge of one peg to far edge of the next) 111.933 and 111.743 mm, clear gap between the same pairs 93.60 and 93.61. outer = spacing + (rect_long + round_dia)/2 and gap = spacing - the same, so spacing = (outer + gap)/2 = 102.767 and 102.677, mean 102.722 mm = 4.0442 in. No peg dimension is assumed. The paper's hole pitch is 101.616 mm from 95 scans, 1.11 mm narrower; the rect holes run 2.9 mm longer than the peg, so each rect peg sits about 0.55 mm off centre in its slot. That is the kinematic freedom along the bar working as designed.",
     "peg_rect_long_SUSPECT": "The same readings give rect_long + round_dia = 18.233 mm, so with the round peg at 6.44 the rect peg is about 11.79 mm along the bar, not the 12.72 modelled. Unverified by direct measurement; it affects detection windows, not the fit.",
-    "field_spec": "Derived by FieldSpec.for_sheet. The origin moved from (-141.7, 205.9) to (+141.7, 205.9) on 2026-09-25 when flip_y stopped meaning \"negate y\" and started meaning \"turn through 180 degrees\". Negating y alone is a reflection and every registered frame came out mirrored."
-  },
-  "ink": {
-    "direction_deg": -61.8,
-    "tolerance_deg": 31.7,
-    "min_chroma": 0.331,
-    "name": "pen+GEAR dry erase blue"
+    "field_spec": "Derived by FieldSpec.for_sheet. The origin moved from (-141.7, 205.9) to (+141.7, 205.9) on 2026-09-25 when flip_y stopped meaning \"negate y\" and started meaning \"turn through 180 degrees\". Negating y alone is a reflection and every registered frame came out mirrored.",
+    "peg_position": "Renamed 2026-09-25 from sheet.bar_position \"below\" and field_spec.flip_y true, which said the same thing in two vocabularies and neither was the trade's. Animation calls these bottom pegs. from_dict still reads the old spellings."
   }
 }

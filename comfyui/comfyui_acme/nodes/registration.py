@@ -51,7 +51,7 @@ class AcmeCalibration(io.ComfyNode):
             description="Peg bar, sheet and output raster geometry.",
             inputs=[
                 io.Combo.Input(
-                    "bar_position", options=["below", "above"],
+                    "peg_position", options=["bottom", "top"],
                     tooltip="Where the artist keeps the bar. Disney-style "
                             "is below. This decides which way up the "
                             "registered frame comes out; geometry alone "
@@ -84,13 +84,13 @@ class AcmeCalibration(io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, bar_position, px_per_mm, peg_spacing_mm, round_peg_mm,
+    def execute(cls, peg_position, px_per_mm, peg_spacing_mm, round_peg_mm,
                 rect_peg_long_mm, rect_peg_short_mm, sheet_width_mm,
                 sheet_height_mm, punch_offset_mm) -> io.NodeOutput:
         sheet = SheetModel(width_mm=sheet_width_mm,
                            height_mm=sheet_height_mm,
                            punch_offset_mm=punch_offset_mm,
-                           bar_position=bar_position)
+                           peg_position=peg_position)
         calibration = Calibration(
             peg=PegModel(round_diameter_mm=round_peg_mm,
                          rect_long_mm=rect_peg_long_mm,

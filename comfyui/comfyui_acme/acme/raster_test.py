@@ -70,12 +70,12 @@ def test_a_raster_that_holds_the_pegs_but_not_the_sheet_is_allowed():
     defined by, not about seeing the whole page.
     """
     sheet = SheetModel()
-    # The origin is the FAR corner, because flip_y turns the output
-    # through 180 degrees and both axes count backwards from it. This
-    # read (-120.0, 20.0) when flip_y still meant "negate y alone",
-    # which was the mirroring bug.
+    # The origin is the FAR corner, because bottom pegs turn the
+    # output through 180 degrees and both axes count backwards from
+    # it. This read (-120.0, 20.0) when the field was flip_y and meant
+    # "negate y alone", which was the mirroring bug.
     tight = FieldSpec(px_per_mm=4.0, origin_mm=(120.0, 20.0),
-                      size_px=(960, 160), flip_y=True)
+                      size_px=(960, 160), peg_position="bottom")
     Calibration(sheet=sheet, field_spec=tight).check_raster()
 
 
@@ -124,7 +124,7 @@ def test_round_tripping_a_calibration_keeps_its_raster():
 
 
 def test_a_bar_above_sheet_still_holds_its_pegs():
-    """`with_bar_position` rebuilds the raster; it must stay valid."""
-    flipped = Calibration().with_bar_position("above")
+    """`with_peg_position` rebuilds the raster; it must stay valid."""
+    flipped = Calibration().with_peg_position("top")
     flipped.check_raster()
-    assert flipped.raster.flip_y is False
+    assert flipped.raster.peg_position == "top"

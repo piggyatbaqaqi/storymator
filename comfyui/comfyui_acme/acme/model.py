@@ -38,6 +38,19 @@ import numpy as np
 
 MM_PER_INCH = 25.4
 
+# The trade's words for where the pegs sit relative to the artwork.
+PEG_POSITIONS = ("bottom", "top")
+# What the fields used to be called, and what they meant.
+_LEGACY_BAR_POSITION = {"below": "bottom", "above": "top"}
+
+
+def _check_peg_position(where) -> None:
+    if where not in PEG_POSITIONS:
+        raise ValueError(
+            f"peg_position must be one of {PEG_POSITIONS}, not {where!r}"
+            + ("  (the old spellings were below and above)"
+               if where in _LEGACY_BAR_POSITION else ""))
+
 
 @dataclass(frozen=True)
 class InkSignature:
@@ -126,7 +139,14 @@ class SheetModel:
     # derived from -- a threshold below it cannot be met by any real
     # sheet, however well the fit is done.
     punch_tolerance_mm: float = 0.268
-    bar_position: str = "below"                        # below | above
+    # Where the pegs sit relative to the artwork, in the trade's own
+    # words: "bottom pegs" and "top pegs".  This was bar_position,
+    # with "below" and "above", which said the same thing in nobody's
+    # vocabulary.
+    peg_position: str = "bottom"                       # bottom | top
+
+    def __post_init__(self):
+        _check_peg_position(self.peg_position)
 
     def corners(self) -> np.ndarray:
         """(4, 2) sheet corners in the peg frame, counter-clockwise from
@@ -152,7 +172,14 @@ class FieldSpec:
     px_per_mm: float = 11.63        # 4K across a 13 in frame
     origin_mm: Tuple[float, float] = (0.0, 0.0)   # peg-frame point at px (0,0)
     size_px: Tuple[int, int] = (1024, 1024)       # (width, height)
-    flip_y: bool = False
+    # The same fact as SheetModel.peg_position, carried here because a
+    # raster has to know which way up it is.  This was flip_y, a
+    # boolean that stopped describing what it does when the reflection
+    # became a rotation.
+    peg_position: str = "top"                          # bottom | top
+
+    def __post_init__(self):
+        _check_peg_position(self.peg_position)
 
     @classmethod
     def for_sheet(cls, sheet: SheetModel, px_per_mm: float = 11.63,
@@ -162,7 +189,7 @@ class FieldSpec:
         lo = corners.min(axis=0) - margin_mm
         hi = corners.max(axis=0) + margin_mm
         size = np.ceil((hi - lo) * px_per_mm).astype(int)
-        flip = sheet.bar_position == "below"
+        flip = sheet.peg_position == "bottom"
         # Bar below means the sheet rises away from the operator, so
         # the raster turns through 180 degrees to come out the right
         # way up -- and the origin goes to the far corner, since both
@@ -170,13 +197,15 @@ class FieldSpec:
         origin = ((float(hi[0]), float(hi[1])) if flip
                   else (float(lo[0]), float(lo[1])))
         return cls(px_per_mm=px_per_mm, origin_mm=origin,
-                   size_px=(int(size[0]), int(size[1])), flip_y=flip)
+                   size_px=(int(size[0]), int(size[1])),
+                   peg_position=sheet.peg_position)
 
     def matrix(self) -> np.ndarray:
         """3x3 taking peg-frame millimetres to output pixels.
 
-        ``flip_y`` turns the output through **180 degrees**, negating
-        both axes.  It is a rotation and its determinant is positive.
+        **Bottom pegs** turn the output through **180 degrees**,
+        negating both axes.  It is a rotation and its determinant is
+        positive.
 
         It used to negate y alone, which is a *reflection*, and every
         registered frame came out mirrored -- lettering backwards --
@@ -192,10 +221,9 @@ class FieldSpec:
         Undoing that rotation means negating both axes. Negating one
         turns the picture over.
 
-        The name is now a misnomer and is kept only because three
-        calibration files on disk carry it.
         """
-        scale = -self.px_per_mm if self.flip_y else self.px_per_mm
+        scale = (-self.px_per_mm if self.peg_position == "bottom"
+                 else self.px_per_mm)
         return np.array([
             [scale, 0.0, -self.origin_mm[0] * scale],
             [0.0, scale, -self.origin_mm[1] * scale],
@@ -264,7 +292,7 @@ class Calibration:
             return
         span_x = (spec.origin_mm[0],
                   spec.origin_mm[0] + width / spec.px_per_mm)
-        step = -1.0 if spec.flip_y else 1.0
+        step = -1.0 if spec.peg_position == "bottom" else 1.0
         span_y = (spec.origin_mm[1],
                   spec.origin_mm[1] + step * height / spec.px_per_mm)
         where = ", ".join(f"({mm[0]:.1f}, {mm[1]:.1f})" for mm, _ in missing)
@@ -275,11 +303,11 @@ class Calibration:
             f"to {span_y[1]:.1f} mm. Derive it from the sheet with "
             f"FieldSpec.for_sheet")
 
-    def with_bar_position(self, where: str) -> "Calibration":
-        if where not in ("below", "above"):
-            raise ValueError(f"bar_position must be below or above, "
+    def with_peg_position(self, where: str) -> "Calibration":
+        if where not in PEG_POSITIONS:
+            raise ValueError(f"peg_position must be bottom or top, "
                              f"not {where!r}")
-        sheet = replace(self.sheet, bar_position=where)
+        sheet = replace(self.sheet, peg_position=where)
         return replace(self, sheet=sheet,
                        field_spec=FieldSpec.for_sheet(
                            sheet, self.raster.px_per_mm))
@@ -301,12 +329,25 @@ class Calibration:
     def from_dict(cls, data: dict) -> "Calibration":
         def arr(a):
             return None if a is None else np.asarray(a, dtype=float)
+        # Files written before the rename carry bar_position and
+        # flip_y.  They have to keep opening: a calibration that stops
+        # loading is a worse bug than a badly named field.
+        sheet = dict(data["sheet"])
+        if "peg_position" not in sheet:
+            sheet["peg_position"] = _LEGACY_BAR_POSITION.get(
+                sheet.get("bar_position", "below"), "bottom")
+        sheet.pop("bar_position", None)
+
         spec = dict(data["field_spec"])
+        if "peg_position" not in spec:
+            spec["peg_position"] = ("bottom" if spec.get("flip_y")
+                                    else "top")
+        spec.pop("flip_y", None)
         spec["origin_mm"] = tuple(spec["origin_mm"])
         spec["size_px"] = tuple(int(v) for v in spec["size_px"])
         return cls(
             peg=PegModel(**data["peg"]),
-            sheet=SheetModel(**data["sheet"]),
+            sheet=SheetModel(**sheet),
             field_spec=FieldSpec(**spec),
             camera_matrix=arr(data.get("camera_matrix")),
             dist_coeffs=arr(data.get("dist_coeffs")),

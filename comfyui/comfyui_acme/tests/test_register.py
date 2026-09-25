@@ -70,10 +70,10 @@ def test_invalid_region_is_marked_not_filled():
 
 
 def test_bar_above_flips_the_raster_and_bar_below_does_not():
-    below = Calibration().with_bar_position("below")
-    above = Calibration().with_bar_position("above")
-    assert below.field_spec.flip_y
-    assert not above.field_spec.flip_y
+    bottom = Calibration().with_peg_position("bottom")
+    top = Calibration().with_peg_position("top")
+    assert bottom.field_spec.peg_position == "bottom"
+    assert top.field_spec.peg_position == "top"
 
 
 def test_calibration_round_trips_through_a_dict():
