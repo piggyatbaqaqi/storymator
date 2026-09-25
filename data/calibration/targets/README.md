@@ -34,6 +34,11 @@ square of 25.4 mm "one inch exactly", which was a tidy story and wrong.
 | 7 squares at 178 mm, ruler | 25.429 ± 0.143 | +0.8σ |
 | the printed 50 mm bar, calipers | 25.518 ± 0.044 | **+3.9σ — do not use** |
 
+**Never measure a printed bar** — this applies to the scale bars on
+`peg-targets-3x3-12.5mm.png` too, which repeat the fault in milder
+form; see
+[../../../docs/planning/measuring-the-printed-target.md](../../../docs/planning/measuring-the-printed-target.md).
+
 **Never measure the printed 50 mm bar.** Its serifs are 0.53 and
 0.58 mm wide, and "50 mm" could mean outside-, centre- or
 inside-to-inside, giving 25.518, 25.241 or 24.963 — a **2.22 % spread**

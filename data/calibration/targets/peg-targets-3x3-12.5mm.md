@@ -25,6 +25,17 @@ the squares. The four chessboard corners each piece contributes are
 but a cut a millimetre inside it destroys the contrast a corner is
 made of.
 
+> **Do not measure the scale bars.** See
+> [../../../docs/planning/measuring-the-printed-target.md](../../../docs/planning/measuring-the-printed-target.md).
+> Their ticks are 0.20 mm wide, so outside-, centre- and
+> inside-to-inside give 100.200, 100.000 and 99.800 mm — a 0.40 %
+> ambiguity on a quantity worth 1.27 %, which over the peg span is
+> 101 % of the error threshold. Measure **corner to corner between
+> boards** instead: 132.40 mm across between the same corner on #0
+> and #1, 129.90 mm down between #0's lower corners and #2's upper
+> ones, six readings each. Only the *solid bar*, outside to outside,
+> is exact at 100.000 mm.
+
 **Measure BOTH scale bars after printing and record what you get.**
 There is a 100 mm horizontal bar in the foot and a 100 mm vertical one
 down the centre, because one bar measures one axis. The 7 x 9 board
