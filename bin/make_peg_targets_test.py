@@ -42,7 +42,8 @@ PPM = 20.0
 def _sheet(count: int = 4, **kw):
     args = dict(squares=SQUARES, square_mm=SQUARE_MM, marker_mm=MARKER_MM,
                 count=count, sheet_mm=SHEET, px_per_mm=PPM,
-                margin_mm=8.0, dictionary="DICT_6X6_250")
+                margin_mm=8.0, dictionary="DICT_6X6_250",
+                caliper_mm=None)
     args.update(kw)
     return mt.render(**args)
 
@@ -65,6 +66,7 @@ def test_the_ids_start_where_they_are_told_to():
     assert sorted(int(v) for v in ranges[1]) == [44, 45, 46, 47]
 
 
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_running_out_of_dictionary_is_an_error():
     with pytest.raises(ValueError, match="dictionary|ids"):
         _sheet(count=80)
@@ -73,6 +75,7 @@ def test_running_out_of_dictionary_is_an_error():
 # --- 2. what the detector sees, at the scale the rig sees it ---------
 
 @pytest.mark.parametrize("index", range(4))
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_every_board_is_found_at_rig_scale(index: int):
     """Rendered at 508 dpi, resampled to 9 px/mm, with sensor noise.
 
@@ -98,6 +101,7 @@ def test_every_board_is_found_at_rig_scale(index: int):
     assert corners is not None and len(corners) == 4
 
 
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_a_board_is_not_confused_with_its_neighbours():
     """Disjoint ids are only useful if the detector honours them."""
     sheet = _sheet()
@@ -119,6 +123,7 @@ def test_a_board_is_not_confused_with_its_neighbours():
 
 # --- 3. the sheet is the size it says it is --------------------------
 
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_sheet_is_the_requested_size():
     sheet = _sheet()
     assert sheet.shape == (int(round(SHEET[1] * PPM)),
@@ -126,6 +131,7 @@ def test_the_sheet_is_the_requested_size():
     assert sheet.dtype == np.uint8
 
 
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_squares_are_the_requested_size_in_millimetres():
     """Measured off the pixels, not taken from the arithmetic.
 
@@ -145,74 +151,22 @@ def test_the_squares_are_the_requested_size_in_millimetres():
         assert abs(gap / PPM - SQUARE_MM) < 0.1
 
 
-def test_the_scale_bar_is_the_length_it_claims():
-    """It exists to catch the print's scale error, so it must be true."""
-    sheet = _sheet()
-    assert mt.scale_bar_mm(sheet, PPM) == pytest.approx(100.0, abs=0.2)
-
-
-def test_there_is_a_vertical_bar_too_and_it_is_also_true():
-    """One bar measures one axis.
-
-    The operator's printer is anisotropic -- the 7 x 9 board came out
-    1.27 % oversize with the two axes differing by 0.15 % -- so a
-    single horizontal bar catches half the error and silently misses
-    the rest.
-    """
-    sheet = _sheet()
-    assert mt.scale_bar_mm(sheet, PPM, axis="y") == pytest.approx(
-        100.0, abs=0.2)
-
-
-def test_each_bar_measures_only_itself():
-    """They must not touch, or each reads the other's length."""
-    sheet = _sheet()
-    assert mt.scale_bar_mm(sheet, PPM, axis="x") == pytest.approx(
-        100.0, abs=0.2)
-    assert mt.scale_bar_mm(sheet, PPM, axis="y") == pytest.approx(
-        100.0, abs=0.2)
-
-
-def test_the_default_axis_stays_horizontal():
-    sheet = _sheet()
-    assert mt.scale_bar_mm(sheet, PPM) == mt.scale_bar_mm(
-        sheet, PPM, axis="x")
-
-
-def test_the_bars_recover_an_anisotropy_that_was_applied():
-    """The point of the feature, tested as the point.
-
-    A printer that stretches one axis 1.27 % and the other 1.42 %
-    leaves a sheet whose two bars no longer agree. Measuring both and
-    taking the ratio recovers the difference; measuring one cannot.
-    """
-    sheet = _sheet()
-    fx, fy = 1.0127, 1.0142
-    stretched = cv2.resize(sheet, None, fx=fx, fy=fy,
-                           interpolation=cv2.INTER_AREA)
-    across = mt.scale_bar_mm(stretched, PPM, axis="x")
-    down = mt.scale_bar_mm(stretched, PPM, axis="y")
-    assert across == pytest.approx(100.0 * fx, abs=0.25)
-    assert down == pytest.approx(100.0 * fy, abs=0.25)
-    assert down / across == pytest.approx(fy / fx, abs=0.004)
-
-
-def test_neither_bar_lands_on_a_board():
-    """A bar crossing a target would corrupt both."""
-    side = mt.board_side_mm(SQUARES, SQUARE_MM)
-    half = side / 2.0 + 8.0
-    for axis, span in mt.scale_bar_boxes(SHEET, side, 8.0).items():
-        (bx0, by0), (bx1, by1) = span
-        for cx, cy in mt.layout(4, side, 8.0, SHEET):
-            apart = (bx1 < cx - half or bx0 > cx + half
-                     or by1 < cy - half or by0 > cy + half)
-            assert apart, (
-                f"the {axis} bar at {span} crosses the board at "
-                f"({cx:.0f}, {cy:.0f})")
+# The six scale-bar tests that lived here are gone with the bars.
+# docs/planning/measuring-the-printed-target.md has the reasoning: the
+# ticks are 0.20 mm wide, so reading them outside-, centre- or
+# inside-to-inside gives a 0.40 % spread on a quantity worth 1.27 %,
+# which over the peg span is 101 % of the error threshold. The project
+# had already found the same fault on the CalibrX board and written
+# "never measure a printed bar" in data/calibration/targets/README.md.
+#
+# What replaces them is below: the sheet advertises corner-to-corner
+# distances, which are points where four quadrants meet and have no
+# width to argue about.
 
 
 # --- 4. refuse rather than clip --------------------------------------
 
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_a_sheet_too_small_for_the_boards_is_refused():
     with pytest.raises(ValueError, match="fit|room|sheet"):
         _sheet(count=4, sheet_mm=(60.0, 60.0))
@@ -259,3 +213,105 @@ def test_it_writes_a_png_with_the_dpi_in_it(tmp_path):
 def test_a_malformed_sheet_size_is_rejected(tmp_path):
     assert mt.main(["--out", str(tmp_path / "x.png"),
                     "--sheet-mm", "letter"]) == 2
+
+
+# --- 6. what the operator actually puts the calipers on --------------
+
+CALIPER_MM = 152.71
+
+
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
+def test_the_sheet_advertises_its_own_measurements():
+    """A nominal to compare a reading against, or the reading is idle."""
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    centres = mt.layout(4, side, 8.0, SHEET, caliper_mm=CALIPER_MM)
+    spans = mt.caliper_spans(centres, SQUARES, SQUARE_MM)
+    assert set(spans) >= {"across", "down", "diagonal_0_3", "diagonal_1_2"}
+    for name, value in spans.items():
+        assert value > 0, name
+
+
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
+def test_every_advertised_span_fits_the_caliper():
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    centres = mt.layout(4, side, 8.0, SHEET, caliper_mm=CALIPER_MM)
+    for name, value in mt.caliper_spans(
+            centres, SQUARES, SQUARE_MM).items():
+        assert value <= CALIPER_MM, (
+            f"{name} is {value:.2f} mm and the caliper reaches "
+            f"{CALIPER_MM} mm")
+
+
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
+def test_the_two_diagonals_are_nominally_equal():
+    """So any measured difference is skew.
+
+    Diagonals do *not* cross-check anisotropy -- under a scaling of sx
+    across and sy down both diagonals change by the same factor,
+    sqrt((sx^2+sy^2)/2), so an isotropic 1.0134 is indistinguishable
+    from an anisotropic 1.0127 by 1.0142. What an inequality between
+    them does show is a shear, which nothing else on the sheet catches.
+    """
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    spans = mt.caliper_spans(
+        mt.layout(4, side, 8.0, SHEET, caliper_mm=CALIPER_MM),
+        SQUARES, SQUARE_MM)
+    assert spans["diagonal_0_3"] == pytest.approx(spans["diagonal_1_2"],
+                                                  abs=0.01)
+
+
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
+def test_the_advertised_spans_match_the_printed_geometry():
+    """Measured through the detector, not read back from the layout.
+
+    An advertised nominal that disagrees with the ink is worse than no
+    nominal: it silently biases every correction derived from it.
+    """
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    centres = mt.layout(4, side, 8.0, SHEET, caliper_mm=CALIPER_MM)
+    spans = mt.caliper_spans(centres, SQUARES, SQUARE_MM)
+    sheet = _sheet(caliper_mm=CALIPER_MM)
+    dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
+    found = []
+    for ids in mt.marker_ids(4, per_board=4):
+        board = cv2.aruco.CharucoBoard((SQUARES, SQUARES), SQUARE_MM,
+                                       MARKER_MM, dictionary, ids)
+        corners, _, _, _ = cv2.aruco.CharucoDetector(board).detectBoard(sheet)
+        assert corners is not None and len(corners) == 4
+        found.append(np.asarray(corners).reshape(-1, 2))
+
+    def far(a, b):
+        return max(float(np.hypot(*(p - q))) for p in a for q in b) / PPM
+
+    order = sorted(range(4), key=lambda i: (found[i][:, 1].mean(),
+                                            found[i][:, 0].mean()))
+    tl, tr, bl, br = (found[i] for i in order)
+    assert far(tl, tr) == pytest.approx(spans["across"], abs=0.2)
+    assert far(tl, bl) == pytest.approx(spans["down"], abs=0.2)
+
+
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
+def test_a_caliper_too_short_for_any_layout_is_refused():
+    """Rather than quietly laying out something unmeasurable."""
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    with pytest.raises(ValueError, match="caliper"):
+        mt.layout(4, side, 8.0, SHEET, caliper_mm=40.0)
+
+
+@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
+def test_no_scale_bar_is_drawn_any_more():
+    """Nothing on the sheet should look like a ruler.
+
+    A board's own black square is 12.5 mm; anything much longer than
+    that is a bar, and a bar invites the measurement this sheet exists
+    to discourage.
+    """
+    sheet = _sheet(caliper_mm=CALIPER_MM)
+    dark = np.asarray(sheet) < 128
+    longest = 0
+    for row in dark:
+        xs = np.nonzero(row)[0]
+        if xs.size:
+            runs = np.split(xs, np.nonzero(np.diff(xs) != 1)[0] + 1)
+            longest = max(longest, max(len(r) for r in runs))
+    assert longest / PPM < 2 * SQUARE_MM
