@@ -113,3 +113,100 @@ just relocates the bias.
 
 If the desk targets are wanted anyway, lay them flat. The risers are
 measurably pointless.
+
+
+---
+
+# Revisited 2026-09-25: the premise has failed
+
+The conclusion above — *desk targets are not needed* — was drawn from
+a Monte Carlo that modelled landmark error as **Gaussian noise on
+points that are where the model says they are**. Four sheet corners at
+`z = 0`, three pegs at their heights, 0.5 to 2 px of scatter.
+
+That premise no longer holds. What has been measured since:
+
+* the sheet is **not flat** — the free end departs from a plane by 3 to
+  12 mm, and three edges hold to 1 mm while one does not;
+* the corners are therefore not *noisy*, they are **biased**, and a
+  simulation that adds symmetric noise cannot represent a bias;
+* the outline residual is 1.33 mm at near-normal incidence and 3.9 mm
+  at 31°, which is now the **dominant** error in the pipeline;
+* and the dependence on viewing angle is itself the proof of
+  non-planarity, since a homography is exact for a plane at any angle.
+
+So the question is no longer whether targets improve the pose against
+noise. It is that **the sheet corners are systematically wrong and a
+target fixed to the disc is not.** That is a different argument and it
+points the other way.
+
+## What targets on the disc would change
+
+The disc carries the bar. Fix targets to the disc and they are rigid
+with respect to the pegs, so a pose from targets is a pose of the
+pegs, and it depends on nothing that bends.
+
+**The black background could go, for pose.** It exists so
+`find_sheet` can threshold paper against surroundings; if pose comes
+from targets, the paper never has to be segmented to be registered.
+
+**But it should stay, for curl — and the reason is sharper than it
+looks.** Right now the outline is doing two jobs at once: it *defines*
+the plane and it is the *only evidence* about the sheet's shape. A
+thing cannot report on itself. Every millimetre of curl is absorbed
+into the fitted homography and re-emerges as a residual that cannot be
+attributed to anything in particular.
+
+Decouple them — pose from the targets, outline measured against it —
+and the outline residual stops being a mixture and becomes a **direct
+measurement of how far the paper departs from the disc**. That is a
+better curl detector than anything available today, and it costs only
+keeping some contrast at the paper's edge.
+
+Which suggests making the **disc itself dark** rather than laying a
+separate mat on it. White paper on white foam has no edge to find, and
+the mat is the thing that is bowing by a centimetre.
+
+## Two 2 x 2 boards is not enough
+
+A ChArUco board of `c x r` squares has `(c-1) x (r-1)` interior
+chessboard corners — the precise ones:
+
+| board | chessboard corners | marker corners |
+|---|---:|---:|
+| 2 x 2 | **1** | 8 |
+| 3 x 3 | 4 | 16 |
+| 4 x 4 | 9 | 32 |
+| 5 x 5 | 16 | 48 |
+
+**Two 2 x 2 boards give two chessboard corners between them.** A
+homography needs four in general position and a pose wants many more.
+The ArUco marker corners are also usable — 8 per board — but they are
+located less precisely than an interpolated chessboard corner, which
+is the whole reason ChArUco exists.
+
+Two further geometric points:
+
+* **Spread matters more than count.** Points in two clusters at
+  opposite corners give a long baseline along the diagonal and very
+  little leverage across it. Targets at three or four places around
+  the paper condition the fit far better than two larger ones.
+* **The paper must not cover them.** The disc has to be enough larger
+  than a 279 x 216 mm sheet to leave the targets visible with a sheet
+  mounted.
+
+## The offset nobody should discover later
+
+Targets live on the disc; the drawing lives on the paper, one sheet
+higher. Canson measures **0.1153 mm** thick. At normal incidence that
+projects to nothing; at 31° it is 0.069 mm. Negligible either way —
+but it is a known constant and belongs in the calibration rather than
+in someone's memory.
+
+## The prize, if the targets are fixed to the disc
+
+The pegs' positions in the target frame become **constant**, because
+both are bolted to the same disc. Measure that once and peg detection
+becomes a *check* rather than a requirement — which would make
+registration survive a sheet whose pegs are hidden under artwork, a
+failure mode the corpus already contains.
