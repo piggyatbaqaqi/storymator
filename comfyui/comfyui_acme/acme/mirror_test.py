@@ -67,10 +67,7 @@ def _load(stem: str, name: str):
 
 # --- 1. the raster stage, on its own ---------------------------------
 
-@pytest.mark.parametrize("where", [
-    pytest.param("below", marks=pytest.mark.xfail(
-        strict=True, reason="flip_y reflects instead of rotating")),
-    "above"])
+@pytest.mark.parametrize("where", ["below", "above"])
 def test_the_raster_never_reflects(where: str):
     """Whichever side of the sheet the bar is on.
 
@@ -82,7 +79,6 @@ def test_the_raster_never_reflects(where: str):
     assert np.linalg.det(spec.matrix()[:2, :2]) > 0
 
 
-@pytest.mark.xfail(strict=True, reason="flip_y reflects instead of rotating")
 def test_a_bar_below_still_rotates_the_output():
     """The reason flip_y was there in the first place.
 
@@ -125,7 +121,6 @@ def test_the_sheet_still_fits_the_raster(where: str):
 # --- 2. the whole chain, on real frames ------------------------------
 
 @pytest.mark.parametrize("stem,name", FRAMES)
-@pytest.mark.xfail(strict=True, reason="flip_y reflects instead of rotating")
 def test_the_registered_frame_is_not_mirrored(stem: str, name: str):
     """Image and output are y-down rasters of the same scene.
 
@@ -140,7 +135,6 @@ def test_the_registered_frame_is_not_mirrored(stem: str, name: str):
 
 
 @pytest.mark.parametrize("stem,name", FRAMES)
-@pytest.mark.xfail(strict=True, reason="flip_y reflects instead of rotating")
 def test_a_chiral_mark_keeps_its_handedness(stem: str, name: str):
     """Chirality, not a round trip.
 

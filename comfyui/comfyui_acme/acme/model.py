@@ -163,19 +163,42 @@ class FieldSpec:
         hi = corners.max(axis=0) + margin_mm
         size = np.ceil((hi - lo) * px_per_mm).astype(int)
         flip = sheet.bar_position == "below"
-        # Bar below means the sheet rises away from the operator, and
-        # image rows increase downward, so the raster must flip to come
-        # out the right way up.  Bar above needs no flip.
-        origin = (float(lo[0]), float(hi[1]) if flip else float(lo[1]))
+        # Bar below means the sheet rises away from the operator, so
+        # the raster turns through 180 degrees to come out the right
+        # way up -- and the origin goes to the far corner, since both
+        # axes now count backwards from it.  Bar above needs neither.
+        origin = ((float(hi[0]), float(hi[1])) if flip
+                  else (float(lo[0]), float(lo[1])))
         return cls(px_per_mm=px_per_mm, origin_mm=origin,
                    size_px=(int(size[0]), int(size[1])), flip_y=flip)
 
     def matrix(self) -> np.ndarray:
-        """3x3 taking peg-frame millimetres to output pixels."""
-        sy = -self.px_per_mm if self.flip_y else self.px_per_mm
+        """3x3 taking peg-frame millimetres to output pixels.
+
+        ``flip_y`` turns the output through **180 degrees**, negating
+        both axes.  It is a rotation and its determinant is positive.
+
+        It used to negate y alone, which is a *reflection*, and every
+        registered frame came out mirrored -- lettering backwards --
+        immediately after a fit that rejects any homography with a
+        negative determinant on the grounds that it describes a sheet
+        seen from behind.
+
+        A flip in y was reaching for the right outcome by the wrong
+        route. Measured on a real capture, +x along the bar points
+        left in the frame and +y into the sheet points up, so the peg
+        frame is a 180 degree rotation of the image frame -- which is
+        why the fit's own determinant is legitimately positive.
+        Undoing that rotation means negating both axes. Negating one
+        turns the picture over.
+
+        The name is now a misnomer and is kept only because three
+        calibration files on disk carry it.
+        """
+        scale = -self.px_per_mm if self.flip_y else self.px_per_mm
         return np.array([
-            [self.px_per_mm, 0.0, -self.origin_mm[0] * self.px_per_mm],
-            [0.0, sy, -self.origin_mm[1] * sy],
+            [scale, 0.0, -self.origin_mm[0] * scale],
+            [0.0, scale, -self.origin_mm[1] * scale],
             [0.0, 0.0, 1.0],
         ], dtype=float)
 

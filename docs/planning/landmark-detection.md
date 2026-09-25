@@ -1135,3 +1135,43 @@ the second.
 Both mistakes have the same shape: a number believed because it was
 nominal, and an argument made without re-reading what the project had
 already measured.
+
+## Fixed: the mirror was a reflection in the raster
+
+`FieldSpec.matrix()` negated y alone when `flip_y` was set. Negating
+one axis is a **reflection**, and every registered frame came out
+mirrored — immediately after a fit that rejects any homography with a
+negative determinant on the grounds that it describes a sheet seen
+from behind. On `hamster_centered_001`:
+
+| stage | determinant |
+|---|---:|
+| image → mm (the fit) | **+0.01014** |
+| mm → output px (the raster) | **−135.3** |
+| image → output px | **−1.39910** |
+
+`flip_y` was reaching for the right outcome by the wrong route.
+Measured on a real capture, **+x along the bar points left in the
+frame and +y into the sheet points up**, so the peg frame is a 180°
+rotation of the image frame — which is exactly why the fit's own
+determinant is legitimately positive. Undoing that rotation means
+negating *both* axes. Negating one turns the picture over.
+
+So `flip_y` now turns the output through 180°, and `for_sheet` puts
+the origin at the far corner since both axes count backwards from it.
+The three calibrations had their `field_spec` regenerated: the origin
+moved from (−141.7, 205.9) to (+141.7, 205.9). Under the new
+semantics the old origin put the sheet at x −3273 to −23 on a raster
+0 to 3296 — entirely off the page — which the determinant tests would
+not have caught on their own, and the "sheet still fits" test is there
+for that reason.
+
+The name is now a misnomer, kept because three files on disk carry it.
+
+### A method that would not have worked
+
+A round trip — warp to the raster, warp back, compare with the
+original — catches none of this. A reflection is its own inverse, so
+the round trip returns the original whether or not one was applied.
+The test has to look at **chirality**: three points that turn one way
+in the frame must still turn that way in the output.

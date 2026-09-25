@@ -70,7 +70,11 @@ def test_a_raster_that_holds_the_pegs_but_not_the_sheet_is_allowed():
     defined by, not about seeing the whole page.
     """
     sheet = SheetModel()
-    tight = FieldSpec(px_per_mm=4.0, origin_mm=(-120.0, 20.0),
+    # The origin is the FAR corner, because flip_y turns the output
+    # through 180 degrees and both axes count backwards from it. This
+    # read (-120.0, 20.0) when flip_y still meant "negate y alone",
+    # which was the mirroring bug.
+    tight = FieldSpec(px_per_mm=4.0, origin_mm=(120.0, 20.0),
                       size_px=(960, 160), flip_y=True)
     Calibration(sheet=sheet, field_spec=tight).check_raster()
 
