@@ -278,3 +278,43 @@ precisely the error the disc is being built to remove.
 And one placement note: the bar occupies one edge of the disc, so one
 of the four compass points is already spoken for. Three targets plus
 the bar may be the real layout.
+
+
+## Framing four targets: put them by the paper, not at the rim
+
+A 16 1/2 in disc with the bar 5 3/4 in south of centre has room
+everywhere — 193 mm of width south of the bar, 352 mm north of the
+sheet, and 70 mm clear on each side. The disc is not the constraint.
+
+The frame is. At today's 9.8 px/mm a 3264 x 2448 sensor sees
+**333 x 250 mm** at the paper plane, and the paper alone is
+279 x 216 — a margin of 27 mm across and **17 mm** top and bottom. A
+3 x 3 piece at 50 % is 37.5 mm. Nothing fits.
+
+But the targets do not need to be at the disc's rim. They need to be
+outside the paper, inside the frame, and spread — and just outside the
+paper satisfies all three at much less cost:
+
+| layout | frame needed | scale | coarser than today |
+|---|---|---:|---:|
+| N, E, W (the bar has the south) | 364 x 258 mm | 9.0 px/mm | **9 %** |
+| N, S, E, W | 364 x 301 mm | 8.1 px/mm | 17 % |
+
+Both are affordable. The best peg residual measured so far is 0.206 mm
+against a 0.804 mm threshold, a factor of four in hand, and a 9 to
+17 % coarser scale does not spend it.
+
+Backing off to catch the disc's rim instead would cost about 40 % and
+buy nothing: a target's value is its precision and its spread, and
+spread is already maximal once it is at the frame's edge.
+
+**Not every target has to be in every shot.** The marker ids are
+disjoint, so a piece is self-identifying and a partial view still
+contributes — that is the whole point of ChArUco over a plain
+checkerboard. Only the bootstrap frames, where the pieces' placement
+is solved against the pegs, need to be generous.
+
+One caution on clearance: 5 mm between paper and target is enough
+geometrically, but a sheet whose free end lifts by a centimetre can
+shadow or overhang a target beside it. Ten would be safer, and costs
+about a percent more scale.
