@@ -151,7 +151,6 @@ def test_the_scale_bar_is_the_length_it_claims():
     assert mt.scale_bar_mm(sheet, PPM) == pytest.approx(100.0, abs=0.2)
 
 
-@pytest.mark.xfail(strict=True, reason="there is only one bar")
 def test_there_is_a_vertical_bar_too_and_it_is_also_true():
     """One bar measures one axis.
 
@@ -165,7 +164,6 @@ def test_there_is_a_vertical_bar_too_and_it_is_also_true():
         100.0, abs=0.2)
 
 
-@pytest.mark.xfail(strict=True, reason="there is only one bar")
 def test_each_bar_measures_only_itself():
     """They must not touch, or each reads the other's length."""
     sheet = _sheet()
@@ -181,7 +179,6 @@ def test_the_default_axis_stays_horizontal():
         sheet, PPM, axis="x")
 
 
-@pytest.mark.xfail(strict=True, reason="there is only one bar")
 def test_the_bars_recover_an_anisotropy_that_was_applied():
     """The point of the feature, tested as the point.
 
@@ -200,7 +197,6 @@ def test_the_bars_recover_an_anisotropy_that_was_applied():
     assert down / across == pytest.approx(fy / fx, abs=0.004)
 
 
-@pytest.mark.xfail(strict=True, reason="there is only one bar")
 def test_neither_bar_lands_on_a_board():
     """A bar crossing a target would corrupt both."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)

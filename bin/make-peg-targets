@@ -106,14 +106,34 @@ BAR_SPACE_MM = 48.0
 SCALE_BAR_MM = 100.0
 
 
+# How far the ticks stand off the bar they belong to.
+TICK_MM = 3.0
+
+
 def scale_bar_boxes(sheet_mm: Tuple[float, float], side_mm: float,
                     margin_mm: float) -> dict:
     """Where each bar sits, as ``{axis: ((x0, y0), (x1, y1))}`` in mm.
 
     Exposed so the placement can be checked against the boards rather
     than eyeballed: a bar crossing a target corrupts both.
+
+    The horizontal bar takes the foot of the sheet.  The vertical one
+    goes down the centre, between the columns of boards, which stays
+    clear as the layout changes in a way the page margin would not --
+    a bar in the left margin fits today and lands on a target the
+    moment the margin or the board size moves.
     """
-    raise NotImplementedError
+    width, height = sheet_mm
+    thick = 0.5
+    foot = height - BAR_SPACE_MM / 2.0
+    across_x0 = (width - SCALE_BAR_MM) / 2.0
+    across = ((across_x0, foot - TICK_MM),
+              (across_x0 + SCALE_BAR_MM, foot + thick))
+    down_x = width / 2.0
+    down_y0 = (height - BAR_SPACE_MM - SCALE_BAR_MM) / 2.0
+    down = ((down_x - TICK_MM, down_y0),
+            (down_x + thick, down_y0 + SCALE_BAR_MM))
+    return {"x": across, "y": down}
 
 
 def scale_bar_mm(sheet: np.ndarray, px_per_mm: float,
@@ -207,30 +227,59 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
                   f"{side:.1f} mm",
                   fill=0, font=font)
 
-    # Drawn as a filled rectangle of an exact pixel count, not as a
-    # line between two points.  A stroked line adds its own width at
-    # each cap, which put this bar 0.2 mm long -- and 0.2 mm in 100 is
-    # a sixth of the 1.27 % print error the bar exists to measure.
-    bar_y = sheet_mm[1] - BAR_SPACE_MM / 2.0
-    bar_x = (sheet_mm[0] - SCALE_BAR_MM) / 2.0
+    # Drawn as filled rectangles of an exact pixel count, not as lines
+    # between two points.  A stroked line adds its own width at each
+    # cap, which put the first bar 0.2 mm long -- and 0.2 mm in 100 is
+    # a sixth of the 1.27 % print error the bars exist to measure.
+    #
+    # Two bars, because one measures one axis.  This printer stretches
+    # its axes by different amounts, and a single bar cannot tell a
+    # uniform error from an anisotropic one.
+    boxes = scale_bar_boxes(sheet_mm, side, margin_mm)
     length_px = int(round(SCALE_BAR_MM * px_per_mm))
     thickness = max(1, px(0.3))
-    x0, y0 = px(bar_x), px(bar_y)
+    tick = max(1, px(0.2))
+
+    for (cx, cy) in centres:
+        for axis, ((bx0, by0), (bx1, by1)) in boxes.items():
+            clear = (bx1 < cx - side / 2 - margin_mm
+                     or bx0 > cx + side / 2 + margin_mm
+                     or by1 < cy - side / 2 - margin_mm
+                     or by0 > cy + side / 2 + margin_mm)
+            if not clear:
+                raise ValueError(
+                    f"the {axis} scale bar would cross the board at "
+                    f"({cx:.0f}, {cy:.0f}) mm; a bar over a target "
+                    f"corrupts both")
+
+    (ax0, ay0), _ = boxes["x"]
+    x0, y0 = px(ax0), px(ay0 + TICK_MM)
     draw.rectangle([(x0, y0), (x0 + length_px - 1, y0 + thickness - 1)],
                    fill=0)
     # Ticks stop one pixel short of the bar, so they cannot join it and
     # lengthen the run that measures it.
-    for tick in range(0, int(SCALE_BAR_MM) + 1, 10):
-        tx = x0 + int(round(tick * px_per_mm))
-        draw.rectangle([(tx, y0 - px(3.0)), (tx + max(0, px(0.2)) - 1,
-                                             y0 - 2)], fill=0)
-    draw.text((px(bar_x), px(bar_y + 3.0)),
-              f"{SCALE_BAR_MM:.1f} mm -- measure this and record what you get",
-              fill=0, font=font)
-    draw.text((px(bar_x), px(bar_y + 11.0)),
+    for step in range(0, int(SCALE_BAR_MM) + 1, 10):
+        tx = x0 + int(round(step * px_per_mm))
+        draw.rectangle([(tx, y0 - px(TICK_MM)), (tx + tick - 1, y0 - 2)],
+                       fill=0)
+
+    (dx0, dy0), _ = boxes["y"]
+    vx, vy = px(dx0 + TICK_MM), px(dy0)
+    draw.rectangle([(vx, vy), (vx + thickness - 1, vy + length_px - 1)],
+                   fill=0)
+    for step in range(0, int(SCALE_BAR_MM) + 1, 10):
+        ty = vy + int(round(step * px_per_mm))
+        draw.rectangle([(vx - px(TICK_MM), ty), (vx - 2, ty + tick - 1)],
+                       fill=0)
+    draw.text((vx + px(2.0), vy - px(5.5)),
+              f"{SCALE_BAR_MM:.1f} mm vertical", fill=0, font=font)
+
+    draw.text((x0, y0 + px(2.0)),
+              f"{SCALE_BAR_MM:.1f} mm horizontal -- measure BOTH bars and "
+              f"record what you get", fill=0, font=font)
+    draw.text((x0, y0 + px(10.0)),
               f"square {square_mm} mm, marker {marker_mm} mm, {dictionary}, "
-              f"{px_per_mm * 25.4:.0f} dpi",
-              fill=0, font=font)
+              f"{px_per_mm * 25.4:.0f} dpi", fill=0, font=font)
     return np.asarray(sheet, dtype=np.uint8)
 
 

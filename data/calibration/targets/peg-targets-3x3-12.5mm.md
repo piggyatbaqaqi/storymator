@@ -25,10 +25,18 @@ the squares. The four chessboard corners each piece contributes are
 but a cut a millimetre inside it destroys the contrast a corner is
 made of.
 
-**Measure the scale bar after printing and record what you get.** The
-7 x 9 board came out 1.27 % oversize with a 0.15 % anisotropy between
-its axes, and this print will have its own error. A 1 % error here is
-a millimetre on the bar, which a caliper reads without argument.
+**Measure BOTH scale bars after printing and record what you get.**
+There is a 100 mm horizontal bar in the foot and a 100 mm vertical one
+down the centre, because one bar measures one axis. The 7 x 9 board
+came out 1.27 % oversize with the two axes differing by 0.15 %, so a
+single bar would have caught most of that error and silently missed
+the difference. A 1 % error is a whole millimetre on a bar, which a
+caliper reads without argument.
+
+The bars are drawn as filled rectangles of an exact pixel count rather
+than as stroked lines, whose end caps added 0.2 mm — a sixth of the
+error being hunted — and the ticks stop one pixel short so they cannot
+join a bar and lengthen it.
 
 Licence: as `../targets/README.md` — the board is generated from
 OpenCV's `DICT_6X6_250`, which carries no third-party claim, unlike
