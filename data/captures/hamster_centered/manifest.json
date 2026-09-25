@@ -1,0 +1,65 @@
+{
+  "frames": [
+    {
+      "file": "hamster_centered_001.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_fvjaz_00001_.png",
+      "sha256_16": "501553fa4205290b",
+      "size_px": [
+        3264,
+        2448
+      ],
+      "captured": "2026-09-24T21:02:29",
+      "exposure": {
+        "p2": 0.0157,
+        "median": 0.8157,
+        "p98": 0.9686,
+        "mean": 0.648,
+        "sd": 0.3503
+      }
+    },
+    {
+      "file": "hamster_centered_002.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_serva_00001_.png",
+      "sha256_16": "d61e0098e06b132b",
+      "size_px": [
+        3296,
+        2558
+      ],
+      "captured": "2026-09-24T21:02:35",
+      "exposure": {
+        "p2": 0.3373,
+        "median": 0.8627,
+        "p98": 0.9686,
+        "mean": 0.8314,
+        "sd": 0.1429
+      }
+    },
+    {
+      "file": "hamster_centered_003.png",
+      "kind": "capture",
+      "source": "ComfyUI_temp_vlujl_00001_.png",
+      "sha256_16": "3c83a138acbdc83f",
+      "size_px": [
+        720,
+        260
+      ],
+      "captured": "2026-09-24T21:02:35",
+      "exposure": {
+        "p2": 0.0706,
+        "median": 0.6314,
+        "p98": 0.6314,
+        "mean": 0.3762,
+        "sd": 0.2807
+      }
+    }
+  ],
+  "session": "hamster_centered",
+  "notes": [
+    {
+      "at": "2026-09-24T21:04:06",
+      "note": "camera roughly centered, phone next to camera, exposure fixed"
+    }
+  ]
+}
