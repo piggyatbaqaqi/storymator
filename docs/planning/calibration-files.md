@@ -49,21 +49,23 @@ Each named after its subject, each holding what was measured and how.
   "round_diameter_mm": 6.44,
   "rect_long_mm": 12.72,
   "rect_short_mm": 3.142,
-  "centre_spacing_mm": 103.185,
+  "centre_spacing_mm": 102.722,
   "round_landmark_height_mm": 8.674,
   "rect_landmark_height_mm": 6.404,
   "provenance": {
-    "centre_spacing_mm": "Calipers 2026-09-25, clear gaps 93.60 and 93.61 mm plus half of each peg along the bar. The halves agree to 0.010 mm.",
+    "centre_spacing_mm": "Calipers 2026-09-25. Gap 93.60/93.61 and outer span 111.933/111.743, so spacing = (gap + outer)/2 and the peg sizes cancel. 102.722 mm.",
+    "rect_long_mm": "SUSPECT. The same readings imply about 11.79 mm, not 12.72, and it has never been measured directly.",
     "round_landmark_height_mm": "Dome apex, 5 readings, mean 8.674 sd 0.312.",
     "rect_landmark_height_mm": "13 readings across both rect pegs, mean 6.404 sd 0.163."
   }
 }
 ```
 
-**`data/calibration/paper/canson_ream_0001/canson_ream_0001.json`** —
+**`data/calibration/paper/canson_animation_8.5x11_20lb.json`** —
 `width_mm`, `height_mm`, `punch_offset_mm`, `punch_tolerance_mm`,
-`bar_position`, and the barcode already recorded in that directory's
-README. The punch tolerance came from 95 flatbed scans and is the only
+`bar_position`, and the barcode already recorded in the ream
+directory's README. Named for the *product*; see **Decided** below for
+why, and for what the ream file keeps. The punch tolerance came from 95 flatbed scans and is the only
 one of these that is currently measured rather than nominal; the
 sheet's own dimensions are still 8.5 × 11 inches taken on faith, and
 the 0.57 % scale discrepancy left after the peg spacing was corrected
@@ -92,7 +94,7 @@ on the desk, so `AcmeCalibrationLoad` takes one path and not four.
   "name": "desk",
   "camera": "../distortion/v4k_01/v4k_01.json",
   "pegs":   "../pegs/honbay_0001/honbay_0001.json",
-  "paper":  "../paper/canson_ream_0001/canson_ream_0001.json",
+  "paper":  "../paper/canson_animation_8.5x11_20lb.json",
   "ink":    "../ink/v4k_01-brite_mark_84001.json",
   "raster": { "px_per_mm": 11.63 }
 }
@@ -115,7 +117,8 @@ should also record what the frames were shot *through*:
     "name": "desk",
     "camera": { "name": "v4k_01", "sha256_16": "…" },
     "pegs":   { "name": "honbay_0001", "sha256_16": "…" },
-    "paper":  { "name": "canson_ream_0001", "sha256_16": "…" },
+    "paper":  { "name": "canson_animation_8.5x11_20lb", "sha256_16": "…" },
+    "ream":   "canson_ream_0001",
     "ink":    { "name": "v4k_01-brite_mark_84001", "sha256_16": "…" }
   },
   "notes": [ … ],
