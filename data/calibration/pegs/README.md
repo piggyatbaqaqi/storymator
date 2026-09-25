@@ -39,5 +39,6 @@ by the camera calibrations rather than copied into them, would put
 each measurement in one place and make "which bar was this shot with?"
 a question the file can answer.
 
-Not done yet, because it changes the calibration file format and
-`Calibration.from_dict` with it.
+Designed in
+[../../../docs/planning/calibration-files.md](../../../docs/planning/calibration-files.md),
+not yet built.
