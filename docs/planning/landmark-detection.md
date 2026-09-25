@@ -904,3 +904,65 @@ corner 743 mm, and that is a conditioning failure in an unnormalised
 DLT — image pixels run to 1e3 and model millimetres to 1e2 — not
 evidence about the idea. It wants Hartley normalisation before it
 means anything.
+
+## The camera angle is worth more than everything else so far
+
+Two sessions shot deliberately: `hamster_centered` with the camera
+roughly over the page, `hamster_from_right` with it well off to one
+side. The difference is not subtle.
+
+| capture | keystone | peg spacings | ratio | peg residual | outline residual |
+|---|---:|---|---:|---:|---:|
+| **centred** | **1.021** | 102.37 / 102.84 | **0.9954** | **0.825 mm** | **1.330 mm** |
+| from right | 1.516 | 105.62 / 102.16 | 1.0339 | 2.032 mm | 3.737 mm |
+| `first_hamster_004` | 1.456 | 101.91 / 103.88 | 0.9811 | 1.158 mm | 2.876 mm |
+| `repaint_001` | 1.497 | 102.74 / 105.40 | 0.9747 | 2.104 mm | 3.945 mm |
+
+"Keystone" is the worst ratio between opposite edge lengths in the
+image — a proxy for how far off normal the camera sits. At a working
+distance of 268 mm it corresponds to roughly **1.5° from vertical**
+for the centred shot and **31°** for the others.
+
+The centred capture's peg residual is **0.825 mm against the 0.804 mm
+threshold**. It misses by 2.6 %. Every other frame in the corpus is
+out by a factor of two to three.
+
+### Why this is proof the surface is not flat
+
+**A homography is exact for a plane at any viewing angle.** If the
+sheet were flat, obliquity would cost nothing at all — the whole point
+of fitting a projective transform is that it handles arbitrary
+foreshortening. An error that *grows with obliquity* is therefore not
+a perspective problem; it is evidence that the thing being fitted is
+not a plane.
+
+The mechanism is direct: a point sitting `h` above the nominal plane
+appears displaced by `h·tanθ`, where θ is the angle from the surface
+normal. Between the two sessions tanθ goes from 0.026 to 0.60 — a
+**23-fold** change in sensitivity to any out-of-plane deviation.
+
+The operator's own observation supplies the deviation: the mat's upper
+left corner stands nearly **1 cm** off the desk. At 31° that is 6 mm
+of apparent displacement. At 1.5° it is 0.26 mm.
+
+The measured improvement is 2.5 to 3 fold rather than 23, so
+out-of-plane error is the dominant term but not the only one. What
+remains at 1.5° — 0.825 mm of peg residual and 1.33 mm of outline —
+is the floor set by everything else: lens model, detection, and the
+paper's own bow, which on these frames is under 2 mm.
+
+### What follows
+
+**Shoot from overhead.** It costs nothing, it is available now, and
+on this evidence it is worth more than every geometric fix made so
+far put together.
+
+**The flat surface is the other half and the two multiply.** The error
+is (out-of-plane deviation) × tan(viewing angle); halving either
+halves the result. A foam animation disc removes the 1 cm the mat is
+contributing, and at a near-normal camera angle what is left of it
+barely projects at all.
+
+Worth re-measuring the whole corpus once the disc exists, since most
+of the geometry in this document was measured through a 31° view of a
+bowed mat.
