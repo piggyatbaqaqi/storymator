@@ -966,3 +966,42 @@ barely projects at all.
 Worth re-measuring the whole corpus once the disc exists, since most
 of the geometry in this document was measured through a 31° view of a
 bowed mat.
+
+### What the centred capture says about the bar itself
+
+At 1.5° from normal, out-of-plane error barely projects, so this frame
+is the closest thing to a direct measurement of the bar we have:
+
+| | measured | model |
+|---|---:|---:|
+| left half spacing | 102.37 mm | 101.616 |
+| right half spacing | 102.84 mm | 101.616 |
+| difference between halves | **0.47 mm** | 0 |
+| middle peg off the line | **0.303 mm** | 0 |
+| full span | **205.20 mm** | 203.232 |
+
+Two separate things, and only one of them is the bar.
+
+**The bend is small.** 0.30 mm of non-collinearity and 0.47 mm of
+asymmetry between the halves — and both still include the paint's
+own placement, since the landmark is a patch of paint on a crown
+rather than the crown's axis. Whatever the bar's bend contributes, it
+is an order of magnitude below the errors this document has been
+chasing. Replacing the bar would not have been measurable.
+
+**The scale is out by 0.97 %.** The peg span measures 205.20 mm where
+the model says 203.232, which is 2 mm — more than twice the 0.804 mm
+threshold, and systematic rather than random.
+
+`centre_spacing_mm` is **101.616 = 4 inches exactly**: nominal, never
+measured. It is the only bar dimension that was not put under the
+calipers — the round diameter is 6.44 rather than a nominal 6.35, the
+rect peg 12.72 × 3.142 rather than 12.70 × 3.175. The one number
+taken on faith is the one that sets the scale of everything.
+
+The other candidate is the sheet: the outline gives the millimetre
+scale, and `SheetModel` says 279.4 × 215.9 from the nominal 8.5 × 11
+inches. Cut paper is usually within a millimetre, so a 2.8 mm error
+there would be surprising — but it has not been measured either.
+
+Both are a caliper measurement away, and one of them is wrong.
