@@ -1047,3 +1047,34 @@ This is the convention the project already had — *"every dimension
 here is a default, not a constant; the bar in the room is the ground
 truth"* — applied to the one dimension that had been taken on faith
 because it was the roundest number.
+
+### Retracted: the bar is not 4.0624 inches
+
+The section above is wrong and the change it describes has been
+reverted.
+
+The punch says otherwise, and the punch is the better measurement. 95
+sheets of `canson_ream_0001`: hole pitch **101.579 and 101.653 mm**
+with a **26 µm** standard deviation, outer span 203.232, and the holes
+**line-to-line with the pegs to within 0.04 mm** — a grip fit, which
+the operator confirmed by hand.
+
+A bar whose pegs sat 103.185 mm apart would be **1.58 mm wider than
+the holes it has to pass through**. The sheet would not mount at all.
+So 103.185 cannot be the spacing, whatever the calipers seemed to say.
+
+**Halving the residual did not make it true.** That is the part worth
+remembering: adopting a physically impossible geometry improved the
+fit on every frame, which means something else is biased outward by
+about 0.8 mm per rect peg and the wrong spacing was absorbing it. The
+most likely candidate is the landmark itself — the paint patch on a
+rect crown runs 10 to 11 mm on a 12.72 mm peg, so a patch sitting off
+centre toward the outer end would inflate the span exactly this way,
+and the round peg's paint, being a full disc, would not be affected.
+That is consistent with both halves reading about 1 mm long rather
+than one of them.
+
+The caliper reading and the punch data still disagree by 1.58 mm and
+one of them is mismeasured. A single reading separates them: **outer
+end to outer end of the two rect pegs**, which is 215.95 mm if the
+spacing is nominal and 219.09 mm if it is not.

@@ -3,7 +3,7 @@
     "round_diameter_mm": 6.44,
     "rect_long_mm": 12.72,
     "rect_short_mm": 3.142,
-    "centre_spacing_mm": 103.185,
+    "centre_spacing_mm": 101.616,
     "round_landmark_height_mm": 8.674,
     "rect_landmark_height_mm": 6.404
   },
@@ -83,7 +83,7 @@
     ],
     "board_dictionary": "DICT_6X6_250",
     "board_print_scale": 1.012652,
-    "peg_centre_spacing": "Measured 2026-09-25 with digital calipers as the clear gaps between pegs: left rect to round 93.60 mm, round to right rect 93.61. Centre to centre is the gap plus half of each peg along the bar, so 93.60 + 12.72/2 + 6.44/2 = 103.180 and 93.61 + 6.44/2 + 12.72/2 = 103.190. Mean 103.185 mm = 4.0624 in, not the nominal 4.0000. The two halves agree to 0.010 mm."
+    "peg_centre_spacing": "REVERTED to nominal 2026-09-25. Calipers gave clear gaps of 93.60 and 93.61 mm between pegs, which with the measured peg sizes implies 103.185 mm centre to centre. That is contradicted by the punch: 95 sheets of canson_ream_0001 give a hole pitch of 101.579/101.653 mm with a 26 micron standard deviation, and the holes are line-to-line with the pegs to 0.04 mm. A bar at 103.185 could not accept that paper at all. Adopting it halved the peg residual, but a physically impossible geometry that fits better is a compensating error, not a measurement. Discriminating measurement outstanding: outer end to outer end of the two rect pegs, 215.95 mm if nominal against 219.09 if not."
   },
   "ink": {
     "direction_deg": -61.8,
