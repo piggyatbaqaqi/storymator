@@ -1078,3 +1078,60 @@ The caliper reading and the punch data still disagree by 1.58 mm and
 one of them is mismeasured. A single reading separates them: **outer
 end to outer end of the two rect pegs**, which is 215.95 mm if the
 spacing is nominal and 219.09 mm if it is not.
+
+### Settled: 102.722 mm, and both earlier answers were wrong
+
+The operator's calipers do not span the bar, so instead of one reading
+there are two per pair — the clear gap between the pegs, and the outer
+span from the far edge of one to the far edge of the next:
+
+| pair | gap | outer span | spacing = (gap + outer)/2 |
+|---|---:|---:|---:|
+| left | 93.60 | 111.933 | **102.767** |
+| right | 93.61 | 111.743 | **102.677** |
+
+**The peg sizes cancel.** `outer = spacing + (rect_long + round_dia)/2`
+and `gap = spacing − ` the same quantity, so their mean is the spacing
+and no peg dimension is assumed. That is why this reading is worth
+more than either of the two it replaces.
+
+Mean **102.722 mm = 4.0442 in**.
+
+| spacing | centred | `first_hamster_004` | from right | `repaint_001` |
+|---|---:|---:|---:|---:|
+| 101.616 nominal | 0.825 | 1.158 | 2.032 | 2.104 |
+| **102.722 measured** | **0.206** | **0.521** | 1.260 | 1.276 |
+| 103.185 (withdrawn) | 0.509 | 0.555 | 1.004 | 0.969 |
+
+The centred frame — the one whose geometry is not confounded by a 31°
+view of a bowed mat — comes in at **0.206 mm** against a 0.804 mm
+threshold. The two near-normal frames accept.
+
+### Two mistakes, and what each one was
+
+**The first derivation assumed the peg sizes and one of them is
+wrong.** `spacing = gap + rect_long/2 + round_dia/2` gave 103.185
+because `rect_long` was taken as 12.72. The new readings put
+`rect_long + round_dia` at 18.233 mm, so with a 6.44 mm round peg the
+rect peg is about **11.79 mm** along the bar. `rect_long` has never
+been measured directly — 12.72 is suspiciously close to the 12.70
+nominal — and it is now flagged as suspect in the calibration's
+provenance. It affects detection windows, not the fit.
+
+**The retraction was wrong too, and more carelessly.** I argued that a
+bar wider than the hole pitch was physically impossible because the
+holes grip the pegs. That is true of the *round* hole and false of the
+rect *slots* — and the ream README I was citing says so in terms:
+*"the rect holes run about 2.9 mm longer than the 12.7 mm peg — the
+kinematic freedom along the bar, working as designed."* Each rect peg
+may sit 1.45 mm off centre in its slot; the 1.11 mm by which the pegs
+exceed the hole pitch needs 0.55.
+
+So the two numbers were never in conflict. **101.616 mm is the pitch
+of the holes; 102.722 is the spacing of the pegs**, and the slots take
+up the difference by design. `PegModel` describes the bar, so it takes
+the second.
+
+Both mistakes have the same shape: a number believed because it was
+nominal, and an argument made without re-reading what the project had
+already measured.

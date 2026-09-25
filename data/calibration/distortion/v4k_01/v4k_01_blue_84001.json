@@ -3,7 +3,7 @@
     "round_diameter_mm": 6.44,
     "rect_long_mm": 12.72,
     "rect_short_mm": 3.142,
-    "centre_spacing_mm": 101.616,
+    "centre_spacing_mm": 102.722,
     "round_landmark_height_mm": 8.674,
     "rect_landmark_height_mm": 6.404
   },
@@ -83,7 +83,8 @@
     ],
     "board_dictionary": "DICT_6X6_250",
     "board_print_scale": 1.012652,
-    "peg_centre_spacing": "REVERTED to nominal 2026-09-25. Calipers gave clear gaps of 93.60 and 93.61 mm between pegs, which with the measured peg sizes implies 103.185 mm centre to centre. That is contradicted by the punch: 95 sheets of canson_ream_0001 give a hole pitch of 101.579/101.653 mm with a 26 micron standard deviation, and the holes are line-to-line with the pegs to 0.04 mm. A bar at 103.185 could not accept that paper at all. Adopting it halved the peg residual, but a physically impossible geometry that fits better is a compensating error, not a measurement. Discriminating measurement outstanding: outer end to outer end of the two rect pegs, 215.95 mm if nominal against 219.09 if not."
+    "peg_centre_spacing": "Calipers 2026-09-25. Measured twice per pair so the peg sizes cancel: outer span (left edge of one peg to far edge of the next) 111.933 and 111.743 mm, clear gap between the same pairs 93.60 and 93.61. outer = spacing + (rect_long + round_dia)/2 and gap = spacing - the same, so spacing = (outer + gap)/2 = 102.767 and 102.677, mean 102.722 mm = 4.0442 in. No peg dimension is assumed. The paper's hole pitch is 101.616 mm from 95 scans, 1.11 mm narrower; the rect holes run 2.9 mm longer than the peg, so each rect peg sits about 0.55 mm off centre in its slot. That is the kinematic freedom along the bar working as designed.",
+    "peg_rect_long_SUSPECT": "The same readings give rect_long + round_dia = 18.233 mm, so with the round peg at 6.44 the rect peg is about 11.79 mm along the bar, not the 12.72 modelled. Unverified by direct measurement; it affects detection windows, not the fit."
   },
   "ink": {
     "direction_deg": -68.0,
