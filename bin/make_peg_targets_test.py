@@ -151,6 +151,70 @@ def test_the_scale_bar_is_the_length_it_claims():
     assert mt.scale_bar_mm(sheet, PPM) == pytest.approx(100.0, abs=0.2)
 
 
+@pytest.mark.xfail(strict=True, reason="there is only one bar")
+def test_there_is_a_vertical_bar_too_and_it_is_also_true():
+    """One bar measures one axis.
+
+    The operator's printer is anisotropic -- the 7 x 9 board came out
+    1.27 % oversize with the two axes differing by 0.15 % -- so a
+    single horizontal bar catches half the error and silently misses
+    the rest.
+    """
+    sheet = _sheet()
+    assert mt.scale_bar_mm(sheet, PPM, axis="y") == pytest.approx(
+        100.0, abs=0.2)
+
+
+@pytest.mark.xfail(strict=True, reason="there is only one bar")
+def test_each_bar_measures_only_itself():
+    """They must not touch, or each reads the other's length."""
+    sheet = _sheet()
+    assert mt.scale_bar_mm(sheet, PPM, axis="x") == pytest.approx(
+        100.0, abs=0.2)
+    assert mt.scale_bar_mm(sheet, PPM, axis="y") == pytest.approx(
+        100.0, abs=0.2)
+
+
+def test_the_default_axis_stays_horizontal():
+    sheet = _sheet()
+    assert mt.scale_bar_mm(sheet, PPM) == mt.scale_bar_mm(
+        sheet, PPM, axis="x")
+
+
+@pytest.mark.xfail(strict=True, reason="there is only one bar")
+def test_the_bars_recover_an_anisotropy_that_was_applied():
+    """The point of the feature, tested as the point.
+
+    A printer that stretches one axis 1.27 % and the other 1.42 %
+    leaves a sheet whose two bars no longer agree. Measuring both and
+    taking the ratio recovers the difference; measuring one cannot.
+    """
+    sheet = _sheet()
+    fx, fy = 1.0127, 1.0142
+    stretched = cv2.resize(sheet, None, fx=fx, fy=fy,
+                           interpolation=cv2.INTER_AREA)
+    across = mt.scale_bar_mm(stretched, PPM, axis="x")
+    down = mt.scale_bar_mm(stretched, PPM, axis="y")
+    assert across == pytest.approx(100.0 * fx, abs=0.25)
+    assert down == pytest.approx(100.0 * fy, abs=0.25)
+    assert down / across == pytest.approx(fy / fx, abs=0.004)
+
+
+@pytest.mark.xfail(strict=True, reason="there is only one bar")
+def test_neither_bar_lands_on_a_board():
+    """A bar crossing a target would corrupt both."""
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    half = side / 2.0 + 8.0
+    for axis, span in mt.scale_bar_boxes(SHEET, side, 8.0).items():
+        (bx0, by0), (bx1, by1) = span
+        for cx, cy in mt.layout(4, side, 8.0, SHEET):
+            apart = (bx1 < cx - half or bx0 > cx + half
+                     or by1 < cy - half or by0 > cy + half)
+            assert apart, (
+                f"the {axis} bar at {span} crosses the board at "
+                f"({cx:.0f}, {cy:.0f})")
+
+
 # --- 4. refuse rather than clip --------------------------------------
 
 def test_a_sheet_too_small_for_the_boards_is_refused():

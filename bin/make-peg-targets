@@ -106,7 +106,18 @@ BAR_SPACE_MM = 48.0
 SCALE_BAR_MM = 100.0
 
 
-def scale_bar_mm(sheet: np.ndarray, px_per_mm: float) -> float:
+def scale_bar_boxes(sheet_mm: Tuple[float, float], side_mm: float,
+                    margin_mm: float) -> dict:
+    """Where each bar sits, as ``{axis: ((x0, y0), (x1, y1))}`` in mm.
+
+    Exposed so the placement can be checked against the boards rather
+    than eyeballed: a bar crossing a target corrupts both.
+    """
+    raise NotImplementedError
+
+
+def scale_bar_mm(sheet: np.ndarray, px_per_mm: float,
+                 axis: str = "x") -> float:
     """Measure the drawn scale bar back off the rendered sheet.
 
     The bar exists to catch the *print's* scale error, so a bar that
@@ -114,7 +125,11 @@ def scale_bar_mm(sheet: np.ndarray, px_per_mm: float) -> float:
     it is there to enable.  Measuring it rather than trusting it costs
     one pass over the pixels.
     """
+    if axis not in ("x", "y"):
+        raise ValueError("axis must be 'x' or 'y'")
     dark = np.asarray(sheet) < 128
+    if axis == "y":
+        dark = dark.T
     best = 0
     for row in dark:
         run = 0
