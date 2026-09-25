@@ -66,7 +66,6 @@ def test_the_ids_start_where_they_are_told_to():
     assert sorted(int(v) for v in ranges[1]) == [44, 45, 46, 47]
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_running_out_of_dictionary_is_an_error():
     with pytest.raises(ValueError, match="dictionary|ids"):
         _sheet(count=80)
@@ -75,7 +74,6 @@ def test_running_out_of_dictionary_is_an_error():
 # --- 2. what the detector sees, at the scale the rig sees it ---------
 
 @pytest.mark.parametrize("index", range(4))
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_every_board_is_found_at_rig_scale(index: int):
     """Rendered at 508 dpi, resampled to 9 px/mm, with sensor noise.
 
@@ -101,7 +99,6 @@ def test_every_board_is_found_at_rig_scale(index: int):
     assert corners is not None and len(corners) == 4
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_a_board_is_not_confused_with_its_neighbours():
     """Disjoint ids are only useful if the detector honours them."""
     sheet = _sheet()
@@ -123,7 +120,6 @@ def test_a_board_is_not_confused_with_its_neighbours():
 
 # --- 3. the sheet is the size it says it is --------------------------
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_sheet_is_the_requested_size():
     sheet = _sheet()
     assert sheet.shape == (int(round(SHEET[1] * PPM)),
@@ -131,7 +127,6 @@ def test_the_sheet_is_the_requested_size():
     assert sheet.dtype == np.uint8
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_squares_are_the_requested_size_in_millimetres():
     """Measured off the pixels, not taken from the arithmetic.
 
@@ -166,7 +161,6 @@ def test_the_squares_are_the_requested_size_in_millimetres():
 
 # --- 4. refuse rather than clip --------------------------------------
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_a_sheet_too_small_for_the_boards_is_refused():
     with pytest.raises(ValueError, match="fit|room|sheet"):
         _sheet(count=4, sheet_mm=(60.0, 60.0))
@@ -220,7 +214,6 @@ def test_a_malformed_sheet_size_is_rejected(tmp_path):
 CALIPER_MM = 152.71
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_sheet_advertises_its_own_measurements():
     """A nominal to compare a reading against, or the reading is idle."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
@@ -231,7 +224,6 @@ def test_the_sheet_advertises_its_own_measurements():
         assert value > 0, name
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_every_advertised_span_fits_the_caliper():
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
     centres = mt.layout(4, side, 8.0, SHEET, caliper_mm=CALIPER_MM)
@@ -242,7 +234,6 @@ def test_every_advertised_span_fits_the_caliper():
             f"{CALIPER_MM} mm")
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_two_diagonals_are_nominally_equal():
     """So any measured difference is skew.
 
@@ -260,7 +251,6 @@ def test_the_two_diagonals_are_nominally_equal():
                                                   abs=0.01)
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_the_advertised_spans_match_the_printed_geometry():
     """Measured through the detector, not read back from the layout.
 
@@ -290,7 +280,6 @@ def test_the_advertised_spans_match_the_printed_geometry():
     assert far(tl, bl) == pytest.approx(spans["down"], abs=0.2)
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_a_caliper_too_short_for_any_layout_is_refused():
     """Rather than quietly laying out something unmeasurable."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
@@ -298,7 +287,6 @@ def test_a_caliper_too_short_for_any_layout_is_refused():
         mt.layout(4, side, 8.0, SHEET, caliper_mm=40.0)
 
 
-@pytest.mark.xfail(strict=True, reason="the sheet still has bars and no caliper spans")
 def test_no_scale_bar_is_drawn_any_more():
     """Nothing on the sheet should look like a ruler.
 

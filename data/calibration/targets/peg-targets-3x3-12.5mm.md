@@ -25,29 +25,57 @@ the squares. The four chessboard corners each piece contributes are
 but a cut a millimetre inside it destroys the contrast a corner is
 made of.
 
-> **Do not measure the scale bars.** See
-> [../../../docs/planning/measuring-the-printed-target.md](../../../docs/planning/measuring-the-printed-target.md).
-> Their ticks are 0.20 mm wide, so outside-, centre- and
-> inside-to-inside give 100.200, 100.000 and 99.800 mm — a 0.40 %
-> ambiguity on a quantity worth 1.27 %, which over the peg span is
-> 101 % of the error threshold. Measure **corner to corner between
-> boards** instead: 132.40 mm across between the same corner on #0
-> and #1, 129.90 mm down between #0's lower corners and #2's upper
-> ones, six readings each. Only the *solid bar*, outside to outside,
-> is exact at 100.000 mm.
+**Measure the corners after printing, and only the corners.** The
+sheet has no scale bar: see
+[../../../docs/planning/measuring-the-printed-target.md](../../../docs/planning/measuring-the-printed-target.md)
+for why one was removed. A tick 0.20 mm wide can be read outside-,
+centre- or inside-to-inside for 100.200, 100.000 or 99.800 mm — a
+0.40 % ambiguity on a quantity worth 1.27 %, which over the peg span
+is 101 % of the error threshold. A chessboard corner is a point where
+four quadrants meet and has no width to argue about.
 
-**Measure BOTH scale bars after printing and record what you get.**
-There is a 100 mm horizontal bar in the foot and a 100 mm vertical one
-down the centre, because one bar measures one axis. The 7 x 9 board
-came out 1.27 % oversize with the two axes differing by 0.15 %, so a
-single bar would have caught most of that error and silently missed
-the difference. A 1 % error is a whole millimetre on a bar, which a
-caliper reads without argument.
+The sheet prints its own nominals in the foot. Seat the calipers on
+the two *furthest apart* corners of the two boards named:
 
-The bars are drawn as filled rectangles of an exact pixel count rather
-than as stroked lines, whose end caps added 0.2 mm — a sixth of the
-error being hunted — and the ticks stop one pixel short so they cannot
-join a bar and lengthen it.
+| span | from | to | nominal |
+|---|---|---|---:|
+| across | board #0 | board #1 | **83.92 mm** |
+| down | board #0 | board #2 | **83.92 mm** |
+| diagonal | board #0 | board #3 | **117.35 mm** |
+| diagonal | board #1 | board #2 | **117.35 mm** |
+
+Six readings each; the scatter is the error bar. The anisotropy is the
+ratio of the across and down fractional errors — 0.15 % on the 7 x 9
+board, so it is real and worth catching.
+
+**The diagonals are for shear, not for anisotropy.** Scaling by `sx`
+across and `sy` down multiplies *both* diagonals by the same
+`sqrt((sx² + sy²)/2)`, so they cannot tell an isotropic 1.0134 from an
+anisotropic 1.0127 × 1.0142. A difference between them is a shear,
+which nothing else on the sheet catches. Treat it as a **bound, not a
+measurement**: with six readings each, anything under 0.381 mm of
+difference is noise, and 0.381 mm is 0.186°, which inside one 37.5 mm
+board moves a corner 0.122 mm — 15 % of the 0.804 mm threshold. So the
+diagonals can confirm shear is harmless and cannot find one that
+matters. They cost two readings at the same jaw setting.
+
+**The boards sit close together because of the calipers.** The layout
+pulls them in until the longest measurement on the sheet — the
+diagonal between the two furthest printed corners, `(step + 37.5) ×
+√2` — fits the 152.71 mm jaws. That caps the centre step at 70.48 mm
+and makes *every* pair of points on the four boards reachable, so no
+reading the operator chooses to take can fall out of range.
+
+It costs precision, and the cost is stated rather than hidden. The
+mean of six corner readings carries 0.161 % on an 83.92 mm span
+against 0.102 % on the 132.40 mm span of the previous layout, which
+over the 203.232 mm peg span is 0.327 mm rather than 0.208 mm — 41 %
+of the threshold instead of 26 %. Capping on the *corner* diagonal
+instead of the printed edge would allow a 95.48 mm step and 0.252 mm,
+at the price of some readings not fitting. The previous layout bought
+its precision with two different rules — corresponding corners across,
+innermost corners down, because corresponding corners were 154.90 mm
+apart — and two rules is how a 0.40 % ambiguity gets in.
 
 Licence: as `../targets/README.md` — the board is generated from
 OpenCV's `DICT_6X6_250`, which carries no third-party claim, unlike
