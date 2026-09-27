@@ -25,6 +25,17 @@ the squares. The four chessboard corners each piece contributes are
 but a cut a millimetre inside it destroys the contrast a corner is
 made of.
 
+**The label is inside the cut box, so cutting on the grey line keeps
+it.** Each piece comes off the sheet 53.5 mm square carrying its own
+`#n  ids a-b  37.5 mm` at 2.5 mm em, 2.0 mm clear of the board. That
+clearance is insurance against ink spread and a wobbling blade, not a
+detection requirement: ChArUco never reads the board outline, only
+the four interior markers, whose nearest edge is already 1.75 mm
+inside the boundary, and a label flush with the board measured 40/40
+detections and 9 um of corner movement — the same as no label at all.
+See
+[../../../docs/planning/labelling-the-cut-targets.md](../../../docs/planning/labelling-the-cut-targets.md).
+
 **Measure the corners after printing, and only the corners.** The
 sheet has no scale bar: see
 [../../../docs/planning/measuring-the-printed-target.md](../../../docs/planning/measuring-the-printed-target.md)

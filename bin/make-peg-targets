@@ -76,14 +76,12 @@ def layout(count: int, side_mm: float, margin_mm: float,
     """
     box = side_mm + 2.0 * margin_mm
     width, height = sheet_mm
-    # Keep off the page edges, leave room above each board for its
-    # label, and reserve the foot of the sheet for the nominals.
-    # Spreading boards to the extreme corners satisfies "wholly on the
-    # sheet" and is still unusable: the labels run off the top and the
-    # bottom row lands on the notes.
+    # Keep off the page edges and reserve the foot of the sheet for
+    # the nominals.  Spreading boards to the extreme corners satisfies
+    # "wholly on the sheet" and is still unusable: the bottom row
+    # lands on the notes.
     left = min(PAGE_MARGIN_MM, max(0.0, (width - box) / 2.0))
-    top = min(PAGE_MARGIN_MM + LABEL_SPACE_MM,
-              max(0.0, (height - box) / 2.0))
+    top = min(PAGE_MARGIN_MM, max(0.0, (height - box) / 2.0))
     foot = min(NOTE_SPACE_MM, max(0.0, (height - box) / 2.0))
     usable_w = width - 2.0 * left
     usable_h = height - top - foot
@@ -167,11 +165,25 @@ def caliper_spans(centres: List[Tuple[float, float]], squares: int,
             "diagonal_1_2": diagonal}
 
 
-# Page furniture, in millimetres: clear of the edges, room above each
-# board for its label, and the foot of the sheet left for the nominals.
+# Page furniture, in millimetres: clear of the edges, and the foot of
+# the sheet left for the nominals.  Nothing is reserved above a board
+# any more -- its label lives inside its own cut box.
 PAGE_MARGIN_MM = 15.0
-LABEL_SPACE_MM = 8.0
 NOTE_SPACE_MM = 34.0
+
+# The label sits in the cut margin, not above it, so that a piece
+# which has been cut out still says which piece it is.
+#
+# LABEL_CLEAR_MM is insurance, not a detection requirement.  ChArUco
+# never reads the board outline: it finds the four interior ArUco
+# markers, whose nearest edge is already 1.75 mm inside the board, and
+# a label flush with the board edge measured 40/40 detections and 9 um
+# of corner movement -- the same as no label at all.  What breaks it
+# is ink *on* a marker.  The 2 mm buys room for registration error,
+# ink spread and a wobbling blade, none of which that sweep modelled.
+# docs/planning/labelling-the-cut-targets.md.
+LABEL_EM_MM = 2.5
+LABEL_CLEAR_MM = 2.0
 
 
 def _font(size_px: int):
@@ -217,7 +229,20 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
     sheet = Image.new("L", (px(sheet_mm[0]), px(sheet_mm[1])), 255)
     draw = ImageDraw.Draw(sheet)
     font = _font(max(8, px(4.0)))
+    label_font = _font(max(6, px(LABEL_EM_MM)))
     rule = max(1, px(0.15))
+
+    # The label has to fit between the board and the cut line with
+    # LABEL_CLEAR_MM of air below it and a little above, or it would
+    # be printed onto the markers.
+    _, _, _, ink_h = draw.textbbox((0, 0), "#0 ids", font=label_font)
+    need_mm = LABEL_CLEAR_MM + ink_h / px_per_mm + 0.5
+    if margin_mm < need_mm:
+        raise ValueError(
+            f"a {margin_mm:.1f} mm cut margin has no room for the "
+            f"{LABEL_EM_MM} mm label, which needs {need_mm:.2f} mm "
+            f"including its {LABEL_CLEAR_MM} mm clearance from the "
+            f"board; widen the margin or shrink LABEL_EM_MM")
 
     for (name, ids), (cx, cy) in zip(
             enumerate(marker_ids(count, per_board, first_id)), centres):
@@ -237,11 +262,16 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
                         (px(cx + side / 2 + margin_mm),
                          px(cy + side / 2 + margin_mm))],
                        outline=128, width=rule)
-        draw.text((px(cx - side / 2 - margin_mm),
-                   px(cy - side / 2 - margin_mm) - px(5.5)),
-                  f"#{index}   ids {int(block[0])}-{int(block[-1])}   "
-                  f"{side:.1f} mm",
-                  fill=0, font=font)
+        # Inside the cut box, so the label survives the scissors.
+        # Left-aligned with the board and sitting LABEL_CLEAR_MM above
+        # it, measured to the ink rather than to the baseline -- a
+        # descender is ink too.
+        text = (f"#{index}   ids {int(block[0])}-{int(block[-1])}   "
+                f"{side:.1f} mm")
+        bx0, _, _, by1 = draw.textbbox((0, 0), text, font=label_font)
+        draw.text((px(cx - side / 2) - bx0,
+                   px(cy - side / 2 - LABEL_CLEAR_MM) - by1),
+                  text, fill=0, font=label_font)
 
     # No scale bar.  The sheet states what the corners *should*
     # measure and leaves the operator to check it with calipers on the

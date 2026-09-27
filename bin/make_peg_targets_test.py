@@ -324,8 +324,6 @@ def _ink(sheet, x0_mm, y0_mm, x1_mm, y1_mm):
     return rows / PPM + y0_mm, cols / PPM + x0_mm
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="labels are still outside the cut box")
 def test_the_label_is_inside_the_cut_box():
     """So cutting on the grey line keeps the label.
 
@@ -349,8 +347,6 @@ def test_the_label_is_inside_the_cut_box():
             "label ink outside the cut box sideways")
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="labels are still outside the cut box")
 def test_the_label_keeps_its_clearance_from_the_board():
     """Ink near a marker is the one thing that breaks detection.
 
@@ -373,8 +369,6 @@ def test_the_label_keeps_its_clearance_from_the_board():
             f"less than the {mt.LABEL_CLEAR_MM} mm it should keep")
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="labels are still outside the cut box")
 def test_nothing_is_printed_above_the_cut_box():
     """The cut piece is exactly the cut box, 53.5 mm square.
 
@@ -393,8 +387,6 @@ def test_nothing_is_printed_above_the_cut_box():
             f"cut line, so the piece is taller than its cut box")
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="labels are still outside the cut box")
 def test_the_label_is_the_size_it_claims():
     """Measured off the pixels, because legibility is the point."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
@@ -410,16 +402,12 @@ def test_the_label_is_the_size_it_claims():
         "the label is wider than the board it names")
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="labels are still outside the cut box")
 def test_a_margin_too_narrow_for_the_label_is_refused():
     """Rather than printing the label onto the markers."""
     with pytest.raises(ValueError, match="label|margin"):
         _sheet(caliper_mm=CALIPER_MM, margin_mm=1.0)
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="labels are still outside the cut box")
 def test_the_top_of_the_page_is_no_longer_reserved_for_labels():
     """LABEL_SPACE_MM is dead once the labels are inside the box."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
