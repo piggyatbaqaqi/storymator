@@ -1,0 +1,77 @@
+{
+  "kind": "target_print",
+  "name": "ref_1",
+  "description": "First physical print of peg-targets-3x3-12.5mm, four 3x3 ChArUco boards to cut out and place on the ACME disc. Labelled 'ref 1' on the sheet itself.",
+  "artwork": {
+    "file": "../peg-targets-3x3-12.5mm.png",
+    "sha256_16": "7e25699d3d8b5d49",
+    "generated_by": "bin/make-peg-targets",
+    "commit": "e455a04ea160a856cdca74301332c131cc5dbf60"
+  },
+  "printed": "2026-09-28",
+  "printer": null,
+  "mounting": "repositionable (sticky-note) adhesive, so pieces can be moved between placements",
+  "nominal": {
+    "square_mm": 12.5,
+    "marker_mm": 9.0,
+    "dictionary": "DICT_6X6_250",
+    "board_side_mm": 37.5,
+    "cut_piece_mm": 53.5,
+    "across_mm": 83.92,
+    "down_mm": 83.92,
+    "diagonal_0_3_mm": 117.35,
+    "diagonal_1_2_mm": 117.35
+  },
+  "pieces": [
+    {
+      "index": 0,
+      "marker_ids": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "index": 1,
+      "marker_ids": [
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "index": 2,
+      "marker_ids": [
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "index": 3,
+      "marker_ids": [
+        12,
+        13,
+        14,
+        15
+      ]
+    }
+  ],
+  "measured": {
+    "across_mm": null,
+    "down_mm": null,
+    "diagonal_0_3_mm": null,
+    "diagonal_1_2_mm": null,
+    "square_mm": null,
+    "anisotropy": null
+  },
+  "_provenance": {
+    "measured": "NOT YET TAKEN. Six caliper readings on each of the four printed spans, furthest corner to furthest corner, WHILE THE SHEET IS STILL INTACT. After cutting, the longest baseline inside one piece is 17.68 mm and six readings carry 0.76 % against a print error worth about 1.27 %; intact they carry 0.11 %. See docs/planning/moveable-targets.md.",
+    "square_mm": "Derive from the measured spans, not from a ruler on one square. charuco_0001's entry in ../README.md shows the calibration data measuring the board better than the calipers did.",
+    "anisotropy": "across/down fractional errors. charuco_0001 came out +0.15 %; only the ratio of the axes affects a lens calibration, the uniform scale does not.",
+    "printer": "Record the make and the driver's scaling setting. 'Fit to page' is the usual way a print silently changes scale between runs."
+  }
+}
