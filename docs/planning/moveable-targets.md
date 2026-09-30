@@ -160,3 +160,134 @@ what §6 exists to find out.
 cost ten minutes, they are impossible after cutting, and until they
 exist every placement comparison is measured in units of an unknown
 scale.
+
+---
+
+# Revisited 2026-09-30: ref 1 is 5 % undersize, and the sheet advertised a span a caliper cannot reach
+
+**Verdict.** Reprint with scaling **off**, and call that one ref 2.
+ref 1 came out **4.97 % undersize** — its 12.5 mm squares are
+11.879 mm — because the printer applied "fit to printable area". The
+print is still usable if its measured scale is carried everywhere,
+but the nominals printed on its own face now lie by 5 %, which is
+precisely the trap this project keeps walking into.
+
+Two faults are ours, not the printer's, and both are in
+`bin/make-peg-targets`:
+
+1. **The sheet advertises interior chessboard corners, and a caliper
+   cannot seat on one.** The operator measured the printed boards'
+   outer edges instead, which was the sensible thing to do and is
+   what the sheet should have asked for.
+2. **The caliper cap left zero headroom.** After a correct 100 %
+   reprint the outer diagonal is 152.71 mm against a 152.71 mm
+   caliper — 100.0 % of jaw travel. ref 1 was only measurable because
+   it had shrunk.
+
+## What was measured, and how we know
+
+The operator reported four spans without saying where the jaws went.
+The readings settle it, because a diagonal is not free: for spans
+`A` across and down and `D` on the diagonal, the measured diagonal
+must equal `sqrt((sx² + sy²)/2) · D`. Testing every candidate:
+
+| what the jaws were on | `A` | `D` | implied `sx` | diagonal predicted vs measured |
+|---|---:|---:|---:|---:|
+| interior corners, furthest — *what the sheet says* | 83.98 | 117.35 | 1.2245 | **1.284 % off** |
+| interior corners, matching | 70.48 | 99.68 | 1.4579 | 0.113 % off |
+| **printed board outer edges** | **107.98** | **152.71** | **0.9516** | **0.074 % off** |
+| printed board, furthest corners | 114.31 | 152.71 | 0.8989 | 5.186 % off |
+
+Outer edges fit seventeen times better than the sheet's own nominals.
+The one rival, matching interior corners at 0.113 %, implies a 45.6 %
+*oversize* print of a letter sheet onto letter paper and is therefore
+impossible.
+
+The scatter says the same thing independently. The axis readings gave
+**sd 0.055 and 0.130 mm**, where a virtual chessboard corner scatters
+0.33 mm (`data/calibration/targets/README.md`). That is a jaw resting
+on a real edge.
+
+This inference is load-bearing: if it is wrong, every derived number
+below is wrong with it.
+
+## The numbers
+
+| | nominal | as printed |
+|---|---:|---:|
+| scale, x | 1.0 | **0.95158 ± 0.00070** |
+| scale, y | 1.0 | **0.94899 ± 0.00029** |
+| uniform | 1.0 | **0.95028** — 4.97 % undersize |
+| square, x | 12.5 mm | **11.895 mm** |
+| square, y | 12.5 mm | **11.862 mm** |
+| board side | 37.5 mm | 35.636 mm |
+| cut piece | 53.5 mm | 50.840 mm |
+
+**Anisotropy +0.273 % ± 0.079**, x wider than y — 3.4σ, against
+`charuco_0001`'s +0.15 %. Treat it as provisional: n = 3, so the
+standard deviation is itself soft, and six readings were asked for.
+
+One thing the outer-edge method gets *right* by accident. Ink spread
+inflates both ends of every reading, so the absolute scale is biased
+by roughly +0.09 % at 0.05 mm of spread. But across and down share
+the same 107.98 mm baseline, so the same absolute bias divides out of
+the **ratio** — and per
+`data/calibration/targets/README.md`, the ratio is the only part a
+lens calibration cares about. The measurement is biased where it does
+not matter and clean where it does.
+
+**No shear.** The diagonals differ by −0.177 mm against a 2σ floor of
+0.840 mm; that would be −0.070° and 43 µm across one cut piece.
+
+## Why "fit to printable area" is the culprit
+
+A uniform 0.9503 on a 215.9 × 279.4 mm page leaves **5.37 mm** side
+and **6.95 mm** top-and-bottom margins. That is an ordinary printer's
+unprintable border, and the sheet is exactly letter-size with
+full-bleed page dimensions, so any driver defaulting to "fit" will do
+this.
+
+The content is inset 15 mm by `PAGE_MARGIN_MM`, so **a 100 % reprint
+clips nothing**. The fix is one checkbox.
+
+Whether the +0.273 % anisotropy is the printer's own or the driver
+scaling the axes separately cannot be told from one print. A reprint
+at 100 % answers it.
+
+## What should change in the generator
+
+**Print the outer-edge spans.** 107.98 mm across and down, 152.71 mm
+diagonal, described as the outside of the black squares — the only
+features on the sheet a jaw can actually close on. The interior-corner
+figures can stay as a second line for anyone photographing the sheet,
+but they are not the caliper instruction.
+
+**Leave headroom in the caliper cap.** Targeting 95 % of jaw travel
+puts the outer diagonal at 145.1 mm and the centre step at 65.09 mm,
+costing 5 % of baseline — against a measurement that is currently
+impossible to take at all.
+
+Both are code changes and need their own tests first.
+
+## Status
+
+**Measured**: the twelve caliper readings, three per span, 2026-09-30.
+The 0.33 mm virtual-corner scatter and `charuco_0001`'s +0.15 %, from
+`data/calibration/targets/README.md`.
+
+**Inferred**: that the jaws were on the outer printed edges. Argued
+from self-consistency and from the reading scatter, not stated by the
+operator.
+
+**Computed**: the scales, the anisotropy and its uncertainty, the
+shear floor, the implied square sizes, and the margins that identify
+"fit to printable area".
+
+**Not measured**: the printer's make and its scaling setting, which
+would confirm the cause outright. Whether the anisotropy survives a
+100 % reprint.
+
+**The cheapest test**: reprint with scaling off and take six readings
+on the outer spans. If the uniform scale goes to about 1.000 the
+cause is settled, and if the +0.273 % stays it belongs to the
+printer.
