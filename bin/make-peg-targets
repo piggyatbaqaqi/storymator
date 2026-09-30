@@ -136,6 +136,31 @@ def _centred(n: int, step: float, middle: float) -> List[float]:
     return [middle + (i - (n - 1) / 2.0) * step for i in range(n)]
 
 
+def outer_spans(centres: List[Tuple[float, float]],
+                side_mm: float) -> Dict[str, float]:
+    """The distances a caliper jaw can actually close on.
+
+    Outside of the black squares at one end to outside of the black
+    squares at the other. This is the only measurement the sheet
+    offers that a jaw can seat on: an interior chessboard corner is a
+    virtual point between four quadrants, with nothing for a flat jaw
+    face to rest against.
+
+    It pays for that with toner spread, which lengthens the reading by
+    twice the bleed. That bias cancels wherever it matters -- the two
+    axes share a baseline, so it divides out of their ratio, and
+    margin plus span plus margin still sums to the paper.
+    """
+    if len(centres) < 2:
+        raise ValueError("outer spans need at least two boards")
+    xs = [x for x, _ in centres]
+    ys = [y for _, y in centres]
+    across = (max(xs) - min(xs)) + float(side_mm)
+    down = (max(ys) - min(ys)) + float(side_mm)
+    return {"across": across, "down": down,
+            "diagonal": float(np.hypot(across, down))}
+
+
 def caliper_spans(centres: List[Tuple[float, float]], squares: int,
                   square_mm: float) -> Dict[str, float]:
     """Nominal corner-to-corner distances the operator can check.
@@ -172,7 +197,13 @@ def caliper_spans(centres: List[Tuple[float, float]], squares: int,
 # the sheet left for the nominals.  Nothing is reserved above a board
 # any more -- its label lives inside its own cut box.
 PAGE_MARGIN_MM = 15.0
-NOTE_SPACE_MM = 34.0
+NOTE_SPACE_MM = 46.0
+
+# The foot carries the measuring instructions, and every line of them
+# was earned by getting it wrong once. 3.5 mm keeps the longest line
+# inside the side margins with room to spare.
+NOTE_EM_MM = 3.5
+NOTE_LINE_MM = 5.0
 
 # The label sits in the cut margin, not above it, so that a piece
 # which has been cut out still says which piece it is.
@@ -397,7 +428,6 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
 
     sheet = Image.new("L", (px(sheet_mm[0]), px(sheet_mm[1])), 255)
     draw = ImageDraw.Draw(sheet)
-    font = _font(max(8, px(4.0)))
     label_font = _font(max(6, px(LABEL_EM_MM)))
     rule = max(1, px(0.15))
 
@@ -461,27 +491,44 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
                        px(cy + side / 2 + margin_mm - LABEL_CLEAR_MM) - ey1),
                       serial, fill=0, font=label_font)
 
-    # No scale bar.  The sheet states what the corners *should*
-    # measure and leaves the operator to check it with calipers on the
-    # corners themselves; a printed bar would invite a reading whose
-    # tick ambiguity alone is 0.40 %, against a 1.27 % print error.
-    spans = caliper_spans(centres, squares, square_mm)
+    # No scale bar, and no invitation to measure one. The foot states
+    # what a caliper can actually close on and how to take it; every
+    # line here replaced a mistake that cost a sheet or a session.
+    spans = outer_spans(centres, side)
+    columns = min(int(np.ceil(np.sqrt(count))),
+                  max(1, len({round(c[0], 6) for c in centres})))
+    rows_n = int(np.ceil(count / columns))
+    tl, tr = 0, columns - 1
+    bl, br = (rows_n - 1) * columns, count - 1
+    last_id = first_id + count * per_board - 1
+    note_font = _font(max(6, px(NOTE_EM_MM)))
     notes = [
-        f"square {square_mm} mm, marker {marker_mm} mm, {dictionary}, "
+        f"{serial + '    ' if serial else ''}{count} boards of "
+        f"{squares}x{squares}, square {square_mm} mm, marker "
+        f"{marker_mm} mm, ids {first_id}-{last_id}, {dictionary}, "
         f"{px_per_mm * 25.4:.0f} dpi",
-        "MEASURE THE CORNERS, never an edge and never a printed bar.",
-        f"furthest corners #0 to #1 (across): {spans['across']:.2f} mm",
-        f"furthest corners #0 to #2 (down):   {spans['down']:.2f} mm",
-        f"diagonals #0-#3 and #1-#2:          "
-        f"{spans['diagonal_0_3']:.2f} mm each; a difference is shear",
+        'PRINT AT 100 %.  Turn off "fit to page" -- ref_1 came out '
+        '4.75 % undersize.',
+        "MEASURE BEFORE CUTTING.  These spans cannot be recovered once "
+        "the sheet is cut up.",
+        "Jaws on the OUTER EDGES of the black squares -- a jaw cannot "
+        "seat on an inner corner.",
+        f"     across   #{tl}-#{tr} and #{bl}-#{br} ....... "
+        f"{spans['across']:.2f} mm",
+        f"     down     #{tl}-#{bl} and #{tr}-#{br} ....... "
+        f"{spans['down']:.2f} mm",
+        f"     diagonal #{tl}-#{br} and #{tr}-#{bl} ....... "
+        f"{spans['diagonal']:.2f} mm   equal unless the print is skewed",
+        "Measure all four axis spans, 3 readings in one sitting and 3 "
+        "in another.",
     ]
     # Bottom-aligned to the page margin, so the last line stays out of
     # the printer's unprintable strip.
-    line = px(5.5)
+    line = px(NOTE_LINE_MM)
     foot = px(sheet_mm[1] - PAGE_MARGIN_MM) - len(notes) * line
     for row, text in enumerate(notes):
         draw.text((px(PAGE_MARGIN_MM), foot + row * line), text,
-                  fill=0, font=font)
+                  fill=0, font=note_font)
     return np.asarray(sheet, dtype=np.uint8)
 
 
@@ -565,13 +612,13 @@ def main(argv=None) -> int:
           f"squares at {args.square_mm} mm, "
           f"{board_side_mm(args.squares, args.square_mm):.1f} mm a side")
     side = board_side_mm(args.squares, args.square_mm)
-    spans = caliper_spans(
+    spans = outer_spans(
         layout(args.count, side, args.cut_margin_mm, (width, height),
-               args.caliper_mm or None),
-        args.squares, args.square_mm)
+               args.caliper_mm or None), side)
     for name, value in spans.items():
-        print(f"   {name:>12}: {value:8.2f} mm")
-    print("   measure the corners after printing and record what you get")
+        print(f"   {name:>10}: {value:8.2f} mm")
+    print("   outer edge to outer edge of the black squares, before "
+          "cutting")
     return 0
 
 

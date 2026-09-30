@@ -673,8 +673,6 @@ def _dark_extent(sheet, x0, y0, x1, y1, axis):
     return float(v.max() - v.min())
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="the foot still asks for interior corners")
 def test_the_sheet_advertises_spans_a_caliper_can_reach():
     """Outer edges, not interior corners."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
@@ -690,29 +688,37 @@ def test_the_sheet_advertises_spans_a_caliper_can_reach():
         np.hypot(outer["across"], outer["down"]), abs=0.01)
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="the foot still asks for interior corners")
 def test_the_advertised_outer_spans_match_the_printed_ink():
-    """Measured off the pixels, in the band where the outer squares
-    are black -- at the board's waist the outer squares are white and
-    the first ink is a marker, 1.75 mm in."""
+    """Measured off the pixels, in windows that see only the boards.
+
+    Two traps, both of which make the measurement read wrong rather
+    than fail: at the board's waist the outer squares are white and
+    the first ink is a marker 1.75 mm in, so the window must sit in a
+    row of black squares; and the piece label and the serial are
+    left-aligned with the board and live in the cut margins, so a
+    window reaching into those margins measures the labels and reads
+    about 10 mm long.
+    """
     side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
     centres = mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM)
     outer = mt.outer_spans(centres, side)
     sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin)
     xs = sorted({round(c[0], 6) for c in centres})
     ys = sorted({round(c[1], 6) for c in centres})
-    top = ys[0]
-    got = _dark_extent(sheet, xs[0] - side / 2 - margin,
-                       top - side / 2 + 2.0, xs[-1] + side / 2 + margin,
-                       top - side / 2 + 10.0, "x")
-    assert got == pytest.approx(outer["across"], abs=0.2)
-    left = xs[0]
-    got = _dark_extent(sheet, left - side / 2 + 2.0,
-                       ys[0] - side / 2 - margin,
-                       left - side / 2 + 10.0, ys[-1] + side / 2 + margin,
-                       "y")
-    assert got == pytest.approx(outer["down"], abs=0.2)
+
+    # across: a band inside the top row of black squares, spanning
+    # both boards. No label is level with it.
+    _, cols = _ink(sheet, xs[0] - side / 2 - margin, ys[0] - side / 2 + 2.0,
+                   xs[-1] + side / 2 + margin, ys[0] - side / 2 + 10.0)
+    assert cols.max() - cols.min() == pytest.approx(outer["across"], abs=0.2)
+
+    # down: each extreme edge on its own, in the left column of black
+    # squares, with the window stopping short of the label bands.
+    x0, x1 = xs[0] - side / 2 + 2.0, xs[0] - side / 2 + 10.0
+    top, _ = _ink(sheet, x0, ys[0] - side / 2 - 1.0, x1, ys[0])
+    bot, _ = _ink(sheet, x0, ys[-1], x1, ys[-1] + side / 2 + 1.0)
+    assert top.size and bot.size
+    assert bot.max() - top.min() == pytest.approx(outer["down"], abs=0.2)
 
 
 def test_the_foot_notes_clear_the_boards_and_the_page_edge():
@@ -741,8 +747,6 @@ def test_the_foot_notes_fit_between_the_side_margins():
         f"{SHEET[0] - mt.PAGE_MARGIN_MM:.1f} mm margin")
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="the foot still asks for interior corners")
 def test_the_foot_names_the_sheet():
     """So a loose sheet says which one it is before it is cut."""
     side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
