@@ -29,14 +29,17 @@ it from 87 % of the budget to 31 %.
 
 ## Layout as built
 
-| board | bearing | radius | mean out-of-plane |
-|---|---:|---:|---:|
-| 0 | reference | 138.5 mm | +0.31 mm |
-| 1 | +90.6° | 164.9 mm | −0.45 mm |
-| 2 | +183.0° | 137.9 mm | +0.81 mm |
-| 3 | +269.1° | 176.6 mm | −0.75 mm |
+| compass | piece | marker ids | bearing | radius | mean out-of-plane |
+|---|---:|---|---:|---:|---:|
+| N | #0 | 0–3 | reference | 138.5 mm | +0.31 mm |
+| E | #1 | 4–7 | +90.6° | 164.9 mm | −0.45 mm |
+| S | #2 | 8–11 | +183.0° | 137.9 mm | +0.81 mm |
+| W | #3 | 12–15 | +269.1° | 176.6 mm | −0.75 mm |
 
-Which board is which compass point is **not recorded** — see below.
+East and west sit furthest out because the paper is **landscape** —
+279.4 mm east-west against 215.9 north-south — so it reaches 139.70 mm
+that way and only 107.95 mm north-south, and a 50.96 mm piece has to
+clear it.
 
 ## A second ChArUco was in the scene
 
@@ -51,32 +54,45 @@ frame. **The set does not need reshooting.**
 
 ## Capture conditions
 
-Recorded from conversation, not from a manifest:
+See [manifest.json](manifest.json). In short: `v4k_01` with
+`camera_settings.gpfl` loaded immediately before shooting, which pins
+`focus_absolute` 134, `auto_exposure` 1, `exposure_time_absolute` 950
+and white balance at 4590 K — exactly the controls `v4k_01`'s own
+provenance requires. 12:50:31 to 12:51:34 EDT on 2026-09-30, nine
+frames in 63 s. Lighting was a hand-held phone above the centre, the
+white monitor, room lights and diffuse sunlight.
 
-* camera `v4k_01`, standard settings, one position throughout
-* lighting: hand-held phone roughly above centre, white monitor, room
-  lights, diffuse sunlight (sunny)
-* captured 2026-09-30
-* targets: ref 1, uniform print scale 0.95251, square **11.906 mm**
+The rotation was meant to be 45° CCW per frame; recovered from the
+poses it is **−45.3° ± 6.3°**, and the nine frames span a full turn,
+so frame 9 repeats frame 1 to within 2° and there are eight distinct
+rotations.
 
-## What is missing
+## The disc
 
-These frames did not go through `bin/collect-captures`, so there is no
-`manifest.json` and no per-frame exposure. Not recoverable after the
-fact:
+| | |
+|---|---:|
+| diameter | 419.1 mm (16.5 in nominal, not measured) |
+| foam board | 4.993 ± 0.015 mm |
+| with paperboard facing | 5.553 ± 0.060 mm |
+| standoff above the desk | 17.156 ± **0.914** mm, range 2.14 |
+| working surface above the desk | 22.71 mm |
+| foam vs facing alignment | −2 to +5 mm at the extremes |
 
-* **which cut piece is at which compass point** — the analysis can
-  only say "board 0 is 90.6° from board 1"
-* **per-frame exposure, white balance and focus** — `v4k_01`'s
-  provenance says `focus_absolute` 134 and names the controls that
-  must be pinned; nothing confirms they were
-* **time of day**, which matters because the sunlight was a light
-  source and moves
-* **disc diameter**, assumed 419 mm from conversation
-* **disc material and thickness**, and how the targets were seated
-* **the rotation angle intended per frame** (derived as ~40°, with
-  frames 3 and 9 only 2° apart, so eight distinct rotations not nine)
-* **whether the paper moved on its pegs** between frames
+The foam is uniform to 15 µm; the **0.914 mm of standoff scatter
+belongs to the adhesive putty**, and as a tilt about the centre it is
+0.250° — the same order as the whole plane-fit scatter. Replacing the
+putty with a rigid mount is the cheapest accuracy left in this rig.
 
-Shoot the next set through `bin/collect-captures` so the manifest
-exists, and put the compass mapping in the session note.
+## What is still missing
+
+These frames did not go through `bin/collect-captures`:
+
+* **shutter times and per-frame exposure** — the manifest's times are
+  file mtimes, and the exposure is the one from the settings file, not
+  a per-frame record
+* **the camera's position and height**, only its recovered poses
+* **disc diameter**, assumed rather than measured
+* **how hard each target was pressed**, and its standoff
+* **whether the paper shifted on its pegs** between frames
+
+Shoot the next set through `bin/collect-captures`.

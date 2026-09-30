@@ -40,10 +40,12 @@ they give no residual and no warning when one of them is wrong.**
 
 The bearings are N-S-E-W to better than a degree. The **radii differ
 by 38.6 mm**, and that is not carelessness — it is the paper. The
-sheet reaches 107.95 mm east and west but 139.7 mm north and south,
-and a 50.96 mm cut piece has to clear it, so the north and south
-targets are pushed out and the east and west ones are not. The disc
-rim is at 209.5 mm.
+sheet lies **landscape**, 279.4 mm east-west by 215.9 north-south
+(`v4k_01.json`'s `sheet` block), so it reaches 139.70 mm east and
+west but only 107.95 mm north and south. A 50.96 mm cut piece has to
+clear it, which pushes the **east and west** targets out to 164.9 and
+176.6 mm and lets north and south sit in at 138.5 and 137.9. The disc
+rim is at 209.6 mm.
 
 **The disc is flat.** Those mean out-of-plane figures span 1.56 mm
 peak to peak over a 419 mm disc. The foam board did its job.
@@ -96,9 +98,13 @@ the axis that was already only as good as the other.
 
 `σ_z ∝ Z² · σ_px / (f · L)`, so **target size is the only strong
 lever**. Doubling the board halves the depth noise; six targets
-instead of four buys 18 %. East and west have 101.5 mm of radial
-room between paper and rim, so a larger piece fits there even though
-north and south have only 69.8 mm.
+instead of four buys 18 %. **North and south** have 101.6 mm of
+radial room between paper and rim, against 69.9 mm east and west, so
+that is where a larger piece fits — which is also, unhelpfully, the
+direction in which extra spread is worth least.
+
+That is the tension behind the NNE-NNW-SSE-SSW proposal: the room is
+north and south, and the optical value is east and west.
 
 ## The phantom marker
 
@@ -158,3 +164,50 @@ nothing about picking the disc up and putting it down.
 **The cheapest test**: nine more frames at the same layout without
 touching the disc between them, to separate the noise floor from
 whatever the rotation itself contributes.
+
+---
+
+# The putty is the next thing to fix
+
+Added 2026-09-30 from the operator's own measurements, which change
+one number above.
+
+The disc sits on a lazy susan on adhesive putty. The standoff from
+desk to the underside of the foam, measured at five rotations, is
+**16.69, 16.51, 18.63, 17.46, 16.49 mm** — mean 17.156, **sd 0.914,
+range 2.14 mm**. The foam itself is 4.993 ± 0.015 mm and the
+paperboard facing adds 0.560, so the working surface sits 22.71 mm
+above the desk.
+
+The foam is uniform to 15 µm. **The 0.914 mm belongs to the putty.**
+
+As a tilt about the disc centre that is **0.250° rms**, and it is
+rotation-dependent by construction. Set against the plane fit:
+
+| | |
+|---|---:|
+| observed per-frame normal scatter | 0.399° |
+| predicted by measurement noise alone | 0.366° |
+| room left for real movement | **≤ 0.159°** |
+| tilt implied by the putty measurements | 0.250° |
+
+Those are the same order. The putty measurement is, if anything,
+slightly larger than the plane fit will allow, so the wobble is real
+but at the small end of what the calipers suggest.
+
+**This revises the averaging claim.** A mean plane is only as good as
+the wobble it averages over:
+
+| | normal error | at the paper corner | of budget |
+|---|---:|---:|---:|
+| one frame | 0.399° | 0.701 mm | 87 % |
+| mean of 8, if the wobble is zero | 0.141° | 0.248 mm | 31 % |
+| **mean of 8, with the wobble** | **0.212°** | **0.373 mm** | **46 %** |
+
+Still comfortably inside budget, but 46 % rather than 31 %, and the
+difference is entirely a mounting problem rather than an optical one.
+
+**Replace the putty with something rigid** — a full-face double-sided
+bond, or a three-point kinematic seat that cannot compress unevenly.
+It is the cheapest 0.25° available anywhere in this rig, and unlike
+target size it costs no redesign.

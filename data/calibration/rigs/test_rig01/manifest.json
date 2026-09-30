@@ -1,0 +1,158 @@
+{
+  "kind": "session",
+  "session": "test_rig01",
+  "purpose": "Can four small ChArUco patches at N/S/E/W find the plane of the animation disc in every rotation? First of a planned pair; the second will try NNE-NNW-SSE-SSW.",
+  "captured": "2026-09-30T12:50:31-04:00/2026-09-30T12:51:34-04:00",
+  "captured_note": "Times are file mtimes, not shutter times; the frames were written directly rather than through bin/collect-captures, so no exposure was recorded per frame. 63 s for nine frames.",
+  "operator": "piggy",
+  "rig": {
+    "camera": {
+      "name": "v4k_01",
+      "calibration": "../../distortion/v4k_01/v4k_01.json",
+      "settings_file": "../../distortion/v4k_01/camera_settings.gpfl",
+      "settings_sha256_16": "4d25c5fd45d0c263",
+      "settings_loaded": "immediately before this session",
+      "controls": {
+        "white_balance_automatic": 0,
+        "auto_exposure": 1,
+        "focus_automatic_continuous": 0,
+        "focus_absolute": 134,
+        "exposure_time_absolute": 950,
+        "white_balance_temperature": 4590,
+        "gamma": 100,
+        "sharpness": 1,
+        "backlight_compensation": 1,
+        "power_line_frequency": 2,
+        "saturation": 25
+      },
+      "position": "fixed throughout; not measured, recoverable from the poses"
+    },
+    "target": {
+      "print": "../../targets/prints/ref_1.json",
+      "square_mm": 11.906,
+      "board_side_mm": 35.719,
+      "cut_piece_mm": 50.959,
+      "mounting": "repositionable (sticky-note) adhesive",
+      "placement": {
+        "N": {
+          "piece": 0,
+          "marker_ids": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "E": {
+          "piece": 1,
+          "marker_ids": [
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "S": {
+          "piece": 2,
+          "marker_ids": [
+            8,
+            9,
+            10,
+            11
+          ]
+        },
+        "W": {
+          "piece": 3,
+          "marker_ids": [
+            12,
+            13,
+            14,
+            15
+          ]
+        }
+      },
+      "radius_mm": {
+        "N": 138.5,
+        "E": 164.9,
+        "S": 137.9,
+        "W": 176.6
+      }
+    },
+    "disc": {
+      "diameter_mm": 419.1,
+      "diameter_note": "16.5 inches nominal, not measured",
+      "foam_thickness_mm": [
+        5.01,
+        4.99,
+        4.98
+      ],
+      "foam_thickness_mean_mm": 4.993,
+      "total_thickness_mm": [
+        5.49,
+        5.56,
+        5.61
+      ],
+      "total_thickness_mean_mm": 5.553,
+      "paperboard_adds_mm": 0.56,
+      "standoff_mm": [
+        16.69,
+        16.51,
+        18.63,
+        17.46,
+        16.49
+      ],
+      "standoff_mean_mm": 17.156,
+      "standoff_sd_mm": 0.914,
+      "top_surface_above_desk_mm": 22.71,
+      "mount": "lazy susan plus adhesive putty",
+      "facing_alignment_mm": [
+        -2.0,
+        5.0
+      ],
+      "facing_alignment_note": "foam disc and black paper facing both cut to 16.5 in; they disagree by -2 to +5 mm at the extremes"
+    },
+    "paper": {
+      "stock": "canson_animation_8.5x11 (ream canson_ream_0001)",
+      "orientation": "landscape, 279.4 mm E-W by 215.9 mm N-S",
+      "pegged": true,
+      "artwork": "printed hamster reference, not original art"
+    }
+  },
+  "protocol": {
+    "intended_rotation_per_frame_deg": -45,
+    "intended_rotation_note": "approximately 45 degrees CCW by hand; no objective measure",
+    "measured_rotation_per_frame_deg": [
+      -38.6,
+      -54.0,
+      -40.3,
+      -51.4,
+      -38.7,
+      -50.9,
+      -41.2,
+      -47.2
+    ],
+    "measured_rotation_mean_deg": -45.3,
+    "measured_rotation_sd_deg": 6.3,
+    "measured_rotation_note": "recovered from the target poses; the sign is in the plane basis, whose handedness is arbitrary. Nine frames span 360 deg, so frame 9 repeats frame 1 to within 2 deg and there are eight distinct rotations.",
+    "camera_moved": false,
+    "disc_lifted": false
+  },
+  "lighting": [
+    "hand-held cell phone, roughly above the disc centre",
+    "white monitor screen",
+    "room lights",
+    "diffuse sunlight, sunny day, early afternoon -- moves during the session and is not reproducible"
+  ],
+  "contamination": {
+    "stray_charuco_in_scene": true,
+    "detail": "A second printed ChArUco on the desk at bottom right emitted a valid marker id 5 in frames 1-3, colliding with piece #1 (E). RANSAC removed it; dropping those frames moves the answer by 0.084 deg, so the set stands. The stray has since been taken out of frame."
+  },
+  "results": "../../../../docs/planning/nsew-disc-plane.md",
+  "not_recorded": [
+    "shutter times and per-frame exposure (no collect-captures manifest)",
+    "the camera's position and height, only its recovered poses",
+    "disc diameter, assumed 16.5 in rather than measured",
+    "how hard each target was pressed down, and its standoff",
+    "whether the paper shifted on its pegs between frames"
+  ]
+}
