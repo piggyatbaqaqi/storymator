@@ -652,3 +652,108 @@ def test_the_shipped_registry_lists_ref_1():
     reg = mt.load_registry(os.path.join(_HERE, os.pardir, mt.SERIAL_REGISTRY))
     assert [e for e in reg["issued"] if e["serial"] == "ref_1"]
     assert mt.next_serial(reg) != "ref_1"
+
+
+# --- 9. the foot tells the operator what to actually do --------------
+#
+# The sheet used to say "MEASURE THE CORNERS, never an edge" and quote
+# the interior chessboard-corner spans. A caliper jaw cannot seat on
+# an interior corner; ref 1 was measured outer edge to outer edge,
+# which is the only thing on the sheet a jaw can close on, and the
+# readings closed against the paper to 0.047 mm. The sheet was telling
+# the reader to do something impossible and quoting numbers they would
+# never take. docs/planning/measuring-the-printed-target.md.
+
+
+def _dark_extent(sheet, x0, y0, x1, y1, axis):
+    """Extent of dark ink in a millimetre window, along one axis."""
+    rows, cols = _ink(sheet, x0, y0, x1, y1)
+    assert rows.size, "no ink in the window"
+    v = cols if axis == "x" else rows
+    return float(v.max() - v.min())
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="the foot still asks for interior corners")
+def test_the_sheet_advertises_spans_a_caliper_can_reach():
+    """Outer edges, not interior corners."""
+    side = mt.board_side_mm(SQUARES, SQUARE_MM)
+    centres = mt.layout(4, side, 8.0, SHEET, caliper_mm=CALIPER_MM)
+    outer = mt.outer_spans(centres, side)
+    inner = mt.caliper_spans(centres, SQUARES, SQUARE_MM)
+    assert set(outer) >= {"across", "down", "diagonal"}
+    for name, value in outer.items():
+        assert value <= CALIPER_MM, f"{name} is {value:.2f} mm"
+    assert outer["across"] > inner["across"], (
+        "an outer-edge span must exceed the interior-corner one")
+    assert outer["diagonal"] == pytest.approx(
+        np.hypot(outer["across"], outer["down"]), abs=0.01)
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="the foot still asks for interior corners")
+def test_the_advertised_outer_spans_match_the_printed_ink():
+    """Measured off the pixels, in the band where the outer squares
+    are black -- at the board's waist the outer squares are white and
+    the first ink is a marker, 1.75 mm in."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    centres = mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM)
+    outer = mt.outer_spans(centres, side)
+    sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin)
+    xs = sorted({round(c[0], 6) for c in centres})
+    ys = sorted({round(c[1], 6) for c in centres})
+    top = ys[0]
+    got = _dark_extent(sheet, xs[0] - side / 2 - margin,
+                       top - side / 2 + 2.0, xs[-1] + side / 2 + margin,
+                       top - side / 2 + 10.0, "x")
+    assert got == pytest.approx(outer["across"], abs=0.2)
+    left = xs[0]
+    got = _dark_extent(sheet, left - side / 2 + 2.0,
+                       ys[0] - side / 2 - margin,
+                       left - side / 2 + 10.0, ys[-1] + side / 2 + margin,
+                       "y")
+    assert got == pytest.approx(outer["down"], abs=0.2)
+
+
+def test_the_foot_notes_clear_the_boards_and_the_page_edge():
+    """Between the lowest cut line and the bottom margin."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    centres = mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM)
+    sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin)
+    lowest = max(c[1] for c in centres) + side / 2 + margin
+    rows, _ = _ink(sheet, 0.0, lowest + 1.0, SHEET[0], SHEET[1])
+    assert rows.size, "no notes printed in the foot"
+    assert rows.max() <= SHEET[1] - mt.PAGE_MARGIN_MM + 0.5, (
+        f"notes reach {SHEET[1] - rows.max():.1f} mm of the page edge, "
+        f"inside the printer's unprintable strip")
+
+
+def test_the_foot_notes_fit_between_the_side_margins():
+    """A line that runs off the page takes its instruction with it."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    centres = mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM)
+    sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin)
+    lowest = max(c[1] for c in centres) + side / 2 + margin
+    _, cols = _ink(sheet, 0.0, lowest + 1.0, SHEET[0], SHEET[1])
+    assert cols.min() >= mt.PAGE_MARGIN_MM - 0.5
+    assert cols.max() <= SHEET[0] - mt.PAGE_MARGIN_MM + 0.5, (
+        f"a note line reaches {cols.max():.1f} mm, past the "
+        f"{SHEET[0] - mt.PAGE_MARGIN_MM:.1f} mm margin")
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="the foot still asks for interior corners")
+def test_the_foot_names_the_sheet():
+    """So a loose sheet says which one it is before it is cut."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    centres = mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM)
+    lowest = max(c[1] for c in centres) + side / 2 + margin
+
+    def foot(serial):
+        sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin,
+                       serial=serial)
+
+        def px(v):
+            return int(round(v * PPM))
+        return np.asarray(sheet)[px(lowest + 1.0):, :]
+    assert not np.array_equal(foot("ref_1"), foot("ref_2"))
