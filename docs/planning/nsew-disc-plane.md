@@ -465,3 +465,104 @@ control instead.
 the new height by hand, refocus, and check whether a ChArUco frame
 still detects cleanly. If the intrinsics have moved enough to matter
 it will show as reprojection error against the old calibration.
+
+---
+
+# Centring did it, and it was nearly free
+
+`data/calibration/tests/focus_100_charuco_0001-1.png`, hand-held at
+focus 100 with `charuco_0001` pegged on the disc and all four ref 1
+targets in shot.
+
+**The four targets are now the same size.** Apparent marker side
+**61.6, 63.8, 64.4, 66.3 px** — a **7.5 %** spread, against
+**31.3–74.5 px, or 138 %**, in the mounted set. The weak link is gone.
+
+## Centring, not raising, is what paid
+
+Recovered from the board's pose:
+
+| | mounted set | this frame |
+|---|---:|---:|
+| camera to the disc/board centre | 400.9 mm | **349.4 mm** |
+| height above the surface | 321.1 mm | 348.3 mm |
+| lateral offset | 240.0 mm | **28.3 mm** |
+| plane tilt | 29.6° | **2.3°** |
+
+The camera went up only about **27 mm — one inch** — and the distance
+to the centre went *down*, because removing 240 mm of lateral offset
+more than pays for the height. `σ_z ∝ Z²`, so this configuration is
+better on both counts at once: the targets are even *and* they are
+closer than before.
+
+Predicted for it: σ_z ≈ 0.64 mm, normal 0.166°, and **0.261 mm at the
+paper corner — 32 % of budget**, against 0.666 mm and 83 % as mounted.
+
+## But two targets are clipped, and that is the height argument
+
+N and S returned **3 of 4 markers**; E and W returned 4. The frame's
+short axis spans ±25.0°, so at 348 mm it sees a radius of 162 mm, and
+the N target needs 138.5 + 25.5 = **164 mm**. Just short. The long
+axis sees 217 mm, which is why E and W at 176.6 + 25.5 = 202 mm are
+complete.
+
+Rotate the disc 90° and the far pair swings onto the short axis,
+needing 202 mm against 162 available — badly clipped. That is exactly
+the operator's "+7 in to see all four with the disc rotated 90°".
+
+**The minimum height that works at every rotation is H ≥ 433 mm**
+(202 mm ÷ tan 25°), about 3.3 in above where this frame was taken. At
+that height: σ_z 0.90 mm, normal 0.236°, **0.296 mm at the paper
+corner, 37 % of budget**.
+
+So the sequence is: centre first, because it is nearly free, then add
+only the height that framing actually demands.
+
+## ref 1 and charuco_0001 cannot share a frame
+
+This frame carries **45 markers with 14 duplicated ids**.
+`charuco_0001` is a 7 × 9 board using ids **0–30**; ref 1's four
+pieces use **0–15**. They collide completely.
+
+The two sets are separable here only because their markers differ in
+size — 135–144 px against 61–66 px, the 18.228 / 8.572 mm ratio — and
+that is luck, not design.
+
+`bin/make-peg-targets` has `--first-id` for exactly this, and ref 1
+was generated without it. **The next print should use
+`--first-id 40`**, leaving a gap above `charuco_0001`'s 30. ref 1
+itself is already cut and glued, so for it the rule is simply that the
+calibration board and the disc targets must not appear together.
+
+## Whether the lens moved is still open
+
+Fitted with the focus-134 intrinsics, this focus-100 frame reprojects
+at **1.324 px** against the 48-frame calibration's 0.707. There is
+real radial structure in the residual — −0.697 ± 0.160 px at r ≈ 340
+against +0.431 ± 0.143 at r ≈ 760, a 5.2σ difference.
+
+That is suggestive and **not conclusive**. One pixel at 349 mm is
+133 µm of object, so **0.13 mm of bow in a pegged sheet of paper would
+produce the same pattern**, and the frame was hand-held. A single view
+cannot separate a changed lens from a bowed board from motion blur.
+
+It does not need to be separated. The calibration has to be redone at
+the final height and focus regardless, and that set will answer the
+question as a by-product: if the refitted intrinsics differ from the
+stored ones by more than the fit's own uncertainty, focus matters.
+
+## Status
+
+**Measured**: the camera geometry and all four targets' apparent
+sizes, from this frame with the stored intrinsics. The marker id
+collision. The reprojection residual and its radial structure.
+
+**Computed**: the projected σ_z, normal and paper-corner figures, from
+the model calibrated on the mounted set's three in-focus boards.
+
+**Confounded**: the 1.324 px reprojection — hand-held, and a paper
+board.
+
+**The next step**: fix the camera centred at 433 mm or a little above,
+set focus, and shoot 48 `charuco_0001` frames. That is the calibration
+this rig now needs anyway, and it settles the focus question.
