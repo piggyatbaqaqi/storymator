@@ -118,12 +118,39 @@
       "artwork": "printed hamster reference, not original art"
     }
   },
-  "lighting": [
-    "hand-held cell phone, roughly above the disc centre",
-    "white monitor screen",
-    "room lights",
-    "diffuse sunlight, sunny day, early afternoon -- moves during the session and is not reproducible"
-  ],
+  "lighting": {
+    "_note": "THE TWO SETS WERE NOT LIT THE SAME. The rotated set had a hand-held cell phone above the disc centre; the static set did not. Any comparison between the sets carries this confound.",
+    "rotated": [
+      "hand-held cell phone, roughly above the disc centre",
+      "white monitor screen",
+      "room lights",
+      "diffuse sunlight, sunny day, early afternoon -- moves during the session and is not reproducible"
+    ],
+    "static": [
+      "white monitor screen",
+      "room lights",
+      "diffuse sunlight, sunny day, early afternoon -- moves during the session and is not reproducible"
+    ],
+    "measured_difference": {
+      "mean_grey": {
+        "rotated": 106.9,
+        "static": 71.2
+      },
+      "contrast_p95_minus_p5": {
+        "rotated": 247.9,
+        "static": 181.2
+      },
+      "saturated_pixels_pct": {
+        "rotated": 1.101,
+        "static": 0.0
+      },
+      "pose_reprojection_rms_px": {
+        "rotated": 1.057,
+        "static": 1.028
+      },
+      "reading": "The phone made the scene brighter and higher contrast but blew out 1.1 per cent of the pixels. Pose quality was slightly WORSE with it, 1.057 px against 1.028, so removing it did not flatter the static set."
+    }
+  },
   "contamination": {
     "stray_charuco_in_scene": true,
     "detail": "A second printed ChArUco on the desk at bottom right emitted a valid marker id 5 in frames 1-3, colliding with piece #1 (E). RANSAC removed it; dropping those frames moves the answer by 0.084 deg, so the set stands. The stray has since been taken out of frame.",
@@ -412,7 +439,7 @@
       "rotated": 0.399,
       "static": 0.379
     },
-    "rotation_contributes": "nothing significant. The quadrature excess is 0.125 deg against uncertainties of 0.107 and 0.095, so the putty wobble does NOT reach the disc plane. This RETRACTS the earlier reading of the standoff scatter.",
+    "rotation_contributes": "nothing significant. The rotated set scatters 0.399 +- 0.107 deg and the static set 0.379 +- 0.095; the quadrature excess is 0.125, smaller than the uncertainty on either. CONFOUND: the static set was shot without the cell phone light. It cuts the safe way -- pose rms was 1.028 px without the phone against 1.057 with it, so scaling the static scatter up to matched lighting gives 0.390 deg and an excess of 0.084, smaller still. The putty wobble does NOT reach the disc plane, and this RETRACTS the earlier reading of the standoff scatter.",
     "sigma_z_mm": {
       "N": 1.017,
       "E": 0.274,
@@ -422,6 +449,7 @@
       "without_W": 0.733
     },
     "dominant_error": "the W target. 482 mm away at 51.9 deg to the line of sight with 31.3 px markers and visibly defocused, against E at 314 mm, 12.0 deg and 74.5 px. Dropping W improves the plane normal 2.7x, from 0.379 to 0.139 deg; dropping any other board makes it worse.",
-    "recommendation": "centre the camera over the disc. At 380 mm up the rim subtends +-28.9 deg, so a 29.7 deg plane tilt puts the near edge at 0.8 deg and the far edge at 58.6; centred, every rim point sits at 28.9 and no target is the weak link."
+    "recommendation": "centre the camera over the disc. At 380 mm up the rim subtends +-28.9 deg, so a 29.7 deg plane tilt puts the near edge at 0.8 deg and the far edge at 58.6; centred, every rim point sits at 28.9 and no target is the weak link.",
+    "dominant_error_is_unconfounded": "The W-target finding is measured entirely WITHIN the static set, so the lighting difference cannot touch it."
   }
 }

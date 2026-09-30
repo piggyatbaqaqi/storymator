@@ -30,6 +30,14 @@ disc in every orientation?
 the plane really is stable as the disc turns — and the 0.914 mm of
 standoff scatter under the putty does *not* reach the working surface.
 
+The sets were not lit the same: the static one had no phone light,
+which left it dimmer (mean grey 71.2 against 106.9) but with **no
+blown pixels at all** against 1.1 %, and slightly *better* pose rms
+(1.028 px against 1.057). Correcting for that shrinks the rotation
+excess from 0.125° to 0.084°, so the confound does not rescue the
+putty. The W-target finding below is measured inside the static set
+alone and is untouched by it.
+
 **One target is doing almost all the damage.** Dropping W improves the
 plane normal 2.7×, to 0.139°; dropping any other board makes it worse.
 
@@ -83,8 +91,9 @@ See [manifest.json](manifest.json). In short: `v4k_01` with
 `focus_absolute` 134, `auto_exposure` 1, `exposure_time_absolute` 950
 and white balance at 4590 K — exactly the controls `v4k_01`'s own
 provenance requires. 12:50:31 to 12:51:34 EDT on 2026-09-30, nine
-frames in 63 s. Lighting was a hand-held phone above the centre, the
-white monitor, room lights and diffuse sunlight.
+frames in 63 s. Lighting for the **rotated** set was a hand-held phone
+above the centre, the white monitor, room lights and diffuse sunlight;
+the **static** set had the same minus the phone.
 
 The rotation was meant to be 45° CCW per frame; recovered from the
 poses it is **−45.3° ± 6.3°**, and the nine frames span a full turn,

@@ -231,6 +231,24 @@ They are the same. The quadrature excess attributable to rotation is
 0.125°, and the uncertainty on each figure is larger than that, so it
 is not significant.
 
+**The two sets were not lit identically** — the static set was shot
+without the hand-held phone. That is a confound, and it has to be
+checked rather than waved away:
+
+| | rotated (phone) | static (no phone) |
+|---|---:|---:|
+| mean grey | 106.9 | 71.2 |
+| contrast, p95−p5 | 247.9 | 181.2 |
+| saturated pixels | **1.101 %** | **0.000 %** |
+| pose reprojection rms | 1.057 px | **1.028 px** |
+
+It cuts the safe way. The phone raised brightness and contrast but
+blew out 1.1 % of the frame, and pose quality was *slightly worse*
+with it. Scaling the static scatter up to matched lighting —
+0.379 × 1.057/1.028 — gives 0.390°, and the excess attributable to
+rotation shrinks to 0.084°. The retraction survives its own
+confound.
+
 **This retracts the previous section.** The 0.914 mm of standoff
 scatter is real and the foam's 15 µm uniformity does mean it belongs
 to the putty, but it does **not** reach the disc's plane. Whatever the
@@ -246,7 +264,9 @@ was actually wanted.
 
 ## Almost all the noise is one target
 
-Leaving each board out in turn, with nothing moving:
+Leaving each board out in turn, with nothing moving. This is measured
+**entirely within the static set**, so the lighting difference above
+cannot reach it:
 
 | plane fitted from | normal scatter |
 |---|---:|
@@ -310,6 +330,9 @@ calibration pass and reading the plane off the working frame.
 **Measured**: all of it, from nine static frames, 36/36 poses at
 1.03 px rms. No stray marker — the second ChArUco is gone from the
 scene and the yield went from 35/36 to 36/36.
+
+**Confounded**: the cross-set comparison only. The static set had no
+phone light. Quantified above; it cuts the safe way.
 
 **Computed**: the significance test, the obliquity table and the
 budget.
