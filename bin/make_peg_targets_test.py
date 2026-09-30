@@ -14,6 +14,8 @@ import importlib.util
 import os
 import types
 
+import json
+
 import numpy as np
 import pytest
 
@@ -43,7 +45,7 @@ def _sheet(count: int = 4, **kw):
     args = dict(squares=SQUARES, square_mm=SQUARE_MM, marker_mm=MARKER_MM,
                 count=count, sheet_mm=SHEET, px_per_mm=PPM,
                 margin_mm=8.0, dictionary="DICT_6X6_250",
-                caliper_mm=None)
+                caliper_mm=None, serial="ref_1")
     args.update(kw)
     return mt.render(**args)
 
@@ -66,6 +68,8 @@ def test_the_ids_start_where_they_are_told_to():
     assert sorted(int(v) for v in ranges[1]) == [44, 45, 46, 47]
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_running_out_of_dictionary_is_an_error():
     with pytest.raises(ValueError, match="dictionary|ids"):
         _sheet(count=80)
@@ -99,6 +103,8 @@ def test_every_board_is_found_at_rig_scale(index: int):
     assert corners is not None and len(corners) == 4
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_a_board_is_not_confused_with_its_neighbours():
     """Disjoint ids are only useful if the detector honours them."""
     sheet = _sheet()
@@ -120,6 +126,8 @@ def test_a_board_is_not_confused_with_its_neighbours():
 
 # --- 3. the sheet is the size it says it is --------------------------
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_the_sheet_is_the_requested_size():
     sheet = _sheet()
     assert sheet.shape == (int(round(SHEET[1] * PPM)),
@@ -127,6 +135,8 @@ def test_the_sheet_is_the_requested_size():
     assert sheet.dtype == np.uint8
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_the_squares_are_the_requested_size_in_millimetres():
     """Measured off the pixels, not taken from the arithmetic.
 
@@ -161,6 +171,8 @@ def test_the_squares_are_the_requested_size_in_millimetres():
 
 # --- 4. refuse rather than clip --------------------------------------
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_a_sheet_too_small_for_the_boards_is_refused():
     with pytest.raises(ValueError, match="fit|room|sheet"):
         _sheet(count=4, sheet_mm=(60.0, 60.0))
@@ -251,6 +263,8 @@ def test_the_two_diagonals_are_nominally_equal():
                                                   abs=0.01)
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_the_advertised_spans_match_the_printed_geometry():
     """Measured through the detector, not read back from the layout.
 
@@ -287,6 +301,8 @@ def test_a_caliper_too_short_for_any_layout_is_refused():
         mt.layout(4, side, 8.0, SHEET, caliper_mm=40.0)
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_no_scale_bar_is_drawn_any_more():
     """Nothing on the sheet should look like a ruler.
 
@@ -324,6 +340,8 @@ def _ink(sheet, x0_mm, y0_mm, x1_mm, y1_mm):
     return rows / PPM + y0_mm, cols / PPM + x0_mm
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_the_label_is_inside_the_cut_box():
     """So cutting on the grey line keeps the label.
 
@@ -347,6 +365,8 @@ def test_the_label_is_inside_the_cut_box():
             "label ink outside the cut box sideways")
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_the_label_keeps_its_clearance_from_the_board():
     """Ink near a marker is the one thing that breaks detection.
 
@@ -369,6 +389,8 @@ def test_the_label_keeps_its_clearance_from_the_board():
             f"less than the {mt.LABEL_CLEAR_MM} mm it should keep")
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_nothing_is_printed_above_the_cut_box():
     """The cut piece is exactly the cut box, 53.5 mm square.
 
@@ -387,6 +409,8 @@ def test_nothing_is_printed_above_the_cut_box():
             f"cut line, so the piece is taller than its cut box")
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_the_label_is_the_size_it_claims():
     """Measured off the pixels, because legibility is the point."""
     side = mt.board_side_mm(SQUARES, SQUARE_MM)
@@ -402,6 +426,8 @@ def test_the_label_is_the_size_it_claims():
         "the label is wider than the board it names")
 
 
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_a_margin_too_narrow_for_the_label_is_refused():
     """Rather than printing the label onto the markers."""
     with pytest.raises(ValueError, match="label|margin"):
@@ -415,3 +441,263 @@ def test_the_top_of_the_page_is_no_longer_reserved_for_labels():
     first = mt.layout(4, side, 8.0, SHEET)[0]
     assert first[1] == pytest.approx(mt.PAGE_MARGIN_MM + half, abs=0.01)
     assert not hasattr(mt, "LABEL_SPACE_MM")
+
+
+# --- 8. every sheet says which sheet it is ---------------------------
+#
+# ref 1 taught this the hard way. Its four pieces are on the disc and
+# a second print would put four more beside them, identical to the eye
+# and 5 % different in scale -- and the scale is what every
+# measurement taken through them inherits. The serial has to survive
+# the scissors, so it goes inside the cut box, in the bottom margin
+# just above the cut line, opposite the piece label at the top. It has
+# to be allocated from somewhere that remembers, so it comes from a
+# registry under data/calibration/targets/.
+
+
+def _foot(sheet, cx, cy, side, margin, grow=0.0):
+    """Ink in the bottom margin band of one board's cut box."""
+    return _ink(sheet, cx - side / 2 - margin - grow, cy + side / 2,
+                cx + side / 2 + margin + grow,
+                cy + side / 2 + margin + grow)
+
+
+def _registry(tmp_path, issued=("ref_1",)):
+    reg = tmp_path / "serials.json"
+    reg.write_text(json.dumps({
+        "kind": "target_serials", "prefix": "ref",
+        "issued": [{"serial": s, "issued": "2026-09-28"} for s in issued],
+    }))
+    return str(reg)
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_serial_is_printed_below_every_board():
+    """Not just on the sheet, because the sheet gets cut up."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    a = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin, serial="ref_1")
+    b = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin, serial="ref_2")
+    for cx, cy in mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM):
+        rows, _ = _foot(a, cx, cy, side, margin)
+        assert rows.size, f"no serial under the board at ({cx:.0f}, {cy:.0f})"
+
+        def px(v):
+            return int(round(v * PPM))
+        band = (slice(px(cy + side / 2), px(cy + side / 2 + margin)),
+                slice(px(cx - side / 2 - margin), px(cx + side / 2 + margin)))
+        assert not np.array_equal(np.asarray(a)[band], np.asarray(b)[band]), (
+            f"the foot of the board at ({cx:.0f}, {cy:.0f}) is identical on "
+            f"ref_1 and ref_2, so the serial did not reach it")
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_serial_sits_just_above_the_bottom_cut_line():
+    """Below the board and hard against the cut, not floating mid-band."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin, serial="ref_1")
+    for cx, cy in mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM):
+        rows, _ = _foot(sheet, cx, cy, side, margin)
+        cut = cy + side / 2 + margin
+        assert cut - rows.max() >= mt.LABEL_CLEAR_MM - 0.1, (
+            f"serial ink is {cut - rows.max():.2f} mm from the cut line")
+        assert cut - rows.max() <= mt.LABEL_CLEAR_MM + 0.6, (
+            f"serial ink is {cut - rows.max():.2f} mm from the cut line, "
+            f"which is not 'just above' it")
+        assert rows.min() - (cy + side / 2) >= mt.LABEL_CLEAR_MM, (
+            "serial ink is closer to the board than LABEL_CLEAR_MM")
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_a_longer_serial_makes_a_wider_mark():
+    """Proves the serial is *what* is printed there, not a decoration."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    cx, cy = mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM)[0]
+    w = []
+    for serial in ("ref_1", "ref_1000"):
+        sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin, serial=serial)
+        _, cols = _foot(sheet, cx, cy, side, margin)
+        w.append(cols.max() - cols.min())
+    assert w[1] > w[0] + 1.0, f"'ref_1000' should be wider than 'ref_1'; {w}"
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_serial_stays_inside_the_cut_box():
+    """A serial past the cut line is lost with the offcut."""
+    side, margin = mt.board_side_mm(SQUARES, SQUARE_MM), 8.0
+    sheet = _sheet(caliper_mm=CALIPER_MM, margin_mm=margin, serial="ref_9999")
+    for cx, cy in mt.layout(4, side, margin, SHEET, caliper_mm=CALIPER_MM):
+        left, right = cx - side / 2 - margin, cx + side / 2 + margin
+        rows, cols = _foot(sheet, cx, cy, side, margin, grow=6.0)
+        assert rows.size
+        assert rows.max() <= cy + side / 2 + margin
+        assert cols.min() >= left and cols.max() <= right
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_a_serial_too_wide_for_the_board_is_refused():
+    """Rather than printing a mark wider than the piece it names."""
+    with pytest.raises(ValueError, match="serial|label|wide"):
+        _sheet(caliper_mm=CALIPER_MM, serial="x" * 60)
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_next_serial_follows_the_highest_issued(tmp_path):
+    reg = mt.load_registry(_registry(tmp_path, ("ref_1", "ref_2")))
+    assert mt.next_serial(reg) == "ref_3"
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_next_serial_ignores_gaps_and_order(tmp_path):
+    """A hole in the sequence must not be reissued.
+
+    ref 1's pieces are already glued to a disc; handing its number to
+    a second sheet would make two different prints answer to it.
+    """
+    reg = mt.load_registry(_registry(tmp_path, ("ref_3", "ref_1")))
+    assert mt.next_serial(reg) == "ref_4"
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_a_serial_is_never_issued_twice(tmp_path):
+    path = _registry(tmp_path, ("ref_1",))
+    with pytest.raises(ValueError, match="ref_1|already"):
+        mt.issue_serial(path, "ref_1")
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_issuing_records_the_sheet_it_was_issued_for(tmp_path):
+    """A bare list of numbers cannot say what was printed."""
+    path = _registry(tmp_path, ("ref_1",))
+    got = mt.issue_serial(path, None, squares=SQUARES, square_mm=SQUARE_MM,
+                          count=4)
+    assert got == "ref_2"
+    entry = [e for e in json.load(open(path))["issued"]
+             if e["serial"] == "ref_2"][0]
+    assert entry["squares"] == SQUARES
+    assert entry["square_mm"] == SQUARE_MM
+    assert entry["count"] == 4
+    assert entry["issued"]
+    assert entry["dictionary"]
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_each_sheet_gets_a_fresh_block_of_ids(tmp_path):
+    """So two sheets can be in one frame without lying to the detector.
+
+    ref 1 and charuco_0001 both start at 0 and collide on fourteen
+    ids; a frame holding both is only readable because their markers
+    happen to differ in size.
+    """
+    path = _registry(tmp_path, ())
+    blocks = []
+    for _ in range(3):
+        s = mt.issue_serial(path, None, squares=3, square_mm=12.5, count=4)
+        e = [x for x in json.load(open(path))["issued"]
+             if x["serial"] == s][0]
+        blocks.append(set(range(e["first_id"], e["first_id"] + 16)))
+    for i, a in enumerate(blocks):
+        assert len(a) == 16
+        for b in blocks[i + 1:]:
+            assert not (a & b), f"id blocks overlap: {sorted(a & b)[:4]}"
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_allocated_ids_clear_the_reserved_range(tmp_path):
+    """charuco_0001 owns 0-30 and ref 1 owns 0-15."""
+    path = _registry(tmp_path, ())
+    s = mt.issue_serial(path, None, squares=3, square_mm=12.5, count=4)
+    e = [x for x in json.load(open(path))["issued"] if x["serial"] == s][0]
+    assert e["first_id"] >= mt.RESERVED_IDS
+    assert mt.RESERVED_IDS > 30
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_running_out_of_dictionary_ids_is_refused(tmp_path):
+    """Rather than wrapping round onto a sheet already in use.
+
+    DICT_6X6_250 holds 250 markers, so after the reserved range it has
+    thirteen blocks of sixteen. DICT_6X6_1000 has sixty, and the two
+    are nested -- the same pattern sits at the same id in both -- so
+    the escape hatch costs nothing already printed.
+    """
+    path = _registry(tmp_path, ())
+    with pytest.raises(ValueError, match="ids|dictionary|exhaust"):
+        for _ in range(20):
+            mt.issue_serial(path, None, squares=3, square_mm=12.5, count=4)
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_issuing_writes_a_print_stub(tmp_path):
+    """Somewhere for the caliper readings to land, next to the registry."""
+    path = _registry(tmp_path, ("ref_1",))
+    s = mt.issue_serial(path, None, squares=SQUARES, square_mm=SQUARE_MM,
+                        count=4)
+    stub = tmp_path / "prints" / f"{s}.json"
+    assert stub.exists(), f"no print stub at {stub}"
+    rec = json.loads(stub.read_text())
+    assert rec["kind"] == "target_print"
+    assert rec["name"] == s
+    assert rec["nominal"]["square_mm"] == SQUARE_MM
+    assert len(rec["pieces"]) == 4
+    assert all(len(pc["marker_ids"]) == 4 for pc in rec["pieces"])
+    assert set(rec["measured"]) and all(v is None
+                                        for v in rec["measured"].values())
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_an_existing_print_record_is_never_clobbered(tmp_path):
+    """ref 1's measurements took an hour and cannot be retaken."""
+    path = _registry(tmp_path, ())
+    (tmp_path / "prints").mkdir()
+    keep = tmp_path / "prints" / "ref_1.json"
+    keep.write_text(json.dumps({"kind": "target_print", "name": "ref_1",
+                                "measured": {"scale_uniform": 0.95251}}))
+    with pytest.raises(ValueError, match="ref_1|exists"):
+        mt.issue_serial(path, "ref_1", squares=3, square_mm=12.5, count=4)
+    assert json.loads(keep.read_text())["measured"]["scale_uniform"] == 0.95251
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_output_filename_carries_the_serial(tmp_path):
+    assert "ref_7" in mt.serial_filename("peg-targets.png", "ref_7")
+    assert mt.serial_filename("x-ref_7.png", "ref_7") == "x-ref_7.png"
+    out = tmp_path / "t.png"
+    assert mt.main(["--out", str(out), "--serial", "ref_7",
+                    "--registry", _registry(tmp_path)]) == 0
+    written = sorted(q.name for q in tmp_path.glob("*.png"))
+    assert written and all("ref_7" in n for n in written), written
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_a_failed_render_does_not_burn_a_serial(tmp_path):
+    """Serials are cheap but they are not reusable."""
+    path = _registry(tmp_path, ("ref_1",))
+    before = json.load(open(path))["issued"]
+    assert mt.main(["--out", str(tmp_path / "t.png"), "--count", "80",
+                    "--registry", path]) != 0
+    assert json.load(open(path))["issued"] == before
+
+
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
+def test_the_shipped_registry_lists_ref_1():
+    """The sheet already cut up and glued to the disc."""
+    reg = mt.load_registry(os.path.join(_HERE, os.pardir, mt.SERIAL_REGISTRY))
+    assert [e for e in reg["issued"] if e["serial"] == "ref_1"]
+    assert mt.next_serial(reg) != "ref_1"
