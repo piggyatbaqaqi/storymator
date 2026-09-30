@@ -291,3 +291,129 @@ would confirm the cause outright. Whether the anisotropy survives a
 on the outer spans. If the uniform scale goes to about 1.000 the
 cause is settled, and if the +0.273 % stays it belongs to the
 printer.
+
+---
+
+# Revisited 2026-09-30 (later): no anisotropy after all, and the sheet is safe to cut
+
+**Verdict.** Cut it. Twenty-four axis readings, six on each diagonal and
+twenty-three on the paper margins close against each other, and the one
+thing still missing before the scissors — whether the scale drifts over
+the page — turns out not to.
+
+**The +0.273 % anisotropy is retracted.** It was an artefact of three
+readings.
+
+## How the retraction happened
+
+The same `down` span, remeasured in a second session:
+
+| | n | mean | sd |
+|---|---:|---:|---:|
+| across #0–#1, session 1 | 3 | 102.753 | 0.130 |
+| across #0–#1, session 2 | 3 | 103.000 | 0.219 |
+| down #0–#2, session 1 | 3 | **102.473** | 0.055 |
+| down #0–#2, session 2 | 3 | **103.180** | 0.035 |
+
+The `down` span moved **+0.707 mm between sessions — thirteen times
+the within-session sd of 0.055 mm**. Session 1's `down` was simply
+low, and the whole +0.273 % rested on it. Pooled over 12 readings per
+axis the anisotropy is **+0.057 % ± 0.100, 0.6σ**. Not detected.
+
+This is the failure mode the project keeps meeting: a tight
+within-session scatter that says nothing about the between-session
+systematic. Three readings taken together are not three independent
+readings. **The error bar has to come from repeats that are separated
+by whatever the technique does between sessions**, which for calipers
+means putting the tool down and picking it up again.
+
+## The page does not drift
+
+The check that could only be made before cutting:
+
+| | n | mean | difference |
+|---|---:|---:|---:|
+| across, top row #0–#1 | 6 | 102.877 | |
+| across, bottom row #2–#3 | 6 | 102.890 | **+0.013 mm** |
+| down, left column #0–#2 | 6 | 102.827 | |
+| down, right column #1–#3 | 6 | 102.822 | **−0.005 mm** |
+
+Both far inside the 0.086 mm sem. The laser's scale is uniform over
+the sheet, so each cut piece carries the same scale and no piece needs
+its own.
+
+## The margins confirm the whole story independently
+
+Margin + span + margin must equal the paper, and **toner spread
+cancels exactly in that sum**: it lengthens the span by 2δ and
+shortens each margin by δ.
+
+| | margin + span + margin | nominal | closure |
+|---|---:|---:|---:|
+| width | 56.662 + 102.883 + 56.612 = 216.156 | 215.9 | +0.256 mm |
+| height | 79.537 + 102.824 + 97.086 = 279.447 | 279.4 | **+0.047 mm** |
+
+The height closes to 47 µm. The width's +0.256 mm is this sheet being
+about 216.16 mm wide, which is ordinary cut-stock tolerance.
+
+That also settles the earlier inference: the jaws really were on the
+outer printed edges, because nothing else closes.
+
+**Fit to printable area is confirmed.** The margins imply a
+**5.35 mm** side and **6.73 mm** top-and-bottom unprintable border,
+and the content is centred to 0.025 mm in x and sits 0.250 mm low in
+y — ordinary feed registration on a Canon Color imageCLASS MF656Cdw.
+
+A margin-derived anisotropy of −0.147 % is *not* independent evidence
+against the span value. It assumes the paper is exactly 215.9 mm, and
+the closure says it is 216.16; putting that in returns
+`sx = 0.95278`, the span figure exactly. The spans do not depend on
+the paper's size, so they win.
+
+## Final geometry for ref 1
+
+| | design | as printed |
+|---|---:|---:|
+| uniform scale | 1.0 | **0.95251** — 4.75 % undersize |
+| square | 12.5 mm | **11.906 mm** |
+| board side | 37.5 mm | 35.719 mm |
+| cut piece | 53.5 mm | 50.959 mm |
+
+Anisotropy, shear and page drift: **none detected**.
+
+The ±0.0005 on the scale is the random part only. The between-session
+spread is 0.707 mm, about **0.3 %**, and that is the honest
+systematic. It does not matter for a lens calibration — a uniform
+scale leaves focal length, principal point and distortion untouched —
+but for absolute work `square_mm` should be refined from the
+calibration data, as `charuco_0001`'s was, because the fit measures a
+board better than calipers do.
+
+## The diagonals confirmed the second generator fault
+
+They give a scale of 0.94906 where the axes give 0.95251, reading
+**0.523 mm short** of what an isotropic print predicts. At 144.9 mm
+the jaws are at 95 % of travel, and they splay.
+
+That is direct evidence for the fix already proposed: a cap that puts
+the diagonal at 100 % of jaw travel does not merely make the
+measurement awkward, it makes it **wrong by 0.36 %** — a quarter of
+the print error being chased. The diagonals remain usable for their
+actual job, bounding shear: they differ by −0.192 mm against a 2σ
+floor of 0.491 mm.
+
+## Status
+
+**Measured**: 24 axis readings, 12 diagonal, 23 margin, all 2026-09-30,
+all recorded in `data/calibration/targets/prints/ref_1.json`.
+
+**Computed**: the pooled scales and their uncertainties, the closure
+sums, the implied unprintable border, the centring offsets and the
+shear floor.
+
+**Retracted**: the +0.273 % anisotropy of earlier the same day.
+
+**Not measured**: whether the printer has an anisotropy at all, which
+needs a print at 100 %; and whether it would flip under a landscape
+print, which is what would prove it belongs to the machine rather than
+to the artwork or the method.

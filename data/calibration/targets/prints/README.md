@@ -13,9 +13,9 @@ blamed on the sensor. See `../README.md`.
 
 | print | artwork | measured |
 |---|---|---|
-| [ref_1](ref_1.json) | `peg-targets-3x3-12.5mm.png` | 2026-09-30 — **4.97 % undersize**, square 11.879 mm, anisotropy +0.27 % |
+| [ref_1](ref_1.json) | `peg-targets-3x3-12.5mm.png` | 2026-09-30 — **4.75 % undersize**, square **11.906 mm**; no anisotropy, shear or page drift |
 
-## ref 1 came out 5 % undersize
+## ref 1 came out 4.75 % undersize
 
 "Fit to printable area" was on. A uniform 0.9503 leaves 5.37 mm side
 and 6.95 mm top-and-bottom margins on a 215.9 × 279.4 mm page, which
@@ -23,7 +23,7 @@ is an ordinary unprintable border. The content is inset 15 mm, so a
 100 % reprint clips nothing — **print the next one with scaling
 off**.
 
-ref 1 is still usable as long as its measured square size, 11.879 mm,
+ref 1 is still usable as long as its measured square size, 11.906 mm,
 travels with every measurement taken from it. What it must not do is
 be read off its own printed face, which still claims the design
 nominals.

@@ -10,8 +10,10 @@
   },
   "printed": "2026-09-28",
   "printer": {
-    "make": null,
-    "scaling": "INFERRED 'fit to printable area' or equivalent -- see _provenance.scale"
+    "make": "Canon",
+    "model": "Color imageCLASS MF656Cdw",
+    "kind": "colour laser MFP",
+    "scaling": "'fit to printable area' was on; confirmed by the margins, see _provenance.scale"
   },
   "mounting": "repositionable (sticky-note) adhesive, so pieces can be moved between placements",
   "nominal": {
@@ -67,49 +69,118 @@
     }
   ],
   "measured": {
-    "scale_x": 0.95158,
-    "scale_y": 0.94899,
-    "scale_uniform": 0.95028,
-    "anisotropy_x_over_y": 1.00273,
-    "square_x_mm": 11.895,
-    "square_y_mm": 11.862,
-    "square_mm": 11.879,
-    "board_side_mm": 35.636,
-    "cut_piece_mm": 50.84,
-    "shear_deg": null
+    "scale_x": 0.95278,
+    "scale_x_sem": 0.0005,
+    "scale_y": 0.95223,
+    "scale_y_sem": 0.0008,
+    "scale_uniform": 0.95251,
+    "anisotropy_x_over_y": 1.00058,
+    "anisotropy_detected": false,
+    "shear_detected": false,
+    "page_scale_drift_detected": false,
+    "square_mm": 11.906,
+    "board_side_mm": 35.719,
+    "cut_piece_mm": 50.959,
+    "paper_measured_mm": [
+      216.16,
+      279.45
+    ]
   },
   "_provenance": {
     "measured": "Derived from readings_mm against the OUTER nominals. If the inference in what_was_measured is wrong, every number in measured is wrong with it.",
     "square_mm": "Derive from the measured spans, not from a ruler on one square. charuco_0001's entry in ../README.md shows the calibration data measuring the board better than the calipers did.",
-    "anisotropy": "+0.273 % +- 0.079, x wider than y, 3.4 sigma -- but n=3, so the sd is itself soft, and six readings were asked for. charuco_0001 came out +0.15 %. Outer-edge readings are inflated by ink spread at both ends, but by the same absolute amount on two equal baselines, so the RATIO is unbiased even though the absolute scale is not.",
+    "anisotropy": "NOT DETECTED: +0.057 % +- 0.100, 0.6 sigma, from 12 readings per axis. This RETRACTS the +0.273 % recorded on 2026-09-30 from n=3, which was an artefact of three low 'down' readings: the same span remeasured in a second session came out 0.707 mm higher, thirteen times the within-session sd of 0.055 mm. Treat the print as isotropic. The margin-derived anisotropy of -0.147 % is NOT independent evidence -- it assumes the paper is exactly 215.9 mm, and the closure says this sheet is about 216.16, which pulls it back onto the span value.",
     "printer": "Record the make and the driver's scaling setting. 'Fit to page' is the usual way a print silently changes scale between runs.",
-    "what_was_measured": "INFERENCE, not a statement by the operator, and everything below depends on it. Four candidate nominals were tested for self-consistency: the measured diagonal must equal sqrt((sx^2+sy^2)/2) times its own nominal. Outer printed edges predict the diagonal to 0.074 %; the interior chessboard corners the sheet advertises miss by 1.284 %, seventeen times worse. A second candidate, matching interior corners, fits to 0.113 % but implies a 45.6 % OVERSIZE print of a letter sheet onto letter paper, which is impossible. The small reading scatter (sd 0.055-0.130 mm on the axes) also says a real edge was seated on rather than a virtual corner, which scatters 0.33 mm. Confirm before relying on it.",
-    "scale": "4.97 % UNDERSIZE, uniform 0.95028. Almost certainly 'fit to printable area': a uniform 0.9503 on a 215.9 x 279.4 mm page leaves 5.37 mm side and 6.95 mm top/bottom margins, which is an ordinary printer's unprintable border. The sheet's content is inset 15 mm, so a 100 % reprint clips nothing.",
-    "shear_deg": "None detected. The diagonals differ by -0.177 mm against a 2-sigma floor of 0.840 mm, which would be -0.070 deg and 43 um across one cut piece."
+    "what_was_measured": "CONFIRMED, no longer an inference. Margin + span + margin must equal the paper, and toner spread cancels exactly in that sum (it lengthens the span by 2d and shortens each margin by d). It closes: 56.662 + 102.883 + 56.612 = 216.156 against 215.9 nominal, and 79.537 + 102.824 + 97.086 = 279.447 against 279.4. The height closes to 0.047 mm.",
+    "scale": "4.75 % undersize, uniform 0.95251 from 24 axis readings. Cause confirmed: the margins imply a 5.35 mm side and 6.73 mm top/bottom unprintable border, and the content is centred to 0.025 mm in x and sits 0.250 mm low in y, which is ordinary feed registration. The sheet's content is inset 15 mm, so a 100 % reprint clips nothing.",
+    "shear_deg": "None. See diagonals.",
+    "scale_uncertainty": "The +-0.0005 sem is the random component only. The between-session spread of the group means is 0.707 mm, about 0.3 %, and that is the honest systematic. For a lens calibration it does not matter, since a uniform scale leaves focal length, principal point and distortion untouched. For absolute work, refine square_mm from the calibration data the way charuco_0001 was refined -- the fit measured that board better than the calipers did.",
+    "uniformity": "No drift over the page. Top row versus bottom row differ by 0.013 mm, left column versus right by 0.005 mm, both far inside the 0.086 mm sem.",
+    "diagonals": "DO NOT USE FOR SCALE. They give 0.94906 where the axes give 0.95251, reading 0.523 mm short of prediction. At 144.9 mm the jaws are at 95 % of travel and splay. They still bound shear: the two differ by -0.192 mm against a 2 sigma floor of 0.491, so none is detected."
   },
   "readings_mm": {
-    "_what_was_seated_on": "the printed boards' OUTER edges, not the interior chessboard corners the sheet's own nominals describe. Inferred, not stated -- see _provenance.what_was_measured.",
+    "_what_was_seated_on": "The printed boards' OUTER edges (the outside of the black squares), not the interior chessboard corners the sheet's nominals describe. Confirmed by closure against the paper edges.",
     "outer_across_0_1": [
       102.88,
       102.62,
+      102.76,
+      103.19,
+      103.05,
       102.76
+    ],
+    "outer_across_2_3": [
+      102.9,
+      102.77,
+      102.75,
+      103.07,
+      102.7,
+      103.15
     ],
     "outer_down_0_2": [
       102.53,
       102.42,
-      102.47
+      102.47,
+      103.14,
+      103.2,
+      103.2
+    ],
+    "outer_down_1_3": [
+      102.54,
+      103.1,
+      102.59,
+      102.94,
+      102.84,
+      102.92
     ],
     "outer_diagonal_0_3": [
       144.32,
       144.77,
-      145.66
+      145.66,
+      145.04,
+      144.93,
+      144.29
     ],
     "outer_diagonal_1_2": [
       145.38,
       144.9,
-      145.0
+      145.0,
+      145.39,
+      144.94,
+      144.55
     ],
-    "taken": "2026-09-30",
-    "n": 3
+    "paper_left_to_board_0": [
+      56.87,
+      56.74,
+      56.71,
+      56.7,
+      56.57,
+      56.38
+    ],
+    "paper_right_to_board_1": [
+      56.58,
+      56.79,
+      56.79,
+      56.41,
+      56.55,
+      56.55
+    ],
+    "paper_top_to_board_0": [
+      79.52,
+      79.52,
+      79.6,
+      79.52,
+      79.57,
+      79.49
+    ],
+    "paper_bottom_to_board_2": [
+      97.21,
+      97.14,
+      97.28,
+      96.74,
+      97.06
+    ],
+    "taken": [
+      "2026-09-30"
+    ]
   }
 }
