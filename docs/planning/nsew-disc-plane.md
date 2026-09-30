@@ -345,3 +345,123 @@ predicted evenness. It is a geometric argument, not an observation.
 **The cheapest test**: move the camera over the disc centre and shoot
 nine more static frames. If σ_z comes back near 0.7 mm for all four
 targets, the geometry is settled and N-S-E-W is finished business.
+
+---
+
+# Raising the camera: worth about 2×, and it costs a lens calibration
+
+The camera cannot be centred where it is. Recovered from the static
+set, it sits **321.1 mm above the disc plane and 240.0 mm off centre**,
+400.9 mm from the disc's middle, with the plane at 29.6°. Centred at
+that height the targets fall outside the frame, which is what the
+operator found: **+4.5 in** to see all four, **+7 in** to keep them
+through a 90° rotation.
+
+The short axis is what binds — ±25.0° against ±31.9° on the long one:
+
+| to fit | needs | from now |
+|---|---:|---:|
+| N/S target, paper-limited, r = 133.4 mm | H ≥ 286 mm | −1.4 in |
+| E/W target, paper-limited, r = 165.2 mm | H ≥ 354 mm | +1.3 in |
+| W as actually placed, r = 202.1 mm | H ≥ 433 mm | **+4.4 in** |
+
+which agrees with the measured +4.5 in for a single rotation.
+
+## What it buys
+
+Calibrating `σ_z = k · Z² / cos θ` on the three in-focus boards gives
+`k = 4.01 × 10⁻⁶` (W fits 17.9 × 10⁻⁶, four times worse, which is the
+defocus the model cannot express):
+
+| | Z | obliquity | σ_z | normal | incidence | at the paper corner | budget |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| now, off-centre | 314–482 | 12–52° | 2.24 mm | 0.379° | 29.7° | 0.666 mm | **83 %** |
+| centred, +4.5 in | 462 | 19.6° | 0.91 | 0.238° | 22.1° | **0.297 mm** | **37 %** |
+| centred, +7 in | 522 | 17.3° | 1.15 | 0.300° | 19.5° | 0.327 mm | 41 % |
+
+Centring wins twice: it equalises the targets *and* it shrinks the
+incidence angle that turns a depth error into a lateral one, from
+29.7° to about 20°. Raising works against it — `σ_z ∝ Z²` — which is
+why +7 in is slightly worse than +4.5 in and why backing off further
+would lose.
+
+**Take the +7 in.** The whole question is the plane *in every
+orientation*, and 4 % of budget is a cheap price for not losing a
+target whenever the disc turns.
+
+## The cost nobody has priced yet
+
+Z at the targets goes from 314–482 mm to about **522 mm**.
+`focus_absolute` is pinned at **134**, set for roughly 380 mm, and the
+W target at 482 mm is already visibly soft. At 522 mm the whole frame
+would be.
+
+So the camera has to be refocused — and `v4k_01.json` was calibrated
+at focus 134, with its provenance naming `focus_absolute` among the
+controls that must be pinned *because the intrinsics move with it*.
+
+**Raising the camera invalidates the lens calibration.** Budget 48
+frames of `charuco_0001` at the new height, and a new
+`camera_settings.gpfl`, before any of the numbers above can be
+believed.
+
+## Do not build the height out of M3 standoffs
+
+The camera-to-base screw is M3 × 12 mm. M3 standoffs are cheap and it
+is tempting. Deflection goes as `L³`:
+
+| M3 column | static sag under a 100 g camera |
+|---|---:|
+| 12 mm, as fitted | 0.002 mm |
+| 114 mm (+4.5 in) | **1.52 mm** |
+| 178 mm (+7 in) | **5.74 mm** |
+
+Cantilever `FL³/3EI`, M3 minor diameter 2.39 mm, steel. Fifteen times
+the length is 3375 times the sag. A 178 mm M3 column would sag 5.7 mm
+under the camera's own weight before anything touched it, and would
+ring at a touch.
+
+**Raise the base, not the joint.** Put the whole mount on a rigid
+column or block and leave the M3 × 12 doing the job it was sized for.
+A longer screw into the camera body also risks bottoming out or going
+through something.
+
+## There is a cheaper path, and it may be the better one
+
+Because rotation does not move the plane, the plane does not have to
+be recovered from the working frame at all:
+
+| | error at the paper corner | budget | cost |
+|---|---:|---:|---|
+| **A.** leave the rig, average 9 static frames | 0.222 mm | **28 %** | a calibration pass; nothing else |
+| **B.** centre and raise +7 in | 0.327 mm | 41 % | a new lens calibration, a new mount |
+
+**A is both cheaper and more accurate.** Its catch is that it needs a
+calibration pass, and it assumes the disc is not *lifted* between that
+pass and the work — rotation is proven safe, lifting is not tested.
+
+B earns its keep only if the plane must come off the working frame
+itself, with no separate pass. That is a workflow question, not a
+measurement one, and it is the operator's to answer.
+
+## Status
+
+**Measured**: the camera's height and offset, recovered from 36 static
+poses. The four boards' Z, obliquity and σ_z. The frame's half-angles,
+from the stored intrinsics.
+
+**Computed**: the `σ_z` model and everything projected through it, the
+heights needed to frame each radius, and the standoff deflection.
+
+**Assumed**: a 100 g camera, and steel standoffs. A plastic or nylon
+standoff is roughly 60× more flexible again.
+
+**Not measured**: whether `focus_absolute` 134 is usable at 522 mm at
+all, and how much the intrinsics actually move when it is changed.
+This project has never measured focus-dependence; it pinned the
+control instead.
+
+**The cheapest test**: before building any mount, hold the camera at
+the new height by hand, refocus, and check whether a ChArUco frame
+still detects cleanly. If the intrinsics have moved enough to matter
+it will show as reprojection error against the old calibration.
