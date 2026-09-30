@@ -1,0 +1,66 @@
+{
+  "kind": "target_print",
+  "name": "ref_2",
+  "description": "Print of a 4-board 3x3 ChArUco sheet, serial ref_2.",
+  "artwork": {
+    "file": "peg-targets-3x3-12.5mm-ref_2.png",
+    "dictionary": "DICT_6X6_250"
+  },
+  "printed": null,
+  "printer": null,
+  "nominal": {
+    "square_mm": 12.5,
+    "board_side_mm": 37.5,
+    "cut_piece_mm": 53.5,
+    "count": 4
+  },
+  "pieces": [
+    {
+      "index": 0,
+      "marker_ids": [
+        40,
+        41,
+        42,
+        43
+      ]
+    },
+    {
+      "index": 1,
+      "marker_ids": [
+        44,
+        45,
+        46,
+        47
+      ]
+    },
+    {
+      "index": 2,
+      "marker_ids": [
+        48,
+        49,
+        50,
+        51
+      ]
+    },
+    {
+      "index": 3,
+      "marker_ids": [
+        52,
+        53,
+        54,
+        55
+      ]
+    }
+  ],
+  "measured": {
+    "scale_x": null,
+    "scale_y": null,
+    "scale_uniform": null,
+    "square_mm": null,
+    "anisotropy_x_over_y": null
+  },
+  "_provenance": {
+    "measured": "NOT YET TAKEN. Six caliper readings on each printed span, outer edge to outer edge, WHILE THE SHEET IS STILL INTACT -- after cutting the longest baseline inside one piece is too short to see the print error. See docs/planning/measuring-the-printed-target.md.",
+    "printer": "Record the make and the driver's scaling setting. ref 1 came out 4.75 per cent undersize because 'fit to printable area' was left on."
+  }
+}

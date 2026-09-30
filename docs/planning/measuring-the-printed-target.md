@@ -247,3 +247,104 @@ has not been printed yet.
 **The cheapest test**: print it and take six readings on each of the
 four advertised spans. If the two diagonals agree within 0.381 mm,
 shear is settled and can be ignored from then on.
+
+---
+
+# Revisited 2026-09-30: measure all four spans, and spread them over sittings
+
+**Verdict.** Yes, take `#2–#3` across and `#1–#3` down on ref 2 — but
+not because ref 1's rows disagreed. They did not, emphatically. Take
+them because they are half the sample and the only guard against a
+scale that differs between pieces, which is unrecoverable once the
+sheet is cut.
+
+And arrange the readings as **3 + 3 across two sittings on each of the
+four spans**, rather than 6 in one. That is the same twenty-four
+readings and a far more honest error bar.
+
+## The rows and columns agreed, and it was not close
+
+| span | n | mean | sd | sem |
+|---|---:|---:|---:|---:|
+| across #0–#1 | 6 | 102.877 | 0.210 | 0.086 |
+| across #2–#3 | 6 | 102.890 | 0.184 | 0.075 |
+| down #0–#2 | 6 | 102.827 | 0.389 | 0.159 |
+| down #1–#3 | 6 | 102.822 | 0.217 | 0.088 |
+
+| | difference | | |
+|---|---:|---:|---|
+| across, top row vs bottom | **+0.013 mm** ± 0.114 | 0.12σ | +0.012 % |
+| down, left column vs right | **−0.005 mm** ± 0.182 | 0.03σ | −0.005 % |
+
+The Canon's scale is uniform over a letter sheet to five thousandths
+of a millimetre. That is a property of the transport and the scanner
+optics, and it is not going to be different on the next sheet out of
+the same machine.
+
+## Why take them anyway: they are half the data
+
+The second pair is not an extra check bolted onto the measurement. It
+*is* half of the measurement.
+
+| | one pair (n=6) | both pairs (n=12) | |
+|---|---:|---:|---:|
+| across, scale uncertainty | 0.080 % | **0.050 %** | 1.58× |
+| down, scale uncertainty | 0.147 % | **0.080 %** | 1.83× |
+| anisotropy uncertainty | ±0.167 % | **±0.095 %** | 1.76× |
+
+Dropping the second pair costs about √2 on everything, and the
+anisotropy — the one quantity a lens calibration actually cares about
+— is already only marginally resolvable at ±0.095 %.
+
+## And the drift they would catch is budget-sized
+
+This is the argument that settles it. With 6 + 6 readings the smallest
+row-to-row drift detectable at 2σ is **0.212 %**. If a drift that size
+went unseen, pieces from different rows would carry scales differing
+by 0.212 %, and one average scale applied to all four would put each
+piece's depth out by half that — at Z ≈ 380 mm, **0.804 mm of
+differential depth between a top-row piece and a bottom-row one**.
+
+That is the entire error budget, spent on a fault nobody looked for.
+And it is worse than a random error, because two targets would be
+pushed one way and two the other, which a plane fit turns directly
+into a spurious tilt.
+
+Measuring one pair does not make this smaller. It makes it invisible.
+
+## What matters more than any of it: sittings
+
+ref 1's `down #0–#2` span, measured twice:
+
+| | n | mean |
+|---|---:|---:|
+| first sitting | 3 | 102.473 |
+| second sitting | 3 | **103.180** |
+
+**A gap of +0.707 mm, thirteen times the 0.055 mm scatter within a
+sitting.** That single systematic is what produced — and then
+destroyed — the +0.273 % anisotropy first reported for ref 1.
+
+Six readings taken back to back are not six independent readings. They
+share a jaw seating, a grip, a viewing angle and a minute of the
+operator's attention, and their agreement measures none of those. The
+error bar has to come from repeats separated by putting the calipers
+down.
+
+So for ref 2: four spans, **3 readings in one sitting and 3 in
+another**. Same total effort as before, and the scatter between
+sittings becomes part of the answer instead of an ambush.
+
+## Status
+
+**Measured**: all four spans of ref 1, 24 readings, 2026-09-30.
+
+**Computed**: the row and column differences and their uncertainties,
+the precision lost by dropping a pair, the 2σ drift floor and its
+projection to differential depth at Z = 380 mm.
+
+**Not measured**: whether a second sheet from the same printer is as
+uniform as ref 1 was. It is assumed, on the grounds that page-scale
+uniformity is a property of the machine rather than of the sheet —
+which is precisely why the check is cheap to keep and expensive to
+skip.

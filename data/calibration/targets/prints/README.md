@@ -62,8 +62,25 @@ separated the longest baseline inside one of them is 17.68 mm, and
 six readings on it carry 0.76 % against a print error worth about
 1.27 %. Intact, the same six readings carry 0.11 %.
 
-Six readings on each of the four spans, furthest corner to furthest
-corner, straight into the print's `measured` block. The reasoning is
+**All four spans — across on both rows, down on both columns — and
+three readings in one sitting plus three in another.**
+
+Not six in one go. On ref 1 the same `down` span came out 0.707 mm
+higher in a second sitting, **thirteen times** the 0.055 mm scatter
+within a sitting, and that systematic produced and then destroyed a
+reported +0.273 % anisotropy. Readings taken back to back share a jaw
+seating and a grip, and their agreement measures neither.
+
+And all four spans, even though ref 1's two rows agreed to 0.013 mm
+and its two columns to 0.005. The second pair is half the sample —
+dropping it costs √2 on the scale and the anisotropy — and it is the
+only check that all four pieces share one scale. An undetected
+row-to-row drift at the 0.212 % detection floor would put two pieces'
+depths 0.804 mm apart at Z ≈ 380 mm, which is the whole error budget,
+and a plane fit turns that straight into a spurious tilt. After
+cutting it is unrecoverable.
+
+Readings go straight into the print's `measured` block. The reasoning is
 in
 [../../../../docs/planning/moveable-targets.md](../../../../docs/planning/moveable-targets.md)
 and

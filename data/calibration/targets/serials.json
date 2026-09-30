@@ -33,6 +33,16 @@
       "dictionary": "DICT_6X6_250",
       "artwork": "peg-targets-3x3-12.5mm.png",
       "note": "Issued before this registry existed and backfilled. Its pieces carry no printed serial and its ids collide with charuco_0001. Printed 4.75 per cent undersize; square 11.906 mm. See prints/ref_1.json."
+    },
+    {
+      "serial": "ref_2",
+      "issued": "2026-09-30",
+      "squares": 3,
+      "square_mm": 12.5,
+      "count": 4,
+      "first_id": 40,
+      "dictionary": "DICT_6X6_250",
+      "artwork": "peg-targets-3x3-12.5mm-ref_2.png"
     }
   ]
 }
