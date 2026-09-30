@@ -1,0 +1,38 @@
+{
+  "kind": "target_serials",
+  "prefix": "ref",
+  "description": "Every target sheet ever generated, with the block of marker ids it owns. A serial is printed at the foot of each cut piece so a piece off the disc can say which sheet it came from; the measurements for each print live in prints/<serial>.json.",
+  "reserved_ids": {
+    "0-30": "charuco_0001, the 7x9 CalibrX board",
+    "0-15": "ref_1, issued before serials existed -- overlaps charuco_0001 and must never share a frame with it",
+    "note": "RESERVED_IDS in bin/make-peg-targets is 40; new sheets start above this range."
+  },
+  "dictionary_budget": {
+    "DICT_6X6_250": {
+      "markers": 250,
+      "min_hamming": 11,
+      "correction_bits": 5,
+      "blocks_of_16_after_40": 13
+    },
+    "DICT_6X6_1000": {
+      "markers": 1000,
+      "min_hamming": 9,
+      "correction_bits": 4,
+      "blocks_of_16_after_40": 60
+    },
+    "nested": "Every DICT_6X6_250 marker is the identical pattern at the identical id in DICT_6X6_1000, measured off the rendered markers, so exhausting the 250 and moving up costs nothing already printed."
+  },
+  "issued": [
+    {
+      "serial": "ref_1",
+      "issued": "2026-09-28",
+      "squares": 3,
+      "square_mm": 12.5,
+      "count": 4,
+      "first_id": 0,
+      "dictionary": "DICT_6X6_250",
+      "artwork": "peg-targets-3x3-12.5mm.png",
+      "note": "Issued before this registry existed and backfilled. Its pieces carry no printed serial and its ids collide with charuco_0001. Printed 4.75 per cent undersize; square 11.906 mm. See prints/ref_1.json."
+    }
+  ]
+}

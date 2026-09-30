@@ -139,3 +139,31 @@ either unit and so is worth measuring rather than inferring.
 given its own true square size. The two were produced from different
 sources — the 7×9 has a PDF and PNG beside its SVG, the 7×5 only an
 SVG — which is the likely origin of the difference.
+
+## Serial numbers
+
+Every sheet `bin/make-peg-targets` generates is issued a serial from
+[serials.json](serials.json), which also allocates it a block of
+sixteen marker ids. The serial is printed at the foot of every cut
+piece, inside the cut line, so a piece prised off a disc can still say
+which sheet it came from — and which print's measured scale applies to
+it.
+
+`charuco_0001` owns ids **0–30** and `ref_1`, issued before this
+existed, owns **0–15**. They overlap, and a frame holding both is
+readable only because their markers differ in size. Sheets from ref 2
+onward start at 40.
+
+The budget, measured off the rendered markers rather than assumed:
+
+| dictionary | markers | min Hamming | correction | blocks of 16 after id 40 |
+|---|---:|---:|---:|---:|
+| DICT_6X6_250 | 250 | 11 | 5 bits | 13 |
+| DICT_6X6_1000 | 1000 | 9 | 4 bits | 60 |
+
+**They are nested** — every DICT_6X6_250 marker is the identical
+pattern at the identical id in DICT_6X6_1000 — so exhausting the
+smaller and moving up costs nothing already printed. Staying on
+DICT_6X6_250 while it lasts buys two more bits of Hamming distance and
+a fifth correction bit, which matters when the markers land at 60-odd
+pixels.

@@ -1,5 +1,16 @@
 # Physical prints of the generated targets
 
+Each record here is named for a **serial** issued by
+[../serials.json](../serials.json). `bin/make-peg-targets` allocates
+one per sheet, prints it at the foot of every cut piece, puts it in
+the artwork's filename, and writes the stub in this directory for the
+measurements to land in.
+
+The serial names the *artwork*, so the discipline it needs is
+**generate once, print once**. Print the same PNG twice and two sheets
+answer to one number, differing in scale — which is the failure the
+serial exists to prevent.
+
 The artwork in `../` is a file; these are the pieces of paper. They
 are separate records because **a print is not its artwork**: the same
 PNG through a different printer, or the same printer with "fit to
@@ -11,9 +22,19 @@ and every measurement taken with it inherits that scale.
 0.15 % turned out to be the whole of a discrepancy that had been
 blamed on the sensor. See `../README.md`.
 
-| print | artwork | measured |
-|---|---|---|
-| [ref_1](ref_1.json) | `peg-targets-3x3-12.5mm.png` | 2026-09-30 — **4.75 % undersize**, square **11.906 mm**; no anisotropy, shear or page drift |
+| print | ids | artwork | measured |
+|---|---|---|---|
+| [ref_1](ref_1.json) | 0–15 ⚠ | `peg-targets-3x3-12.5mm.png` | 2026-09-30 — **4.75 % undersize**, square **11.906 mm**; no anisotropy, shear or page drift |
+
+## ref 1's ids collide with charuco_0001
+
+ref 1 was generated before serials existed, starting at marker id 0.
+`charuco_0001` uses **0–30**, so they overlap on fourteen ids and
+**must never share a frame** — a frame holding both is readable only
+because their markers happen to differ in size, which is luck.
+
+Sheets from ref 2 onward start at `RESERVED_IDS` = 40 and get a fresh
+block of sixteen each, so this cannot recur.
 
 ## ref 1 came out 4.75 % undersize
 

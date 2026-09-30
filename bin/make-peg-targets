@@ -31,6 +31,9 @@ print will have a different error.
 from __future__ import annotations
 
 import argparse
+import datetime
+import json
+import os
 import sys
 from typing import Dict, List, Optional, Tuple
 
@@ -185,6 +188,171 @@ NOTE_SPACE_MM = 34.0
 LABEL_EM_MM = 2.5
 LABEL_CLEAR_MM = 2.0
 
+# Where the issued serials live, relative to the repository root.
+SERIAL_REGISTRY = "data/calibration/targets/serials.json"
+
+# Marker ids below this belong to sheets already in the world:
+# charuco_0001 uses 0-30 and ref 1 uses 0-15. They overlap, which is
+# the fault this reservation exists to stop repeating.
+RESERVED_IDS = 40
+
+# How many markers each predefined dictionary holds. DICT_6X6_250 and
+# DICT_6X6_1000 are NESTED -- every marker of the smaller is the same
+# pattern at the same id in the larger -- so running out of the one
+# and moving to the other costs nothing already printed. The price is
+# error correction: minimum Hamming distance 11 against 9, and 5
+# correction bits against 4, measured off the rendered markers.
+DICTIONARY_SIZE = {"DICT_6X6_50": 50, "DICT_6X6_100": 100,
+                   "DICT_6X6_250": 250, "DICT_6X6_1000": 1000,
+                   "DICT_4X4_50": 50, "DICT_4X4_100": 100,
+                   "DICT_4X4_250": 250, "DICT_4X4_1000": 1000,
+                   "DICT_5X5_50": 50, "DICT_5X5_100": 100,
+                   "DICT_5X5_250": 250, "DICT_5X5_1000": 1000,
+                   "DICT_7X7_50": 50, "DICT_7X7_100": 100,
+                   "DICT_7X7_250": 250, "DICT_7X7_1000": 1000}
+
+
+def load_registry(path: str) -> dict:
+    """The issued serials, or raise if the file is not there.
+
+    Raises rather than starting an empty registry: a mistyped path
+    that quietly begins again at ref_1 would hand a live sheet's
+    number to a new one, which is the one thing a serial must never
+    do.
+    """
+    if not os.path.exists(path):
+        raise ValueError(
+            f"no serial registry at {path!r}; every sheet is issued from "
+            f"one, so a missing registry is a wrong path rather than a "
+            f"fresh start")
+    with open(path) as fh:
+        return json.load(fh)
+
+
+def _issued_numbers(registry: dict) -> List[int]:
+    prefix = registry.get("prefix", "ref")
+    out = []
+    for entry in registry.get("issued", []):
+        name = str(entry.get("serial", ""))
+        if name.startswith(prefix + "_"):
+            tail = name[len(prefix) + 1:]
+            if tail.isdigit():
+                out.append(int(tail))
+    return out
+
+
+def next_serial(registry: dict) -> str:
+    """One past the highest ever issued, never filling a gap.
+
+    A gap means a sheet that was issued and then lost or discarded.
+    Reusing its number would make two physical sheets answer to the
+    same name, which is exactly what the serial exists to prevent.
+    """
+    numbers = _issued_numbers(registry)
+    return f"{registry.get('prefix', 'ref')}_{max(numbers, default=0) + 1}"
+
+
+def next_first_id(registry: dict, reserved: int = RESERVED_IDS) -> int:
+    """The first marker id no issued sheet has claimed."""
+    top = reserved
+    for entry in registry.get("issued", []):
+        first = entry.get("first_id")
+        count = entry.get("count")
+        squares = entry.get("squares")
+        if first is None or count is None or squares is None:
+            continue
+        top = max(top, int(first) + int(count) * (int(squares) ** 2 // 2))
+    return top
+
+
+def issue_serial(path: str, serial: Optional[str] = None, *,
+                 squares: int = 3, square_mm: float = 12.5, count: int = 4,
+                 dictionary: str = "DICT_6X6_250",
+                 first_id: Optional[int] = None,
+                 artwork: Optional[str] = None) -> str:
+    """Claim a serial and a block of marker ids, and record both.
+
+    Writes the registry and a ``prints/<serial>.json`` stub beside it,
+    so the caliper readings taken before the sheet is cut up have
+    somewhere to land.
+    """
+    registry = load_registry(path)
+    name = serial or next_serial(registry)
+    if any(e.get("serial") == name for e in registry.get("issued", [])):
+        raise ValueError(f"serial {name!r} has already been issued")
+
+    per_board = (squares * squares) // 2
+    n_ids = count * per_board
+    start = next_first_id(registry) if first_id is None else int(first_id)
+    available = DICTIONARY_SIZE.get(dictionary)
+    if available is not None and start + n_ids > available:
+        raise ValueError(
+            f"{dictionary} is exhausted: ids {start}-{start + n_ids - 1} "
+            f"were wanted and it holds {available}. DICT_6X6_1000 is "
+            f"nested with DICT_6X6_250 -- the same pattern at the same "
+            f"id -- so moving up costs nothing already printed")
+
+    stub = os.path.join(os.path.dirname(os.path.abspath(path)), "prints",
+                        f"{name}.json")
+    if os.path.exists(stub):
+        raise ValueError(
+            f"a print record for {name!r} already exists at {stub!r}; "
+            f"its measurements cannot be retaken, so it is never "
+            f"overwritten")
+
+    today = datetime.date.today().isoformat()
+    entry = {"serial": name, "issued": today, "squares": squares,
+             "square_mm": square_mm, "count": count,
+             "first_id": start, "dictionary": dictionary}
+    if artwork:
+        entry["artwork"] = artwork
+    registry.setdefault("issued", []).append(entry)
+    registry.setdefault("kind", "target_serials")
+    registry.setdefault("prefix", "ref")
+    with open(path, "w") as fh:
+        json.dump(registry, fh, indent=2)
+        fh.write("\n")
+
+    os.makedirs(os.path.dirname(stub), exist_ok=True)
+    side = board_side_mm(squares, square_mm)
+    with open(stub, "w") as fh:
+        json.dump({
+            "kind": "target_print", "name": name,
+            "description": f"Print of a {count}-board {squares}x{squares} "
+                           f"ChArUco sheet, serial {name}.",
+            "artwork": {"file": artwork, "dictionary": dictionary},
+            "printed": None, "printer": None,
+            "nominal": {"square_mm": square_mm, "board_side_mm": side,
+                        "cut_piece_mm": side + 16.0, "count": count},
+            "pieces": [{"index": i,
+                        "marker_ids": list(range(start + i * per_board,
+                                                 start + (i + 1) * per_board))}
+                       for i in range(count)],
+            "measured": {"scale_x": None, "scale_y": None,
+                         "scale_uniform": None, "square_mm": None,
+                         "anisotropy_x_over_y": None},
+            "_provenance": {
+                "measured": "NOT YET TAKEN. Six caliper readings on each "
+                            "printed span, outer edge to outer edge, WHILE "
+                            "THE SHEET IS STILL INTACT -- after cutting "
+                            "the longest baseline inside one piece is too "
+                            "short to see the print error. See "
+                            "docs/planning/measuring-the-printed-target.md.",
+                "printer": "Record the make and the driver's scaling "
+                           "setting. ref 1 came out 4.75 per cent "
+                           "undersize because 'fit to printable area' was "
+                           "left on.",
+            },
+        }, fh, indent=2)
+        fh.write("\n")
+    return name
+
+
+def serial_filename(out: str, serial: str) -> str:
+    """``out`` with the serial in it, so the file says what it is."""
+    stem, ext = os.path.splitext(out)
+    return out if serial in os.path.basename(stem) else f"{stem}-{serial}{ext}"
+
 
 def _font(size_px: int):
     from PIL import ImageFont
@@ -202,7 +370,8 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
            sheet_mm: Tuple[float, float], px_per_mm: float,
            margin_mm: float, dictionary: str,
            first_id: int = 0,
-           caliper_mm: Optional[float] = None) -> np.ndarray:
+           caliper_mm: Optional[float] = None,
+           serial: str = "") -> np.ndarray:
     """The whole sheet, as an 8-bit greyscale array."""
     import cv2
     from PIL import Image, ImageDraw
@@ -237,6 +406,14 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
     # be printed onto the markers.
     _, _, _, ink_h = draw.textbbox((0, 0), "#0 ids", font=label_font)
     need_mm = LABEL_CLEAR_MM + ink_h / px_per_mm + 0.5
+    if serial:
+        sx0, _, sx1, _ = draw.textbbox((0, 0), serial, font=label_font)
+        if (sx1 - sx0) / px_per_mm > side:
+            raise ValueError(
+                f"the serial {serial!r} prints "
+                f"{(sx1 - sx0) / px_per_mm:.1f} mm wide, more than the "
+                f"{side:.1f} mm board it names; shorten it or shrink "
+                f"LABEL_EM_MM")
     if margin_mm < need_mm:
         raise ValueError(
             f"a {margin_mm:.1f} mm cut margin has no room for the "
@@ -272,6 +449,17 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
         draw.text((px(cx - side / 2) - bx0,
                    px(cy - side / 2 - LABEL_CLEAR_MM) - by1),
                   text, fill=0, font=label_font)
+
+        # The serial goes at the foot of the cut box, opposite the
+        # piece label, because a cut piece has to say which *sheet*
+        # it came from. Two prints of the same artwork look identical
+        # and differ in scale, and the scale is what every measurement
+        # taken through them inherits.
+        if serial:
+            ex0, _, _, ey1 = draw.textbbox((0, 0), serial, font=label_font)
+            draw.text((px(cx - side / 2) - ex0,
+                       px(cy + side / 2 + margin_mm - LABEL_CLEAR_MM) - ey1),
+                      serial, fill=0, font=label_font)
 
     # No scale bar.  The sheet states what the corners *should*
     # measure and leaves the operator to check it with calipers on the
@@ -312,7 +500,14 @@ def main(argv=None) -> int:
                          "square a whole number of pixels")
     ap.add_argument("--cut-margin-mm", type=float, default=8.0)
     ap.add_argument("--dictionary", default="DICT_6X6_250")
-    ap.add_argument("--first-id", type=int, default=0)
+    ap.add_argument("--serial", default=None,
+                    help="the sheet's serial; allocated from the registry "
+                         "if not given")
+    ap.add_argument("--registry", default=SERIAL_REGISTRY,
+                    help="where issued serials and id blocks are recorded")
+    ap.add_argument("--first-id", type=int, default=None,
+                    help="override the id block the registry would "
+                         "allocate; normally leave this alone")
     ap.add_argument("--caliper-mm", type=float, default=152.71,
                     help="how far the calipers open; the boards are "
                          "pulled together until every advertised span "
@@ -328,19 +523,44 @@ def main(argv=None) -> int:
               file=sys.stderr)
         return 2
     try:
+        registry = load_registry(args.registry)
+    except ValueError as exc:
+        print(f"{exc}", file=sys.stderr)
+        return 1
+    serial = args.serial or next_serial(registry)
+    first_id = (next_first_id(registry) if args.first_id is None
+                else args.first_id)
+
+    try:
         sheet = render(args.squares, args.square_mm, args.marker_mm,
                        args.count, (width, height), args.px_per_mm,
-                       args.cut_margin_mm, args.dictionary, args.first_id,
-                       args.caliper_mm or None)
+                       args.cut_margin_mm, args.dictionary, first_id,
+                       args.caliper_mm or None, serial)
+    except ValueError as exc:
+        print(f"{exc}", file=sys.stderr)
+        return 1
+
+    # The serial is claimed only once the sheet has actually rendered.
+    # Serials are cheap but they are not reusable, so a typo must not
+    # burn one.
+    out = serial_filename(args.out, serial)
+    try:
+        issue_serial(args.registry, serial, squares=args.squares,
+                     square_mm=args.square_mm, count=args.count,
+                     dictionary=args.dictionary, first_id=first_id,
+                     artwork=os.path.basename(out))
     except ValueError as exc:
         print(f"{exc}", file=sys.stderr)
         return 1
 
     from PIL import Image
     dpi = args.px_per_mm * 25.4
-    Image.fromarray(sheet).save(args.out, dpi=(dpi, dpi))
-    print(f"{args.out}: {sheet.shape[1]}x{sheet.shape[0]} px, "
+    Image.fromarray(sheet).save(out, dpi=(dpi, dpi))
+    print(f"{out}: {sheet.shape[1]}x{sheet.shape[0]} px, "
           f"{width} x {height} mm at {dpi:.0f} dpi")
+    print(f"   serial {serial}, marker ids {first_id}-"
+          f"{first_id + args.count * (args.squares ** 2 // 2) - 1}, "
+          f"{args.dictionary}")
     print(f"   {args.count} boards of {args.squares}x{args.squares} "
           f"squares at {args.square_mm} mm, "
           f"{board_side_mm(args.squares, args.square_mm):.1f} mm a side")
