@@ -25,6 +25,7 @@ blamed on the sensor. See `../README.md`.
 | print | ids | artwork | measured |
 |---|---|---|---|
 | [ref_1](ref_1.json) | 0–15 ⚠ | `peg-targets-3x3-12.5mm.png` | 2026-09-30 — **4.75 % undersize**, square **11.906 mm**; no anisotropy, shear or page drift |
+| [ref_2](ref_2.json) | 40–55 | `peg-targets-3x3-12.5mm-ref_2.png` | tranche 1 of 2 — **4.70 % undersize**, square **11.913 mm**; no anisotropy; shear unresolved |
 
 ## ref 1's ids collide with charuco_0001
 
@@ -35,6 +36,19 @@ because their markers happen to differ in size, which is luck.
 
 Sheets from ref 2 onward start at `RESERVED_IDS` = 40 and get a fresh
 block of sixteen each, so this cannot recur.
+
+## Both prints so far came out about 4.7 % undersize
+
+| | uniform scale | square |
+|---|---:|---:|
+| ref_1 | 0.95251 | 11.906 mm |
+| ref_2 | 0.95303 | 11.913 mm |
+
+They agree to **0.052 %**, so this printer's "fit to printable area"
+is highly reproducible — which is useful to know and is still not what
+anyone wants. Both sheets predate the `PRINT AT 100 %` line now
+printed in the foot. **ref_3 should be printed with scaling off**, and
+it should then come out near 1.000.
 
 ## ref 1 came out 4.75 % undersize
 
