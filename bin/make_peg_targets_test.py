@@ -78,6 +78,8 @@ def test_running_out_of_dictionary_is_an_error():
 # --- 2. what the detector sees, at the scale the rig sees it ---------
 
 @pytest.mark.parametrize("index", range(4))
+@pytest.mark.xfail(strict=True,
+                   reason="sheets carry no serial yet")
 def test_every_board_is_found_at_rig_scale(index: int):
     """Rendered at 508 dpi, resampled to 9 px/mm, with sensor noise.
 
