@@ -211,3 +211,114 @@ difference is entirely a mounting problem rather than an optical one.
 bond, or a three-point kinematic seat that cannot compress unevenly.
 It is the cheapest 0.25° available anywhere in this rig, and unlike
 target size it costs no redesign.
+
+---
+
+# Revisited 2026-09-30: the putty is exonerated, and one target is doing all the damage
+
+Nine frames with **nothing moved** — not the camera, not the disc —
+`ref1_nsew_noise_detection-[1-9].png`. This is the control named as
+"the cheapest test" above, and it changes two conclusions.
+
+## The putty does not matter. Retracted.
+
+| set | four-target frames | plane normal scatter |
+|---|---:|---:|
+| disc rotated between frames | 8 | 0.399° ± 0.107 |
+| **nothing moved** | 9 | **0.379° ± 0.095** |
+
+They are the same. The quadrature excess attributable to rotation is
+0.125°, and the uncertainty on each figure is larger than that, so it
+is not significant.
+
+**This retracts the previous section.** The 0.914 mm of standoff
+scatter is real and the foam's 15 µm uniformity does mean it belongs
+to the putty, but it does **not** reach the disc's plane. Whatever the
+putty is doing, it is not tilting the working surface by anything the
+targets can see. Leave the mount alone; the quarter-degree I said was
+cheaply available is not there.
+
+The reasoning that failed is worth keeping: *a standoff that varies
+with rotation must tilt the disc* assumed the measurement point and
+the tilt axis were related. Five height readings at one place say
+nothing about the plane through the whole disc, and the plane is what
+was actually wanted.
+
+## Almost all the noise is one target
+
+Leaving each board out in turn, with nothing moving:
+
+| plane fitted from | normal scatter |
+|---|---:|
+| all four | 0.379° |
+| without N | 0.747° |
+| without E | 0.940° |
+| without S | 0.806° |
+| **without W** | **0.139°** |
+
+Dropping any target but W makes things worse, which is what losing
+spread should do. **Dropping W improves the fit 2.7×.**
+
+The per-axis scatter with nothing moving says the same:
+
+| | Z | apparent marker | angle to the line of sight | σ_z |
+|---|---:|---:|---:|---:|
+| N | 397 mm | 46.9 px | 41.0° | 1.017 mm |
+| **E** | **314 mm** | **74.5 px** | **12.0°** | **0.274 mm** |
+| S | 397 mm | 46.8 px | 39.3° | 0.907 mm |
+| **W** | **482 mm** | **31.3 px** | **51.9°** | **6.744 mm** |
+
+W is 168 mm further away than E, viewed at 52° instead of 12°, and
+its markers are 31 px where E's are 74. Its depth is **25× noisier**.
+It is also visibly out of focus, which `focus_absolute` 134 cannot
+help: one focus setting cannot serve a 168 mm depth range.
+
+σ_z is 2.236 mm over all four and **0.733 mm without W**.
+
+## So the limit is where the camera is, not how the targets are laid out
+
+The camera sits about 380 mm up, and the disc rim is 209.6 mm from
+centre, so the rim subtends ±28.9°. Against a 29.7° plane tilt that
+puts the near edge at 0.8° and the far edge at **58.6°**. The disc is
+simply too wide for this working distance to see evenly.
+
+| camera | rim subtends | near edge | far edge |
+|---|---:|---:|---:|
+| 380 mm up, 29.7° tilt (now) | ±28.9° | 0.8° | **58.6°** |
+| 500 mm up, same tilt | ±22.7° | 7.0° | 52.4° |
+| 700 mm up, same tilt | ±16.7° | 13.0° | 46.4° |
+| **380 mm up, centred** | ±28.9° | **28.9°** | **28.9°** |
+
+Backing the camera off barely helps and costs pixels as `Z²`.
+**Centring it over the disc is what equalises the four targets**, and
+it removes the weak link rather than shrinking it.
+
+## What this is worth
+
+| | normal error | at the paper corner | of the 0.804 mm budget |
+|---|---:|---:|---:|
+| per frame, as shot | 0.399° | 0.701 mm | 87 % |
+| **per frame, without W** | **0.139°** | **0.244 mm** | **30 %** |
+| mean of 9, as shot | 0.126° | 0.222 mm | 28 % |
+
+A single frame with an evenly-seen set of targets is as good as the
+mean of nine is now. That is the difference between needing a
+calibration pass and reading the plane off the working frame.
+
+## Status
+
+**Measured**: all of it, from nine static frames, 36/36 poses at
+1.03 px rms. No stray marker — the second ChArUco is gone from the
+scene and the yield went from 35/36 to 36/36.
+
+**Computed**: the significance test, the obliquity table and the
+budget.
+
+**Retracted**: that the putty wobble contributes to the plane error.
+
+**Not measured**: whether centring the camera actually delivers the
+predicted evenness. It is a geometric argument, not an observation.
+
+**The cheapest test**: move the camera over the disc centre and shoot
+nine more static frames. If σ_z comes back near 0.7 mm for all four
+targets, the geometry is settled and N-S-E-W is finished business.

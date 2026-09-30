@@ -1,6 +1,9 @@
 # test_rig01 — N-S-E-W target layout, disc rotated
 
-Nine frames, `ref1_nsew-1.png` … `-9.png`, 3264 × 2448. Four ref 1
+Two sets of nine frames, 3264 × 2448: `ref1_nsew-1.png` … `-9.png`
+with the disc rotated ~45° between frames, and
+`ref1_nsew_noise_detection-1.png` … `-9.png` with **nothing moved at
+all** — the control that separates measurement noise from movement. Four ref 1
 targets glued at N, S, E and W of the animation disc with
 repositionable adhesive; the disc is rotated between frames and the
 camera does not move. First of a planned pair — the second will try
@@ -19,13 +22,34 @@ disc in every orientation?
 | board poses recovered | 35 / 36 (frame 7 lost one target) |
 | reprojection | 0.78 – 1.35 px |
 | disc flatness | ±0.8 mm over 419 mm — **flat** |
-| plane normal, one frame | 0.399° rms → 0.702 mm at the paper corner, **87 % of budget** |
-| plane normal, mean of 8 | 0.141° → 0.248 mm, **31 % of budget** |
+| plane normal, rotated set | 0.399° ± 0.107 |
+| plane normal, **static** set | **0.379° ± 0.095** |
 | rotation coverage | 9 bearings, largest gap 54° |
 
-The disc plane does **not** move as the disc rotates, so it can be
-measured once by averaging rather than per frame. That is what takes
-it from 87 % of the budget to 31 %.
+**Rotation contributes nothing measurable.** The two scatters agree, so
+the plane really is stable as the disc turns — and the 0.914 mm of
+standoff scatter under the putty does *not* reach the working surface.
+
+**One target is doing almost all the damage.** Dropping W improves the
+plane normal 2.7×, to 0.139°; dropping any other board makes it worse.
+
+| | Z | marker | angle to line of sight | σ_z |
+|---|---:|---:|---:|---:|
+| N | 397 mm | 46.9 px | 41.0° | 1.017 mm |
+| E | 314 mm | 74.5 px | 12.0° | 0.274 mm |
+| S | 397 mm | 46.8 px | 39.3° | 0.907 mm |
+| **W** | **482 mm** | **31.3 px** | **51.9°** | **6.744 mm** |
+
+W is far, oblique and out of focus, and one `focus_absolute` cannot
+serve a 168 mm depth range. **The fix is to centre the camera over the
+disc**, which puts every rim point at 28.9° instead of spreading them
+from 0.8° to 58.6°.
+
+| | normal error | at the paper corner | of budget |
+|---|---:|---:|---:|
+| per frame, as shot | 0.399° | 0.701 mm | 87 % |
+| **per frame, without W** | **0.139°** | **0.244 mm** | **30 %** |
+| mean of 9, as shot | 0.126° | 0.222 mm | 28 % |
 
 ## Layout as built
 
@@ -78,10 +102,11 @@ rotations.
 | working surface above the desk | 22.71 mm |
 | foam vs facing alignment | −2 to +5 mm at the extremes |
 
-The foam is uniform to 15 µm; the **0.914 mm of standoff scatter
-belongs to the adhesive putty**, and as a tilt about the centre it is
-0.250° — the same order as the whole plane-fit scatter. Replacing the
-putty with a rigid mount is the cheapest accuracy left in this rig.
+The foam is uniform to 15 µm, so the 0.914 mm of standoff scatter
+belongs to the adhesive putty — but the static control shows it does
+**not** reach the disc's plane. Leave the mount alone. Five height
+readings at one point say nothing about the plane through the whole
+disc, and the plane was what was wanted.
 
 ## What is still missing
 

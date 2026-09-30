@@ -118,25 +118,6 @@
       "artwork": "printed hamster reference, not original art"
     }
   },
-  "protocol": {
-    "intended_rotation_per_frame_deg": -45,
-    "intended_rotation_note": "approximately 45 degrees CCW by hand; no objective measure",
-    "measured_rotation_per_frame_deg": [
-      -38.6,
-      -54.0,
-      -40.3,
-      -51.4,
-      -38.7,
-      -50.9,
-      -41.2,
-      -47.2
-    ],
-    "measured_rotation_mean_deg": -45.3,
-    "measured_rotation_sd_deg": 6.3,
-    "measured_rotation_note": "recovered from the target poses; the sign is in the plane basis, whose handedness is arbitrary. Nine frames span 360 deg, so frame 9 repeats frame 1 to within 2 deg and there are eight distinct rotations.",
-    "camera_moved": false,
-    "disc_lifted": false
-  },
   "lighting": [
     "hand-held cell phone, roughly above the disc centre",
     "white monitor screen",
@@ -145,7 +126,8 @@
   ],
   "contamination": {
     "stray_charuco_in_scene": true,
-    "detail": "A second printed ChArUco on the desk at bottom right emitted a valid marker id 5 in frames 1-3, colliding with piece #1 (E). RANSAC removed it; dropping those frames moves the answer by 0.084 deg, so the set stands. The stray has since been taken out of frame."
+    "detail": "A second printed ChArUco on the desk at bottom right emitted a valid marker id 5 in frames 1-3, colliding with piece #1 (E). RANSAC removed it; dropping those frames moves the answer by 0.084 deg, so the set stands. The stray has since been taken out of frame.",
+    "static_set": "clean: 36/36 poses, no duplicate ids"
   },
   "results": "../../../../docs/planning/nsew-disc-plane.md",
   "not_recorded": [
@@ -154,5 +136,292 @@
     "disc diameter, assumed 16.5 in rather than measured",
     "how hard each target was pressed down, and its standoff",
     "whether the paper shifted on its pegs between frames"
-  ]
+  ],
+  "sets": {
+    "rotated": {
+      "note": "disc rotated about 45 deg CCW between frames; camera fixed",
+      "protocol": {
+        "intended_rotation_per_frame_deg": -45,
+        "intended_rotation_note": "approximately 45 degrees CCW by hand; no objective measure",
+        "measured_rotation_per_frame_deg": [
+          -38.6,
+          -54.0,
+          -40.3,
+          -51.4,
+          -38.7,
+          -50.9,
+          -41.2,
+          -47.2
+        ],
+        "measured_rotation_mean_deg": -45.3,
+        "measured_rotation_sd_deg": 6.3,
+        "measured_rotation_note": "recovered from the target poses; the sign is in the plane basis, whose handedness is arbitrary. Nine frames span 360 deg, so frame 9 repeats frame 1 to within 2 deg and there are eight distinct rotations.",
+        "camera_moved": false,
+        "disc_lifted": false
+      },
+      "frames": [
+        {
+          "index": 1,
+          "file": "ref1_nsew-1.png",
+          "sha256_16": "ab234216ccd3030c",
+          "mtime": "2026-09-30T12:50:31.322533-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": 94.17,
+          "rotation_from_previous_deg": null
+        },
+        {
+          "index": 2,
+          "file": "ref1_nsew-2.png",
+          "sha256_16": "c436bddb643cb2a0",
+          "mtime": "2026-09-30T12:50:37.576545-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": 55.53,
+          "rotation_from_previous_deg": -38.6
+        },
+        {
+          "index": 3,
+          "file": "ref1_nsew-3.png",
+          "sha256_16": "3286385e1261c108",
+          "mtime": "2026-09-30T12:50:45.623561-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": 1.57,
+          "rotation_from_previous_deg": -54.0
+        },
+        {
+          "index": 4,
+          "file": "ref1_nsew-4.png",
+          "sha256_16": "14a025c52df36ca1",
+          "mtime": "2026-09-30T12:50:51.192572-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": -38.69,
+          "rotation_from_previous_deg": -40.3
+        },
+        {
+          "index": 5,
+          "file": "ref1_nsew-5.png",
+          "sha256_16": "f8a3dad245cf3a66",
+          "mtime": "2026-09-30T12:50:56.752583-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": -90.09,
+          "rotation_from_previous_deg": -51.4
+        },
+        {
+          "index": 6,
+          "file": "ref1_nsew-6.png",
+          "sha256_16": "283f26ad74e2fe63",
+          "mtime": "2026-09-30T12:51:06.533602-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": -128.82,
+          "rotation_from_previous_deg": -38.7
+        },
+        {
+          "index": 7,
+          "file": "ref1_nsew-7.png",
+          "sha256_16": "8e7648ccd06fd77a",
+          "mtime": "2026-09-30T12:51:15.638619-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2
+          ],
+          "board_0_bearing_deg": -179.77,
+          "rotation_from_previous_deg": -50.9
+        },
+        {
+          "index": 8,
+          "file": "ref1_nsew-8.png",
+          "sha256_16": "ca322ffd91e943ce",
+          "mtime": "2026-09-30T12:51:28.150644-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": 139.04,
+          "rotation_from_previous_deg": -41.2
+        },
+        {
+          "index": 9,
+          "file": "ref1_nsew-9.png",
+          "sha256_16": "80a2b438387e3535",
+          "mtime": "2026-09-30T12:51:34.426761-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "board_0_bearing_deg": 91.81,
+          "rotation_from_previous_deg": -47.2
+        }
+      ]
+    },
+    "static": {
+      "note": "control: nothing moved at all, to separate the measurement noise floor from anything the rotation contributes",
+      "protocol": {
+        "camera_moved": false,
+        "disc_moved": false,
+        "disc_rotated": false
+      },
+      "captured": "2026-09-30T13:36:28.643425-04:00/2026-09-30T13:42:05.939604-04:00",
+      "frames": [
+        {
+          "index": 1,
+          "file": "ref1_nsew_noise_detection-1.png",
+          "sha256_16": "609e21ef12185121",
+          "mtime": "2026-09-30T13:42:05.939604-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 2,
+          "file": "ref1_nsew_noise_detection-2.png",
+          "sha256_16": "885548bfe91098e6",
+          "mtime": "2026-09-30T13:36:28.643425-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 3,
+          "file": "ref1_nsew_noise_detection-3.png",
+          "sha256_16": "b9e66d86de040ac9",
+          "mtime": "2026-09-30T13:36:30.368427-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 4,
+          "file": "ref1_nsew_noise_detection-4.png",
+          "sha256_16": "06049d1529a172dc",
+          "mtime": "2026-09-30T13:36:32.534429-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 5,
+          "file": "ref1_nsew_noise_detection-5.png",
+          "sha256_16": "06cd5a712c2d7ccd",
+          "mtime": "2026-09-30T13:36:35.187432-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 6,
+          "file": "ref1_nsew_noise_detection-6.png",
+          "sha256_16": "f7665e4633ac483a",
+          "mtime": "2026-09-30T13:36:37.348435-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 7,
+          "file": "ref1_nsew_noise_detection-7.png",
+          "sha256_16": "940396e8d0ac5ccf",
+          "mtime": "2026-09-30T13:37:12.203475-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 8,
+          "file": "ref1_nsew_noise_detection-8.png",
+          "sha256_16": "dcd12429b185b78f",
+          "mtime": "2026-09-30T13:37:15.118478-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "index": 9,
+          "file": "ref1_nsew_noise_detection-9.png",
+          "sha256_16": "fc38189560524066",
+          "mtime": "2026-09-30T13:44:15.339189-04:00",
+          "boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ]
+        }
+      ]
+    }
+  },
+  "results_summary": {
+    "plane_normal_scatter_deg": {
+      "rotated": 0.399,
+      "static": 0.379
+    },
+    "rotation_contributes": "nothing significant. The quadrature excess is 0.125 deg against uncertainties of 0.107 and 0.095, so the putty wobble does NOT reach the disc plane. This RETRACTS the earlier reading of the standoff scatter.",
+    "sigma_z_mm": {
+      "N": 1.017,
+      "E": 0.274,
+      "S": 0.907,
+      "W": 6.744,
+      "all_four": 2.236,
+      "without_W": 0.733
+    },
+    "dominant_error": "the W target. 482 mm away at 51.9 deg to the line of sight with 31.3 px markers and visibly defocused, against E at 314 mm, 12.0 deg and 74.5 px. Dropping W improves the plane normal 2.7x, from 0.379 to 0.139 deg; dropping any other board makes it worse.",
+    "recommendation": "centre the camera over the disc. At 380 mm up the rim subtends +-28.9 deg, so a 29.7 deg plane tilt puts the near edge at 0.8 deg and the far edge at 58.6; centred, every rim point sits at 28.9 and no target is the weak link."
+  }
 }
