@@ -53,9 +53,11 @@
       "radius_fit_residual_mm": 2.36
     },
     "second_camera": {
-      "name": null,
+      "name": "fancy_pro_001",
       "model": "CZUR Fancy Pro",
-      "role": "illumination only; uncalibrated and unnamed"
+      "calibration": "../../distortion/fancy_pro_001/",
+      "role": "illumination only in this session; uncalibrated",
+      "note": "Being evaluated as a capture camera. At 4000x3000 it finds all 16 ref_2 markers at 75 px a side against v4k_01's 22-78 for three or four pieces. With auto white balance off it emits a single channel packed into green, which is fine for ChArUco and fatal for the blue-peg ink path."
     },
     "disc": {
       "diameter_mm": 419.1,
