@@ -1,6 +1,25 @@
-# fancy_pro_001 — CZUR Fancy Pro
+# fancy_pro_001 — CZUR Fancy S Pro
 
-Not yet calibrated. Three test shots while working out static settings.
+| | |
+|---|---|
+| manufacturer | CZUR |
+| model | **Fancy S Pro** |
+| device ID | `CAF1C22601008785` |
+| serial | not recorded here — see below |
+| max resolution | 4000 × 3000 (12.0 MP) |
+| lens calibration | **none yet** |
+
+Not yet calibrated. Seven test shots while working out static
+settings.
+
+> **The 25-character serial is deliberately not in this file.**
+> `6NU89-…-8339Y` is five groups of five, which is the shape of a
+> software licence key rather than a hardware serial, and CZUR ships
+> these with bundled software. This repository pushes to GitHub, and
+> `CLAUDE.md` says not to check credentials in. The device ID above
+> identifies the unit for every purpose this project has. If the
+> 25-character string turns out to be a hardware serial after all it
+> can be added.
 
 | shot | size | white balance | markers found | marker side |
 |---|---|---|---:|---:|

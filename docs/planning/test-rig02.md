@@ -109,10 +109,10 @@ now is work that gets thrown away.
 ## Better than rig 01 in one respect
 
 The lighting is **reproducible**. Room light, white terminal and the
-CZUR Fancy Pro's lamp, with **no window light** — where `test_rig01`
+CZUR Fancy S Pro's lamp, with **no window light** — where `test_rig01`
 had diffuse sunlight that moved through the session and could never
 be repeated. The CZUR is a second camera being used as an
-illuminator; it is unnamed and uncalibrated, and worth naming if it
+illuminator; it is `fancy_pro_001` and uncalibrated, and worth naming if it
 stays.
 
 ## What to change
