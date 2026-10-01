@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+"""Report on, and print, the keyd config that owns the big green button.
+
+    bin/big-green-button check      is it wired up, and is it safe?
+    bin/big-green-button render     print the config, to pipe into tee
+    bin/big-green-button devices    which interfaces the button presents
+
+This installs nothing: ``check`` is read-only and ``render`` writes to
+stdout, because everything it would touch needs root.  See
+docs/big-green-button.md for the install commands.
+
+Parameters follow CLI --<flag>, then BIG_GREEN_BUTTON_<FLAG>, then the
+hardcoded default.  CLAUDE.md asks for ``parents=[common_parser()]``
+and ``get_env_config``; neither exists in this repo yet, so this
+follows the substance of the rule -- a strict ``parse_args()``, never
+``parse_known_args()`` -- and should be migrated when those land.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Mapping, Sequence
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from big_green_button import button, input_devices, keyd_config  # noqa: E402
+
+ENV_PREFIX = "BIG_GREEN_BUTTON_"
+DEFAULT_KEYD_DIR = button.KEYD_CONFIG_DIR
+SHIPPED_CONFIG = (Path(__file__).resolve().parent.parent
+                  / "big_green_button" / "etc"
+                  / button.KEYD_CONFIG_NAME)
+
+
+def env_default(name: str, default: str) -> str:
+    """CLI beats BIG_GREEN_BUTTON_<NAME> beats ``default``.
+
+    The CLI half of that order is argparse's: this supplies the
+    default argparse uses when the flag is absent.
+    """
+    return os.environ.get(ENV_PREFIX + name.upper().replace("-", "_"),
+                          default)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """The strict parser: an unknown flag is an error, not a passthrough."""
+    raise NotImplementedError
+
+
+def load_keyd_dir(
+        path: str
+) -> tuple[dict[str, keyd_config.KeydConfig], list[str]]:
+    """Parse every ``*.conf`` in ``path``.
+
+    Returns the configs by file name and a list of problems, so one
+    unreadable file does not hide the rest.
+    """
+    raise NotImplementedError
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    """Print a report; return 0 when nothing is wrong, 1 otherwise."""
+    raise NotImplementedError
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    """Print the config artifact this repo ships."""
+    raise NotImplementedError
+
+
+def cmd_devices(args: argparse.Namespace) -> int:
+    """List the button's input interfaces, or say it is unplugged."""
+    raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class Report:
+    """What ``check`` found: text for the operator, problems for exit(1)."""
+
+    lines: tuple[str, ...] = field(default_factory=tuple)
+    problems: tuple[str, ...] = field(default_factory=tuple)
+
+
+def build_report(
+        configs: Mapping[str, keyd_config.KeydConfig],
+        devices: Sequence[input_devices.InputDevice],
+        *,
+        shipped: keyd_config.KeydConfig | None = None,
+        check_hooks: bool = True,
+) -> Report:
+    """The whole of ``check``, with the I/O already done by the caller.
+
+    ``shipped`` is this repo's copy of the config; when given, an
+    installed config that parses differently is reported, so a hand
+    edit under /etc/keyd does not drift away unnoticed.  Comments are
+    not compared, only the parsed form.
+    """
+    raise NotImplementedError
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    sys.exit(main())
