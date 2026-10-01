@@ -56,31 +56,34 @@
     }
   ],
   "measured": {
-    "scale_x": 0.95312,
-    "scale_x_sem": 0.00051,
-    "scale_y": 0.95294,
-    "scale_y_sem": 0.0002,
-    "scale_uniform": 0.95303,
-    "anisotropy_x_over_y": 1.00019,
+    "scale_x": 0.95226,
+    "scale_x_sem": 0.00091,
+    "scale_y": 0.9525,
+    "scale_y_sem": 0.00041,
+    "scale_uniform": 0.95238,
+    "scale_uniform_sem": 0.0005,
+    "anisotropy_x_over_y": 0.99975,
     "anisotropy_detected": false,
-    "shear_detected": null,
+    "shear_detected": false,
     "page_scale_drift_detected": false,
-    "square_mm": 11.913,
-    "_status": "PROVISIONAL -- tranche 1 of 2"
+    "square_mm": 11.905,
+    "board_side_mm": 35.714,
+    "cut_piece_mm": 50.952
   },
   "_provenance": {
     "measured": "NOT YET TAKEN. Six caliper readings on each printed span, outer edge to outer edge, WHILE THE SHEET IS STILL INTACT -- after cutting the longest baseline inside one piece is too short to see the print error. See docs/planning/measuring-the-printed-target.md.",
     "printer": "Record the make and the driver's scaling setting. ref 1 came out 4.75 per cent undersize because 'fit to printable area' was left on.",
-    "scale": "4.70 per cent undersize, uniform 0.95303 from 6 readings per axis in ONE sitting. ref_1 came out 0.95251, so the two prints agree to 0.052 per cent: this printer's 'fit to printable area' is highly reproducible, and ref_2 was made from artwork that predates the PRINT AT 100 % instruction. ref_3 should be printed with scaling off.",
-    "anisotropy": "+0.019 per cent +- 0.058, 0.3 sigma -- not detected, agreeing with ref_1's +0.057 +- 0.100. Two prints now say this printer has no measurable anisotropy.",
-    "shear_detected": "UNRESOLVED and recorded as null rather than true. The diagonals differ by -0.390 mm against a 2 sigma floor of 0.318, which is 2.45 sigma, but n is 3 and the whole result rests on one low reading of 144.28 against 144.66 and 144.79. That is the shape of the artefact that produced and then destroyed ref_1's +0.273 per cent anisotropy. If real it is 0.154 degrees, which inside one 48.6 mm cut piece is 0.130 mm, 16 per cent of the error budget. Tranche 2 settles it.",
-    "diagonals": "DO NOT USE FOR SCALE. They give 0.94802 where the axes give 0.95303, reading 0.501 per cent short -- ref_1 read 0.345 per cent short the same way. At 144.9 mm the jaws are at 95 per cent of travel and splay. Their scatter is also the worst on the sheet, 0.265 mm against 0.006 to 0.191 on the axes.",
-    "uniformity": "No drift detected. Rows differ by +0.113 mm +- 0.111 (1.03 sigma) and columns by -0.053 +- 0.039 (1.35), both inside noise.",
-    "readings_mm": "across #0-#1 came in at sd 0.006 mm -- three readings inside one caliper count. That is not three independent seatings; compare sd 0.191 on the nominally identical #2-#3 span. Release the jaws fully between readings."
+    "scale": "4.76 per cent undersize, uniform 0.95238 +- 0.00050. ref_1 came out 0.95251, so two independent prints measured by two independent campaigns agree to 0.013 per cent. This printer's 'fit to printable area' is highly reproducible. Both sheets predate the PRINT AT 100 % line now in the foot; ref_3 is the first that should come out near 1.000.",
+    "anisotropy": "-0.025 per cent +- 0.105, 0.2 sigma. Not detected, agreeing with ref_1's +0.057 +- 0.100. Two prints now say this printer has no measurable anisotropy.",
+    "shear_detected": "RESOLVED as none, and the history is the point. Tranche 1 alone gave -0.390 mm against a 2 sigma floor of 0.318 and would have been recorded as detected. Tranche 2 gave -0.040 against 0.256. Pooled, -0.215 against 0.224 -- none. The tranche-1 result rested on a single low reading of 144.28, exactly the artefact that produced and then destroyed ref_1's +0.273 per cent anisotropy.",
+    "diagonals": "DO NOT USE FOR SCALE. They give 0.94766 where the axes give 0.95238, reading 0.471 per cent short; ref_1 read 0.345 per cent short the same way. At 144.8 mm the jaws sit at 95 per cent of travel and splay.",
+    "uniformity": "No drift. Rows differ by -0.137 mm +- 0.221 (0.6 sigma) and columns by -0.108 +- 0.078 (1.4), with the uncertainties taken across sittings. Pooling all twelve readings as if independent put the columns at 2.13 sigma, which is the same over-confidence in a different costume.",
+    "readings_mm": "across #0-#1 came in at sd 0.006 mm -- three readings inside one caliper count. That is not three independent seatings; compare sd 0.191 on the nominally identical #2-#3 span. Release the jaws fully between readings.",
+    "scale_uncertainty": "The sem is computed from the FOUR (span, sitting) group means, not from 24 pooled readings. The between-sitting gaps run to 0.437 mm and reach 5.5 times the within-sitting scatter, so readings inside one sitting are not independent. Pooling them naively would have quoted 0.060 and 0.027 per cent on the two axes -- 1.5 times too confident."
   },
   "readings_mm": {
     "_what_was_seated_on": "outer edges of the black squares, board to board",
-    "_tranches": "Tranche 1 only. The protocol asks for 3 readings in one sitting and 3 in another on each span, because ref 1's down span moved 0.707 mm between sittings, thirteen times the scatter within one. Everything derived below is provisional until tranche 2.",
+    "_tranches": "Two sittings of three readings on each span, as the protocol asks. It earned its keep: the between-sitting gaps run to 0.437 mm, up to 5.5 times the scatter within a sitting, and tranche 1 alone reported a shear that tranche 2 dissolved.",
     "tranche_1": {
       "taken": "2026-09-30",
       "outer_across_0_1": [
@@ -112,6 +115,39 @@
         144.88,
         145.02,
         145.0
+      ]
+    },
+    "tranche_2": {
+      "taken": "2026-09-30",
+      "outer_across_0_1": [
+        102.93,
+        102.91,
+        102.94
+      ],
+      "outer_across_2_3": [
+        102.83,
+        102.33,
+        102.46
+      ],
+      "outer_down_0_2": [
+        102.96,
+        102.9,
+        102.8
+      ],
+      "outer_down_1_3": [
+        102.78,
+        102.61,
+        102.78
+      ],
+      "outer_diagonal_0_3": [
+        144.49,
+        144.56,
+        144.88
+      ],
+      "outer_diagonal_1_2": [
+        144.77,
+        144.63,
+        144.65
       ]
     }
   }

@@ -25,7 +25,7 @@ blamed on the sensor. See `../README.md`.
 | print | ids | artwork | measured |
 |---|---|---|---|
 | [ref_1](ref_1.json) | 0–15 ⚠ | `peg-targets-3x3-12.5mm.png` | 2026-09-30 — **4.75 % undersize**, square **11.906 mm**; no anisotropy, shear or page drift |
-| [ref_2](ref_2.json) | 40–55 | `peg-targets-3x3-12.5mm-ref_2.png` | tranche 1 of 2 — **4.70 % undersize**, square **11.913 mm**; no anisotropy; shear unresolved |
+| [ref_2](ref_2.json) | 40–55 | `peg-targets-3x3-12.5mm-ref_2.png` | 2026-09-30 — **4.76 % undersize**, square **11.905 mm**; no anisotropy, shear or page drift |
 
 ## ref 1's ids collide with charuco_0001
 
@@ -42,9 +42,9 @@ block of sixteen each, so this cannot recur.
 | | uniform scale | square |
 |---|---:|---:|
 | ref_1 | 0.95251 | 11.906 mm |
-| ref_2 | 0.95303 | 11.913 mm |
+| ref_2 | 0.95238 ± 0.00050 | 11.905 mm |
 
-They agree to **0.052 %**, so this printer's "fit to printable area"
+They agree to **0.013 %**, so this printer's "fit to printable area"
 is highly reproducible — which is useful to know and is still not what
 anyone wants. Both sheets predate the `PRINT AT 100 %` line now
 printed in the foot. **ref_3 should be printed with scaling off**, and
@@ -84,6 +84,15 @@ higher in a second sitting, **thirteen times** the 0.055 mm scatter
 within a sitting, and that systematic produced and then destroyed a
 reported +0.273 % anisotropy. Readings taken back to back share a jaw
 seating and a grip, and their agreement measures neither.
+
+ref 2 paid the protocol back twice. Its between-sitting gaps reached
+**0.437 mm, up to 5.5×** the within-sitting scatter; tranche 1 alone
+reported a shear at 2.45σ that tranche 2 dissolved to 0.2σ; and the
+scale moved from +0.052 % away from ref 1 to −0.013 %.
+
+**Compute the error bar from the (span, sitting) group means, not
+from the pooled readings.** Pooling ref 2's 24 as if independent was
+1.5× too confident and put a non-existent column drift at 2.13σ.
 
 And all four spans, even though ref 1's two rows agreed to 0.013 mm
 and its two columns to 0.005. The second pair is half the sample —
