@@ -48,7 +48,29 @@ def env_default(name: str, default: str) -> str:
 
 def build_parser() -> argparse.ArgumentParser:
     """The strict parser: an unknown flag is an error, not a passthrough."""
-    raise NotImplementedError
+    parser = argparse.ArgumentParser(
+        prog="big-green-button",
+        description="Report on the keyd config that owns the big green "
+                    "button.")
+    subs = parser.add_subparsers(dest="command", required=True)
+
+    check = subs.add_parser(
+        "check", help="is the button wired up, and is the hook safe?")
+    check.add_argument(
+        "--keyd-dir", default=env_default("keyd-dir", DEFAULT_KEYD_DIR),
+        help=f"where keyd reads its configs (default {DEFAULT_KEYD_DIR}, "
+             f"or {ENV_PREFIX}KEYD_DIR)")
+    check.set_defaults(func=cmd_check)
+
+    render = subs.add_parser(
+        "render", help="print the config this repo ships")
+    render.set_defaults(func=cmd_render)
+
+    devices = subs.add_parser(
+        "devices", help="which interfaces the button presents")
+    devices.set_defaults(func=cmd_devices)
+
+    return parser
 
 
 def load_keyd_dir(
@@ -57,24 +79,65 @@ def load_keyd_dir(
     """Parse every ``*.conf`` in ``path``.
 
     Returns the configs by file name and a list of problems, so one
-    unreadable file does not hide the rest.
+    unreadable file does not hide the rest -- which is also how keyd
+    behaves, and why a broken file is easy to miss.
     """
-    raise NotImplementedError
+    configs: dict[str, keyd_config.KeydConfig] = {}
+    problems: list[str] = []
+    try:
+        # keyd loads only *.conf out of its directory, so neither do we.
+        entries = sorted(p for p in Path(path).iterdir()
+                         if p.suffix == ".conf" and p.is_file())
+    except OSError as err:
+        return {}, [f"cannot read {path}: {err}"]
+
+    for entry in entries:
+        try:
+            configs[entry.name] = keyd_config.parse(entry.read_text())
+        except (OSError, keyd_config.ConfigError) as err:
+            problems.append(f"{entry.name}: {err}")
+    return configs, problems
 
 
 def cmd_check(args: argparse.Namespace) -> int:
     """Print a report; return 0 when nothing is wrong, 1 otherwise."""
-    raise NotImplementedError
+    configs, load_problems = load_keyd_dir(args.keyd_dir)
+    try:
+        shipped: keyd_config.KeydConfig | None = keyd_config.parse(
+            SHIPPED_CONFIG.read_text())
+    except (OSError, keyd_config.ConfigError):
+        shipped = None
+
+    report = build_report(configs, input_devices.read_devices(),
+                          shipped=shipped)
+
+    print(f"keyd dir: {args.keyd_dir}")
+    for line in report.lines:
+        print(line)
+
+    problems = [*load_problems, *report.problems]
+    for problem in problems:
+        print(f"problem: {problem}")
+    if not problems:
+        print("ok")
+    return 1 if problems else 0
 
 
 def cmd_render(args: argparse.Namespace) -> int:
     """Print the config artifact this repo ships."""
-    raise NotImplementedError
+    print(SHIPPED_CONFIG.read_text(), end="")
+    return 0
 
 
 def cmd_devices(args: argparse.Namespace) -> int:
     """List the button's input interfaces, or say it is unplugged."""
-    raise NotImplementedError
+    found = button.find(input_devices.read_devices())
+    if not found:
+        print(f"no device matching {button.VENDOR}:{button.PRODUCT} "
+              "on the bus")
+        return 1
+    print(input_devices.format_devices(found))
+    return 0
 
 
 @dataclass(frozen=True)
@@ -99,7 +162,56 @@ def build_report(
     edit under /etc/keyd does not drift away unnoticed.  Comments are
     not compared, only the parsed form.
     """
-    raise NotImplementedError
+    lines: list[str] = []
+    problems: list[str] = []
+
+    found = button.find(devices)
+    if found:
+        lines.extend(input_devices.format_devices(found).splitlines())
+    else:
+        lines.append(
+            f"no device matching {button.VENDOR}:{button.PRODUCT} on the bus")
+        problems.append(
+            f"the button ({button.KEYD_ID}) is not attached; plug it in")
+
+    claiming = [name for name, cfg in sorted(configs.items())
+                if cfg.claims(button.VENDOR, button.PRODUCT,
+                              is_keyboard=True)]
+    if claiming:
+        lines.append(f"claimed by: {', '.join(claiming)}")
+    else:
+        problems.append(
+            "no config claims the button's keyboard interface, so keyd is "
+            "not grabbing it and the button still types Return")
+
+    for name, cfg in sorted(configs.items()):
+        if cfg.claims(button.VENDOR, button.PRODUCT, is_keyboard=False):
+            problems.append(
+                f"{name} also claims the button's mouse interface (js0); "
+                "use the k: prefix, because keyd calls mouse management "
+                "experimental and it can break the pointer")
+
+    for name in claiming:
+        for problem in keyd_config.validate(configs[name]):
+            problems.append(f"{name}: {problem}")
+
+    problems.extend(keyd_config.find_id_conflicts(configs))
+
+    if shipped is not None:
+        for name in claiming:
+            if configs[name] != shipped:
+                problems.append(
+                    f"{name} does not match this repo's copy; compare it "
+                    "against `big-green-button render`")
+
+    if check_hooks:
+        for name in claiming:
+            for hook in configs[name].hook_paths():
+                lines.append(f"hook: {hook}")
+                for problem in keyd_config.check_hook_permissions(hook):
+                    problems.append(f"{name}: {problem}")
+
+    return Report(lines=tuple(lines), problems=tuple(problems))
 
 
 def main(argv: Sequence[str] | None = None) -> int:

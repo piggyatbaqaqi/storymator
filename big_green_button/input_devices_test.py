@@ -13,8 +13,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from big_green_button import input_devices
 from big_green_button.input_devices import InputDevice
 
@@ -63,9 +61,6 @@ H: Handlers=mouse2 event25 js0\x20
 B: PROP=0
 B: EV=1f
 '''
-
-pytestmark = pytest.mark.xfail(raises=NotImplementedError, strict=True,
-                               reason="skeleton; implementation to follow")
 
 
 class TestParseProcDevices:

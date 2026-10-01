@@ -7,6 +7,7 @@ validator and the CLI cannot drift apart.  See
 
 from __future__ import annotations
 
+import posixpath
 from typing import Final, Iterable
 
 from . import input_devices
@@ -28,28 +29,35 @@ KEYD_ID: Final[str] = f"k:{VENDOR}:{PRODUCT}"
 BY_ID_PATH: Final[str] = (
     f"/dev/input/by-id/usb-LinTx_USB_Keyboard_{SERIAL}-if01-event-kbd")
 
-#: Keys the button is known to send.  Cheap HID buttons disagree about
-#: which Return they report, so bind both.
+#: Keys the button is known to send.  Measured: it only ever sends
+#: ``enter`` (scancode 70028).  ``kpenter`` is bound anyway so a
+#: firmware mode change cannot quietly start leaking Returns.
 KEYS: Final[tuple[str, ...]] = ("enter", "kpenter")
 
 #: Where the installed artifacts live on this machine.
 KEYD_CONFIG_DIR: Final[str] = "/etc/keyd"
 KEYD_CONFIG_NAME: Final[str] = "big-green-button.conf"
-HOOK_PATH: Final[str] = "/usr/local/bin/big-green-button-press"
+#: Deliberately NOT under /usr/local: on this machine /usr/local and
+#: /usr/local/bin are root:src mode 0775, so group src -- which is just
+#: the operator -- could replace a hook keyd runs as root.  /opt is
+#: root:root 0755, and HOOK_DIR is created the same way.
+HOOK_DIR: Final[str] = "/opt/big-green-button"
+HOOK_PATH: Final[str] = f"{HOOK_DIR}/press"
 
 
 def installed_config_path() -> str:
     """``/etc/keyd/big-green-button.conf``."""
-    raise NotImplementedError
+    return posixpath.join(KEYD_CONFIG_DIR, KEYD_CONFIG_NAME)
 
 
 def find(devices: Iterable[InputDevice]) -> tuple[InputDevice, ...]:
     """The button's interfaces among ``devices``, keyboard first."""
-    raise NotImplementedError
+    found = input_devices.find(devices, VENDOR, PRODUCT)
+    return tuple(sorted(found, key=lambda d: not d.is_keyboard))
 
 
 def is_attached(devices: Iterable[InputDevice] | None = None) -> bool:
     """True when the button's keyboard interface is on the bus."""
     if devices is None:
         devices = input_devices.read_devices()
-    raise NotImplementedError
+    return any(d.is_keyboard for d in find(devices))

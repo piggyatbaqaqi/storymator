@@ -189,7 +189,29 @@ comment for whoever wants the other route, with this caveat beside it.
 
 1. The hook must be root-owned and not writable by group or other, or
    any local user can run code as root by editing it.  This is checked
-   by `keyd_config.check_hook_permissions`.
+   by `keyd_config.check_hook_permissions`, and the check must walk
+   *up* the path: a group-writable ancestor lets someone swap the whole
+   directory, so the file's own mode is not enough.
+
+   **It found something on the first run.**  The hook was installed to
+   `/usr/local/bin/big-green-button-press`, and on this machine
+
+       drwxrwxr-x root src /usr/local
+       drwxrwxr-x root src /usr/local/bin
+
+   with `getent group src` listing exactly one member -- the operator.
+   That makes a root-run hook a standing local escalation: any process
+   running as the operator (a compromised browser, a bad pip install)
+   could plant code that runs as root at the next button press, without
+   ever needing the sudo password.  The hook therefore lives in
+
+       /opt/big-green-button/press
+
+   because `/opt` is `root:root` 0755.  Tightening `/usr/local` instead
+   would work, but that 0775 looks deliberate -- it is what lets the
+   operator install into `/usr/local` without sudo -- so moving one
+   file is the smaller change.  `button.HOOK_DIR` holds the decision
+   and `button_test.py` pins it.
 2. The hook should do as little as possible as root.  The example hook
    drops to the desk operator and execs the real work.
 3. The hook path in the config must be absolute.  keyd runs it through
@@ -204,12 +226,24 @@ an override buys the operator's rights and not root's.
 
 ## Installing
 
-    sudo install -m 0644 big_green_button/etc/big-green-button.conf \
+    sudo install -d -m 0755 -o root -g root /opt/big-green-button
+    sudo install -m 0755 -o root -g root \
+        big_green_button/hook/big-green-button-press \
+        /opt/big-green-button/press
+    sudo install -m 0644 -o root -g root \
+        big_green_button/etc/big-green-button.conf \
         /etc/keyd/big-green-button.conf
-    sudo install -m 0755 big_green_button/hook/big-green-button-press \
-        /usr/local/bin/big-green-button-press
     sudo keyd.rvaiya reload
     journalctl -eu keyd | tail        # expect "DEVICE: match" not "ignoring"
+
+The `-o root -g root` is not decoration: `install` without it keeps the
+invoking user's group, and the whole point of `/opt/big-green-button`
+is that nothing but root can write it.  A healthy reload says
+
+    DEVICE: match    8089:0019:6f7af444  /etc/keyd/big-green-button.conf
+    DEVICE: ignoring 8089:0019:b9fb0960  (LinTx USB Keyboard Mouse)
+
+-- the keyboard interface claimed, the mouse interface left alone.
 
 `bin/big-green-button check` reports whether the button is attached,
 which keyd config claims it, and whether the hook's permissions are
@@ -238,7 +272,7 @@ ever locks up the machine's keyboard.  Worth knowing before editing
       keyd_config.py        parse, render and validate keyd configs
       input_devices.py      read /proc/bus/input/devices, find the button
       etc/big-green-button.conf     the artifact installed to /etc/keyd/
-      hook/big-green-button-press   the hook, installed to /usr/local/bin
+      hook/big-green-button-press   the hook, installed to /opt/big-green-button/press
       hook_test.py          runs the hook for real; checks its child env
     bin/big-green-button    check / render / show the device
 

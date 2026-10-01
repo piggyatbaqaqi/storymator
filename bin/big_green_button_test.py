@@ -41,9 +41,6 @@ def _load() -> types.ModuleType:
 
 bgb = _load()
 
-NEEDS_IMPL = pytest.mark.xfail(raises=NotImplementedError, strict=True,
-                               reason="skeleton; implementation to follow")
-
 KBD = InputDevice(
     name="LinTx USB Keyboard", vendor="8089", product="0019",
     uniq="BEC8023D", handlers=("sysrq", "kbd", "event24", "leds"))
@@ -51,8 +48,8 @@ MOUSE = InputDevice(
     name="LinTx USB Keyboard Mouse", vendor="8089", product="0019",
     uniq="BEC8023D", handlers=("mouse2", "event25", "js0"))
 
-OURS = "[ids]\nk:8089:0019\n[main]\nenter = command(/usr/local/bin/x)\n"
-BARE = "[ids]\n8089:0019\n[main]\nenter = command(/usr/local/bin/x)\n"
+OURS = "[ids]\nk:8089:0019\n[main]\nenter = command(/opt/bgb-x)\n"
+BARE = "[ids]\n8089:0019\n[main]\nenter = command(/opt/bgb-x)\n"
 
 
 class TestEnvDefault:
@@ -93,7 +90,6 @@ class TestShippedConfigConstant:
         assert bgb.DEFAULT_KEYD_DIR == "/etc/keyd"
 
 
-@NEEDS_IMPL
 class TestBuildParser:
 
     def test_accepts_the_three_subcommands(self) -> None:
@@ -130,7 +126,6 @@ class TestBuildParser:
             bgb.build_parser().parse_args([])
 
 
-@NEEDS_IMPL
 class TestLoadKeydDir:
 
     def test_reads_every_conf_file(self, tmp_path: Path) -> None:
@@ -168,7 +163,6 @@ class TestLoadKeydDir:
         assert problems != []
 
 
-@NEEDS_IMPL
 class TestBuildReport:
 
     def _ours(self) -> dict[str, keyd_config.KeydConfig]:
@@ -230,9 +224,9 @@ class TestBuildReport:
         assert report.problems == ()
 
     def test_check_hooks_looks_at_the_hook(self) -> None:
-        """/usr/local/bin/x does not exist, so this must be noticed."""
+        """/opt/bgb-x does not exist, so this must be noticed."""
         report = bgb.build_report(self._ours(), [KBD], check_hooks=True)
-        assert any("/usr/local/bin/x" in p for p in report.problems)
+        assert any("/opt/bgb-x" in p for p in report.problems)
 
     def test_every_line_and_problem_is_a_plain_string(self) -> None:
         report = bgb.build_report({}, [], check_hooks=False)
@@ -240,7 +234,6 @@ class TestBuildReport:
                    for x in (*report.lines, *report.problems))
 
 
-@NEEDS_IMPL
 class TestCmdRender:
 
     def test_prints_the_shipped_config(
@@ -258,7 +251,6 @@ class TestCmdRender:
         assert keyd_config.validate(keyd_config.parse(out)) == []
 
 
-@NEEDS_IMPL
 class TestCmdDevices:
 
     def test_prints_a_line_about_the_bus(
@@ -268,7 +260,6 @@ class TestCmdDevices:
         assert capsys.readouterr().out.strip() != ""
 
 
-@NEEDS_IMPL
 class TestCmdCheck:
 
     def test_zero_when_everything_is_in_order(
@@ -300,7 +291,6 @@ class TestCmdCheck:
         assert "bad.conf" in capsys.readouterr().out
 
 
-@NEEDS_IMPL
 class TestMain:
 
     def test_dispatches_to_the_subcommand(

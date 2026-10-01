@@ -14,6 +14,7 @@ import os
 import shutil
 import stat
 from pathlib import Path
+from typing import Iterable
 
 import pytest
 
@@ -24,9 +25,6 @@ from big_green_button.keyd_config import (Binding, ConfigError, DeviceId,
 _HERE = Path(__file__).resolve().parent
 SHIPPED = _HERE / "etc" / "big-green-button.conf"
 SHIPPED_HOOK = _HERE / "hook" / "big-green-button-press"
-
-NEEDS_IMPL = pytest.mark.xfail(raises=NotImplementedError, strict=True,
-                               reason="skeleton; implementation to follow")
 
 MINIMAL = """[ids]
 
@@ -67,7 +65,6 @@ class TestKeyNamesTable:
         assert live == set(keyd_config.KEY_NAMES)
 
 
-@NEEDS_IMPL
 class TestDeviceIdParse:
 
     def test_a_bare_vendor_product(self) -> None:
@@ -103,7 +100,6 @@ class TestDeviceIdParse:
             DeviceId.parse(bad)
 
 
-@NEEDS_IMPL
 class TestDeviceIdStr:
 
     @pytest.mark.parametrize("text", [
@@ -113,7 +109,6 @@ class TestDeviceIdStr:
         assert str(DeviceId.parse(text)) == text
 
 
-@NEEDS_IMPL
 class TestDeviceIdMatches:
 
     def test_a_bare_id_matches_the_keyboard(self) -> None:
@@ -149,7 +144,6 @@ class TestDeviceIdMatches:
             "8089", "0019", is_keyboard=True) is True
 
 
-@NEEDS_IMPL
 class TestBinding:
 
     def test_a_command_action(self) -> None:
@@ -179,7 +173,6 @@ class TestBinding:
         assert b.action_arg == "sh -c 'f(){ :; }; f'"
 
 
-@NEEDS_IMPL
 class TestKeydConfigClaims:
 
     def test_an_explicit_keyboard_id(self) -> None:
@@ -212,7 +205,6 @@ class TestKeydConfigClaims:
         assert KeydConfig().claims("8089", "0019", is_keyboard=True) is False
 
 
-@NEEDS_IMPL
 class TestKeydConfigBindings:
 
     def test_returns_the_named_layer(self) -> None:
@@ -228,7 +220,6 @@ class TestKeydConfigBindings:
         assert KeydConfig(layers={"main": ()}).bindings("nav") == ()
 
 
-@NEEDS_IMPL
 class TestKeydConfigHookPaths:
 
     def test_extracts_the_program_without_its_arguments(self) -> None:
@@ -255,7 +246,6 @@ class TestKeydConfigHookPaths:
         assert set(cfg.hook_paths()) == {"/a", "/b"}
 
 
-@NEEDS_IMPL
 class TestParse:
 
     def test_a_minimal_config(self) -> None:
@@ -328,7 +318,6 @@ class TestParse:
             keyd_config.parse("")
 
 
-@NEEDS_IMPL
 class TestRender:
 
     def test_round_trips_through_parse(self) -> None:
@@ -367,7 +356,6 @@ class TestRender:
             Binding("h", "left"),)
 
 
-@NEEDS_IMPL
 class TestKeyNamesFunction:
 
     def test_falls_back_to_the_vendored_table(self) -> None:
@@ -380,7 +368,6 @@ class TestKeyNamesFunction:
         assert {"enter", "kpenter", "f24"} <= keyd_config.key_names()
 
 
-@NEEDS_IMPL
 class TestValidate:
 
     def test_a_good_config_has_no_problems(self) -> None:
@@ -447,8 +434,17 @@ class TestValidate:
         assert all(isinstance(p, str) for p in keyd_config.validate(cfg))
 
 
-@NEEDS_IMPL
 class TestCheckHookPermissions:
+    """keyd runs the hook as root, so anyone who can write it is root.
+
+    Every assertion here matches a phrase with a leading space, never a
+    bare word.  pytest names ``tmp_path`` after the test function and
+    the problems quote the path, so ``"writable" in problem`` is true
+    for a test called ``test_a_group_writable_hook`` whatever the code
+    does.  Three of these tests passed vacuously before that was
+    noticed; a tmpdir path never contains a space, so the phrases do
+    not collide with it.
+    """
 
     def _hook(self, tmp_path: Path, mode: int = 0o755) -> Path:
         path = tmp_path / "press"
@@ -456,38 +452,65 @@ class TestCheckHookPermissions:
         path.chmod(mode)
         return path
 
+    def _about_the_file(self, problems: Iterable[str]) -> list[str]:
+        return [p for p in problems if not p.startswith("the directory ")]
+
     def test_a_missing_hook(self, tmp_path: Path) -> None:
         problems = keyd_config.check_hook_permissions(
             str(tmp_path / "absent"))
-        assert any("exist" in p for p in problems)
+        assert any(" does not exist" in p for p in problems)
 
     def test_a_hook_that_is_not_executable(self, tmp_path: Path) -> None:
         path = self._hook(tmp_path, 0o644)
         problems = keyd_config.check_hook_permissions(str(path))
-        assert any("executable" in p for p in problems)
+        assert any(" is not executable" in p for p in problems)
+
+    def test_an_executable_hook_is_not_flagged_for_it(
+            self, tmp_path: Path) -> None:
+        path = self._hook(tmp_path, 0o755)
+        problems = keyd_config.check_hook_permissions(str(path))
+        assert not any(" is not executable" in p for p in problems)
 
     def test_a_group_writable_hook(self, tmp_path: Path) -> None:
         path = self._hook(tmp_path, 0o775)
-        problems = keyd_config.check_hook_permissions(str(path))
-        assert any("writable" in p for p in problems)
+        problems = self._about_the_file(
+            keyd_config.check_hook_permissions(str(path)))
+        assert any(" is writable by group or other" in p for p in problems)
 
     def test_a_world_writable_hook(self, tmp_path: Path) -> None:
         path = self._hook(tmp_path, 0o777)
-        problems = keyd_config.check_hook_permissions(str(path))
-        assert any("writable" in p for p in problems)
+        problems = self._about_the_file(
+            keyd_config.check_hook_permissions(str(path)))
+        assert any(" is writable by group or other" in p for p in problems)
+
+    def test_a_tight_hook_is_not_flagged_as_writable(
+            self, tmp_path: Path) -> None:
+        path = self._hook(tmp_path, 0o700)
+        problems = self._about_the_file(
+            keyd_config.check_hook_permissions(str(path)))
+        assert not any(" is writable by group or other" in p
+                       for p in problems)
 
     def test_a_hook_not_owned_by_root(self, tmp_path: Path) -> None:
-        """keyd runs it as root, so anyone who can write it is root."""
         path = self._hook(tmp_path)
         problems = keyd_config.check_hook_permissions(str(path))
-        assert any("root" in p for p in problems)
+        assert any(" is owned by uid " in p for p in problems)
+
+    def test_the_mode_is_quoted_so_the_operator_can_see_it(
+            self, tmp_path: Path) -> None:
+        path = self._hook(tmp_path, 0o777)
+        problems = self._about_the_file(
+            keyd_config.check_hook_permissions(str(path)))
+        assert any("0777" in p for p in problems)
 
     def test_a_world_writable_parent_directory(self, tmp_path: Path) -> None:
         d = tmp_path / "wide"
         d.mkdir(mode=0o777)
+        d.chmod(0o777)
         path = self._hook(d)
         problems = keyd_config.check_hook_permissions(str(path))
-        assert any("director" in p for p in problems)
+        assert any(p.startswith("the directory ") and str(d) in p
+                   for p in problems)
 
     def test_a_sticky_parent_directory_is_not_flagged(
             self, tmp_path: Path) -> None:
@@ -497,7 +520,13 @@ class TestCheckHookPermissions:
         d.chmod(0o777 | stat.S_ISVTX)
         path = self._hook(d)
         problems = keyd_config.check_hook_permissions(str(path))
-        assert not any("director" in p for p in problems)
+        assert not any(p.startswith("the directory ") for p in problems)
+
+    def test_a_tight_parent_directory_is_not_flagged(
+            self, tmp_path: Path) -> None:
+        path = self._hook(tmp_path)
+        problems = keyd_config.check_hook_permissions(str(path))
+        assert not any(p.startswith("the directory ") for p in problems)
 
     def test_every_problem_is_a_plain_string(self, tmp_path: Path) -> None:
         path = self._hook(tmp_path, 0o666)
@@ -505,7 +534,6 @@ class TestCheckHookPermissions:
         assert all(isinstance(p, str) for p in problems)
 
 
-@NEEDS_IMPL
 class TestFindIdConflicts:
 
     def test_no_conflict_between_different_devices(self) -> None:
@@ -587,7 +615,6 @@ class TestShippedConfigText:
         assert "docs/big-green-button.md" in SHIPPED.read_text()
 
 
-@NEEDS_IMPL
 class TestShippedConfig:
     """The anti-rot tests: the artifact we install, validated."""
 
@@ -652,16 +679,23 @@ class TestShippedHookFile:
         assert "OPERATOR_CMD" in SHIPPED_HOOK.read_text()
 
 
-@NEEDS_IMPL
 class TestShippedHook:
 
     def test_the_repo_copy_is_executable_and_not_group_writable(self) -> None:
-        """Ownership is not checked: the repo copy belongs to the operator,
-        and only the installed copy under /usr/local/bin must be root's."""
-        problems = "\n".join(
-            keyd_config.check_hook_permissions(str(SHIPPED_HOOK)))
-        assert "executable" not in problems
-        assert "writable by group or other" not in problems
+        """Only the hook's own mode is checked here.
+
+        Not its ownership: the repo copy belongs to the operator and
+        only the installed copy under /usr/local/bin must be root's.
+        Not its parent directories either -- this checkout is group
+        writable, which is a fact about the checkout and not a defect
+        in the hook.
+        """
+        problems = [p for p in
+                    keyd_config.check_hook_permissions(str(SHIPPED_HOOK))
+                    if not p.startswith("the directory ")]
+        assert not any(" is not executable" in p for p in problems)
+        assert not any(" is writable by group or other" in p
+                       for p in problems)
 
     def test_the_installed_hook_is_safe_if_it_is_there(self) -> None:
         """Skips on a machine where nobody has run the install yet."""

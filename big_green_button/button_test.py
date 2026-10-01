@@ -8,13 +8,8 @@ this breaks is one of them being updated and the others not.
 
 from __future__ import annotations
 
-import pytest
-
 from big_green_button import button, keyd_config
 from big_green_button.input_devices import InputDevice
-
-NEEDS_IMPL = pytest.mark.xfail(raises=NotImplementedError, strict=True,
-                               reason="skeleton; implementation to follow")
 
 KBD = InputDevice(
     name="LinTx USB Keyboard", vendor="8089", product="0019",
@@ -59,12 +54,20 @@ class TestIdentity:
         """keyd runs it through a shell from its own working directory."""
         assert button.HOOK_PATH.startswith("/")
 
+    def test_the_hook_lives_in_the_hook_dir(self) -> None:
+        assert button.HOOK_PATH.startswith(button.HOOK_DIR + "/")
+
+    def test_the_hook_is_not_under_usr_local(self) -> None:
+        """On this machine /usr/local and /usr/local/bin are root:src
+        mode 0775, and group src is just the operator.  A hook keyd runs
+        as root must not sit anywhere a non-root user can replace it."""
+        assert not button.HOOK_PATH.startswith("/usr/local/")
+
     def test_the_config_name_ends_in_conf(self) -> None:
         """keyd loads only ``*.conf`` out of /etc/keyd."""
         assert button.KEYD_CONFIG_NAME.endswith(".conf")
 
 
-@NEEDS_IMPL
 class TestInstalledConfigPath:
 
     def test_joins_the_keyd_directory_and_the_name(self) -> None:
@@ -72,7 +75,6 @@ class TestInstalledConfigPath:
             "/etc/keyd/big-green-button.conf")
 
 
-@NEEDS_IMPL
 class TestFind:
 
     def test_returns_both_interfaces(self) -> None:
@@ -90,7 +92,6 @@ class TestFind:
         assert button.find([]) == ()
 
 
-@NEEDS_IMPL
 class TestIsAttached:
 
     def test_true_when_the_keyboard_interface_is_present(self) -> None:
