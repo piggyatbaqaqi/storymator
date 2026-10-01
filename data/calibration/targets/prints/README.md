@@ -44,7 +44,26 @@ block of sixteen each, so this cannot recur.
 | ref_1 | 0.95251 | 11.906 mm |
 | ref_2 | 0.95238 ± 0.00050 | 11.905 mm |
 
-They agree to **0.013 %**, so this printer's "fit to printable area"
+They agree to **0.013 %**, and ref 1 came from gthumb while ref 2 came
+from GIMP, so the application is not the variable.
+
+**The control to check is not "Scale".** Both sheets were printed with
+Scale 100 % and Print Scaling None. The dialog reported
+`Width 8.106 in, Height 10.491 in, resolution 532.672 dpi` — and the
+artwork is 4318 × 5588 px, which is 8.500 × 11.000 in at its own
+508 dpi. The image is being laid down at 532.672 dpi to fit the
+printable area, a scale of 0.95369.
+
+**Before printing, make Width read 8.500 and Height 11.000**, by
+setting the resolution boxes to 508. `PAGE_MARGIN_MM` insets
+everything 15 mm against an unprintable border of 5.0–6.5 mm, so
+printing at true size clips only blank paper. See
+[../../../../docs/planning/printing-the-target-at-size.md](../../../../docs/planning/printing-the-target-at-size.md).
+
+A residue of about **0.131 %** is expected to survive even a correct
+print — that is the gap between the dialog's predicted 0.95369 and
+ref 2's measured 0.95238, and laser fuser shrinkage is its size and
+sign. No setting removes it; it is measured, not fixed. so this printer's "fit to printable area"
 is highly reproducible — which is useful to know and is still not what
 anyone wants. Both sheets predate the `PRINT AT 100 %` line now
 printed in the foot. **ref_3 should be printed with scaling off**, and

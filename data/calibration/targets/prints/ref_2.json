@@ -6,8 +6,24 @@
     "file": "peg-targets-3x3-12.5mm-ref_2.png",
     "dictionary": "DICT_6X6_250"
   },
-  "printed": null,
-  "printer": null,
+  "printed": "2026-09-28",
+  "printer": {
+    "make": "Canon",
+    "model": "Color imageCLASS MF656Cdw",
+    "kind": "colour laser MFP",
+    "application": "gimp",
+    "options": {
+      "scale": "100 %",
+      "print_scaling": "None",
+      "width_in": 8.106,
+      "height_in": 10.491,
+      "x_resolution_dpi": 532.672,
+      "y_resolution_dpi": 532.672,
+      "centre": "both",
+      "colour": "Monochrome"
+    },
+    "note": "Scale 100 % and Print Scaling None, and it still came out 4.7 % small. The fault is in Width and Height: the artwork is 4318 x 5588 px at 508 dpi, which is exactly 8.5 x 11 in, and 4318/532.672 = 8.1063 -- so the image is laid down at 532.672 dpi to fit the printable area. Predicted scale 0.95369. See docs/planning/printing-the-target-at-size.md."
+  },
   "nominal": {
     "square_mm": 12.5,
     "board_side_mm": 37.5,
@@ -73,7 +89,7 @@
   "_provenance": {
     "measured": "NOT YET TAKEN. Six caliper readings on each printed span, outer edge to outer edge, WHILE THE SHEET IS STILL INTACT -- after cutting the longest baseline inside one piece is too short to see the print error. See docs/planning/measuring-the-printed-target.md.",
     "printer": "Record the make and the driver's scaling setting. ref 1 came out 4.75 per cent undersize because 'fit to printable area' was left on.",
-    "scale": "4.76 per cent undersize, uniform 0.95238 +- 0.00050. ref_1 came out 0.95251, so two independent prints measured by two independent campaigns agree to 0.013 per cent. This printer's 'fit to printable area' is highly reproducible. Both sheets predate the PRINT AT 100 % line now in the foot; ref_3 is the first that should come out near 1.000.",
+    "scale": "4.76 per cent undersize, uniform 0.95238 +- 0.00050. The print dialog predicts 0.95369 from its own Width and Height fields, leaving a deficit of -0.131 per cent, 2.6 sigma, which toner spread can only make larger. Laser fuser shrinkage of 0.1 to 0.3 per cent is the right size and sign. ref_1 came out 0.95251 from a different application, so the application is not the variable -- the driver's treatment of the printable area is.",
     "anisotropy": "-0.025 per cent +- 0.105, 0.2 sigma. Not detected, agreeing with ref_1's +0.057 +- 0.100. Two prints now say this printer has no measurable anisotropy.",
     "shear_detected": "RESOLVED as none, and the history is the point. Tranche 1 alone gave -0.390 mm against a 2 sigma floor of 0.318 and would have been recorded as detected. Tranche 2 gave -0.040 against 0.256. Pooled, -0.215 against 0.224 -- none. The tranche-1 result rested on a single low reading of 144.28, exactly the artefact that produced and then destroyed ref_1's +0.273 per cent anisotropy.",
     "diagonals": "DO NOT USE FOR SCALE. They give 0.94766 where the axes give 0.95238, reading 0.471 per cent short; ref_1 read 0.345 per cent short the same way. At 144.8 mm the jaws sit at 95 per cent of travel and splay.",

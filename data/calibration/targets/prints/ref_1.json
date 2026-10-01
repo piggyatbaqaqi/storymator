@@ -13,7 +13,18 @@
     "make": "Canon",
     "model": "Color imageCLASS MF656Cdw",
     "kind": "colour laser MFP",
-    "scaling": "'fit to printable area' was on; confirmed by the margins, see _provenance.scale"
+    "application": "gthumb",
+    "options": {
+      "scale": "100 %",
+      "print_scaling": "None",
+      "width_in": 8.106,
+      "height_in": 10.491,
+      "x_resolution_dpi": 532.672,
+      "y_resolution_dpi": 532.672,
+      "centre": "both",
+      "colour": "Monochrome"
+    },
+    "note": "Scale 100 % and Print Scaling None, and it still came out 4.7 % small. The fault is in Width and Height: the artwork is 4318 x 5588 px at 508 dpi, which is exactly 8.5 x 11 in, and 4318/532.672 = 8.1063 -- so the image is laid down at 532.672 dpi to fit the printable area. Predicted scale 0.95369. See docs/planning/printing-the-target-at-size.md."
   },
   "mounting": "repositionable (sticky-note) adhesive, so pieces can be moved between placements",
   "nominal": {
