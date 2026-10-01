@@ -54,28 +54,57 @@ because the same landscape sheet forces it:
 Radius fit residual 2.36 mm, which is the disc shifting under the hand
 between rotations rather than target placement.
 
-## The charuco set cannot recalibrate the lens
+## The focus was 100, and the lens model is from 134
 
-It was the obvious hope and it does not work. Across the nine frames
-the board's normal moves **0.18° to 0.41°** — it is the same sheet
-lying flat on a disc that turns about its own normal, so its
-orientation barely changes. Zhang's method separates focal length from
-distance only when the board is seen at many *orientations*. The set
-is degenerate for intrinsics.
+**This supersedes the paragraph below, which was too broad.** Every
+other control matches `test_rig01`'s `camera_settings.gpfl`; only
+`focus_absolute` differs, 134 → 100.
 
-It can still **check** the stored lens, and does: `charuco_0001`
-reprojects at **1.262 ± 0.097 px** against the 48-frame calibration's
-0.707. Elevated — but these are single-frame fits of a paper board,
-and the same ambiguity applies as before: 1 px at 440 mm is 168 µm of
-object, so a little bow explains it as well as a changed lens.
+### Superseded: "the set is degenerate for intrinsics"
 
-**The focus setting was not recorded**, and that is the gap that
-matters. The stored calibration is at `focus_absolute` 134; the
-hand-held test at this height used 100. Until that is known, every
-number in this document carries an unquantified lens error.
+Across the nine frames the board's normal moves only **0.18° to
+0.41°** — the same sheet lying flat on a disc turning about its own
+normal — and I concluded the set could not say anything about the
+lens. That is right for the *full* intrinsic set and **wrong for the
+focal length**, which the data constrains sharply:
 
-A real recalibration needs the 48-frame treatment: the board held at
-many angles, not lying on the disc.
+| `fx` scale | `fx` | rms |
+|---:|---:|---:|
+| 0.98 | 2572.9 | 1.937 px |
+| 1.00 (stored) | 2625.4 | 1.351 px |
+| **1.01** | **2651.7** | **1.264 px** |
+| 1.02 | 2677.9 | 1.353 px |
+| 1.04 | 2730.5 | 1.886 px |
+
+A clear minimum, not a flat valley. The pose re-solve cannot absorb a
+focal change, because distortion is applied in *normalised*
+coordinates and changing `f` changes the radius at which it acts.
+
+So the lens has moved, and about **+1.0 %** on the focal length is the
+best this data can say. **It is not a measurement**: the scan holds
+the distortion coefficients at their focus-134 values, so 2651.7 is
+"the focal length that makes the old distortion fit the new images",
+not the true one. And 1.264 px is still far from the calibration's own
+0.707.
+
+### Which of these numbers it actually threatens
+
+| error | shape | effect on the disc plane |
+|---|---|---|
+| focal length | scales every distance by one factor | **none** — a uniform scaling about the camera centre preserves planarity *and* the normal |
+| distortion | non-uniform radial field | **tilts a fitted plane**; magnitude unknown |
+
+So the plane-orientation figures above survive the focal mismatch
+intact. A 1.0 % focal error is 4.4 mm of absolute distance at 440 mm
+and 0° of plane tilt. The distortion mismatch is the one to worry
+about, and nothing here can size it.
+
+### Do not recalibrate yet
+
+A real recalibration needs the board at many angles, not lying on the
+disc — and it should wait. **7 inch risers are on order**, the camera
+will move, and the focus will change again. Calibrating at focus 100
+now is work that gets thrown away.
 
 ## Better than rig 01 in one respect
 
@@ -88,13 +117,16 @@ stays.
 
 ## What to change
 
-**Centre the camera.** It is the one change the measurements already
-argue for, it was demonstrated by hand, and it is worth more than
-anything else available: the hand-held frame got the four targets to
-within 7.5 % of each other, where this rig spans 250 %.
+**Centre the camera, once it can be mounted there.** It is the one
+change the measurements already argue for and it was demonstrated by
+hand — the hand-held frame got the four targets within 7.5 % of each
+other, where this rig spans 250 %. It cannot be done at the present
+height: from the centre, fewer than two targets stay in frame. The
+7 inch risers on order are what unblocks it.
 
-**Record the focus**, and recalibrate the lens at whatever it turns
-out to be if it is not 134.
+**Recalibrate the lens once the risers are in and the camera is
+final** — 48 frames, board at many angles. Not before: the focus will
+move again with the height.
 
 ## Status
 
@@ -107,8 +139,8 @@ stored `v4k_01` intrinsics.
 **Computed**: the paper-corner projections, from the normal scatter
 and the incidence.
 
-**Not recorded**: the focus setting, the disc diameter (carried over
-from rig 01 rather than re-measured), and per-frame exposure — these
+**Not recorded**: the disc diameter (carried over from rig 01 rather
+than re-measured) and per-frame exposure — these
 frames did not go through `bin/collect-captures`.
 
 **The cheapest test**: nine static frames with the camera moved over

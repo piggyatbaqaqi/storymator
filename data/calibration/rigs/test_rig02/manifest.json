@@ -9,14 +9,16 @@
     "camera": {
       "name": "v4k_01",
       "calibration": "../../distortion/v4k_01/v4k_01.json",
-      "focus_absolute": null,
-      "focus_note": "NOT RECORDED. The stored calibration was made at focus_absolute 134; an earlier hand-held test at this height used 100. charuco_0001 reprojects here at 1.262 +- 0.097 px against that calibration's 0.707, which is elevated but not diagnostic from single frames of a board on paper.",
+      "focus_absolute": 100,
+      "focus_note": "100, NOT the 134 the stored calibration was made at. Everything else as test_rig01. charuco_0001 reprojects here at 1.351 px with the stored intrinsics against the calibration's own 0.707, and a scan of the focal length finds a sharp minimum at fx x 1.010 = 2651.7 for 1.264 px. That scan is conditioned on focus-134 distortion coefficients, so the 1.0 per cent is suggestive rather than a measurement. A proper recalibration needs the board at many orientations, and should wait until the camera is at its final height -- 7 inch risers are on order and will change the focus again.",
       "recovered_pose": {
         "height_above_disc_mm": 340.3,
         "lateral_offset_mm": 273.9,
         "distance_to_disc_centre_mm": 436.8,
         "incidence_at_disc_centre_deg": 38.8
-      }
+      },
+      "lens_mismatch_effect": "A focal-length error scales every recovered distance by the same factor, which is a uniform scaling of the point cloud about the camera centre. That preserves planarity and preserves the plane's NORMAL, so the disc-plane orientation figures survive it. What does not survive is the distortion mismatch, which is a non-uniform radial field and can tilt a fitted plane. Its magnitude is unknown until there is a focus-100 calibration.",
+      "settings_note": "All other controls as test_rig01's camera_settings.gpfl: white_balance_automatic 0, auto_exposure 1, focus_automatic_continuous 0, exposure_time_absolute 950, white_balance_temperature 4590. Only focus_absolute differs, 134 -> 100."
     },
     "target": {
       "print": "../../targets/prints/ref_2.json",
