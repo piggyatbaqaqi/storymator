@@ -18,7 +18,6 @@
 set -eu
 
 OPERATOR=piggy
-DISPLAY_NAME=:0
 
 # Overridable from the environment so the tests can drive this script
 # without a button.  keyd's environment comes from systemd, not from any
@@ -38,21 +37,48 @@ if [ "${1:-}" != "--dropped" ]; then
     fi
 fi
 
-# The operator from here.  A GUI command needs the session's X
-# authority and message bus, and keyd handed us root's environment,
-# which has neither.  Under GNOME Wayland the XWayland auth file is
-# named with a random suffix regenerated at every login, so glob for it
-# rather than hardcoding one that will be wrong after the next reboot.
+# The operator from here.  A GUI command needs the session's display,
+# X authority and message bus, and keyd handed us root's environment,
+# which has none of them.
+#
+# Ask the operator's own systemd user manager rather than guessing.
+# GNOME imports DISPLAY, WAYLAND_DISPLAY, XAUTHORITY and
+# DBUS_SESSION_BUS_ADDRESS into it at login, so this tracks whatever is
+# true right now -- across reboots, across re-logins, and whichever
+# display number XWayland happened to take.  Hardcoding :0 and globbing
+# for the auth cookie both worked, but each was a standing bet: the
+# cookie's filename is new at every login, and /tmp/.X11-unix holds an
+# X1 socket as well as X0 on this machine.
+#
+# Values are passed as whole argv entries to env, never through eval,
+# so a space or a shell metacharacter in one cannot become code.
 runtime=/run/user/$(id -u)
-xauth=
-for f in "$runtime"/.mutter-Xwaylandauth.*; do
-    if [ -e "$f" ]; then xauth=$f; fi
-done
+set --
+while IFS= read -r line; do
+    case $line in
+    DISPLAY=*|WAYLAND_DISPLAY=*|XAUTHORITY=*|DBUS_SESSION_BUS_ADDRESS=*)
+        set -- "$@" "$line" ;;
+    esac
+done <<SESSION
+$(XDG_RUNTIME_DIR="$runtime" systemctl --user show-environment 2>/dev/null)
+SESSION
+
+if [ "$#" -eq 0 ]; then
+    # No systemd user manager to ask -- nobody logged in, or a session
+    # that does not import its environment.  Fall back to the old
+    # guesses so a headless press still runs the command.
+    xauth=
+    for f in "$runtime"/.mutter-Xwaylandauth.*; do
+        if [ -e "$f" ]; then xauth=$f; fi
+    done
+    set -- "DISPLAY=${DISPLAY:-:0}"
+    if [ -n "$xauth" ]; then
+        set -- "$@" "XAUTHORITY=$xauth"
+    fi
+fi
 
 exec env \
-    DISPLAY="$DISPLAY_NAME" \
-    XAUTHORITY="$xauth" \
     XDG_RUNTIME_DIR="$runtime" \
-    DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus" \
     HOME="$(getent passwd "$(id -u)" | cut -d: -f6)" \
+    "$@" \
     /bin/sh -c "$OPERATOR_CMD"

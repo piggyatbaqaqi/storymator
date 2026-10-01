@@ -25,6 +25,31 @@ HOOK = Path(__file__).resolve().parent / "hook" / "big-green-button-press"
 RUNTIME = Path(f"/run/user/{os.getuid()}")
 
 
+def _code_lines() -> list[str]:
+    """The hook's lines with whole-line comments and blanks dropped."""
+    return [line for line in HOOK.read_text().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")]
+
+
+def _session_environment() -> dict[str, str]:
+    """What the operator's systemd user manager is handing out.
+
+    The hook's source of truth, so the tests compare against it rather
+    than against values of their own.
+    """
+    try:
+        done = subprocess.run(
+            ["systemctl", "--user", "show-environment"],
+            capture_output=True, text=True, timeout=30, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    if done.returncode != 0:
+        return {}
+    return dict(
+        line.split("=", 1) for line in done.stdout.splitlines()
+        if "=" in line)
+
+
 def _run(tmp_path: Path, command: str,
          log: Path | None = None) -> subprocess.CompletedProcess[str]:
     env = dict(os.environ,
@@ -102,17 +127,60 @@ class TestTheChildEnvironment:
         assert self._env_of_child(tmp_path, "HOME") == [
             os.path.expanduser("~")]
 
+    def test_wayland_display_is_set(self, tmp_path: Path) -> None:
+        """A Wayland-native command needs this, not just DISPLAY."""
+        if "WAYLAND_DISPLAY" not in _session_environment():
+            pytest.skip("no WAYLAND_DISPLAY in the session")
+        assert self._env_of_child(tmp_path, "WAYLAND_DISPLAY") == [
+            _session_environment()["WAYLAND_DISPLAY"]]
+
     def test_xauthority_names_a_file_that_exists(self, tmp_path: Path) -> None:
         """The whole point: XWayland refuses a client with no authority."""
-        if not list(RUNTIME.glob(".mutter-Xwaylandauth.*")):
-            pytest.skip("no XWayland auth file; not a GNOME Wayland session")
+        if "XAUTHORITY" not in _session_environment():
+            pytest.skip("no XAUTHORITY in the session")
         got = self._env_of_child(tmp_path, "XAUTHORITY")
         assert got and Path(got[0]).is_file()
 
-    def test_the_auth_file_is_found_by_glob_not_hardcoded(self) -> None:
-        """Its suffix is regenerated at every login."""
-        text = HOOK.read_text()
-        assert ".mutter-Xwaylandauth.*" in text
+    def test_the_values_come_from_the_live_session(
+            self, tmp_path: Path) -> None:
+        """Not from a guess.  DISPLAY and the auth cookie's filename both
+        change between logins, so the hook must read them rather than
+        remember them."""
+        session = _session_environment()
+        wanted = [k for k in ("DISPLAY", "XAUTHORITY") if k in session]
+        if not wanted:
+            pytest.skip("no graphical session to compare against")
+        got = self._env_of_child(tmp_path, " ".join(wanted))
+        assert got == [session[k] for k in wanted]
+
+
+class TestHowItFindsTheSession:
+    """Read rather than run: the mechanism, and its fallback."""
+
+    def test_it_asks_the_systemd_user_manager(self) -> None:
+        assert "systemctl --user show-environment" in HOOK.read_text()
+
+    def test_it_never_evals_those_values(self) -> None:
+        """show-environment is KEY=value; eval would make a value code.
+
+        Checks the code lines only.  The hook's own comments say the
+        word, and matching those is the same trap that made three
+        hook-permission tests pass vacuously in keyd_config_test.py.
+        """
+        assert not any("eval" in line for line in _code_lines())
+
+    def test_it_passes_them_as_whole_argv_entries(self) -> None:
+        assert 'set -- "$@" "$line"' in HOOK.read_text()
+
+    def test_it_keeps_the_glob_as_a_fallback(self) -> None:
+        """For a press with no systemd user manager to ask."""
+        assert ".mutter-Xwaylandauth.*" in HOOK.read_text()
+
+    def test_it_does_not_hardcode_a_display_outside_the_fallback(
+            self) -> None:
+        """:0 may appear in the fallback and in OPERATOR_CMD, but the hook
+        must not assign DISPLAY_NAME=:0 and use it unconditionally."""
+        assert "DISPLAY_NAME" not in HOOK.read_text()
 
 
 class TestTheDroppedGuard:

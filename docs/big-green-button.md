@@ -96,16 +96,102 @@ no `HOME`.  A GUI command started that way fails with
     Error: Can't open display: :0
 
 even though `/tmp/.X11-unix/X0` is world-accessible, because XWayland
-still demands an authority cookie.  On this GNOME Wayland session that
-cookie lives at
+still demands an authority cookie.
 
-    /run/user/1116/.mutter-Xwaylandauth.EZBBU3
+The hook asks the operator's own systemd user manager for the live
+values:
 
-and **the suffix is regenerated at every login**, so the hook globs
-`$XDG_RUNTIME_DIR/.mutter-Xwaylandauth.*` rather than hardcoding it.
-It also sets `DISPLAY`, `XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS`
-and `HOME` before handing off.  `hook_test.py` asserts each of those on
-the child's real environment.
+    systemctl --user show-environment
+    DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1116/bus
+    DISPLAY=:0
+    WAYLAND_DISPLAY=wayland-0
+    XAUTHORITY=/run/user/1116/.mutter-Xwaylandauth.EZBBU3
+
+GNOME imports those at login, so this tracks whatever is true now --
+across reboots, across re-logins, and whichever display number XWayland
+took.  The first version hardcoded `DISPLAY=:0` and globbed
+`$XDG_RUNTIME_DIR/.mutter-Xwaylandauth.*`; both worked, but each was a
+standing bet, the cookie's name being new every login and this machine
+having an `X1` socket as well as `X0`.  That pair survives only as a
+fallback for a press with no user manager to ask.
+
+The values are passed to `env` as whole argv entries, never through
+`eval`, so a space or a shell metacharacter in one cannot become code.
+`hook_test.py` compares the child's real environment against
+`show-environment` rather than against values of its own.
+
+## Identification, replugging and reboots
+
+**The button is identified by USB vendor:product, not by port.**  The
+`[ids]` section says `k:8089:0019` and that is all keyd matches on.
+Nothing in this design touches any of the things that *do* move:
+
+| path | moves? | used here |
+|------|--------|-----------|
+| `/dev/input/event24` | yes, freely | no -- only reported by `check` |
+| `/dev/input/by-path/pci-…-usb-0:10:1.1-event-kbd` | yes, encodes the port | no |
+| `/dev/input/by-id/usb-LinTx_USB_Keyboard_BEC8023D-…` | no, encodes the serial | diagnostics only |
+| `[ids] k:8089:0019` | no | **yes** |
+
+Verified rather than assumed: the button was unplugged and moved to a
+different socket, taking `Phys` from `usb-0000:80:14.0-7/input1` to
+`usb-0000:80:14.0-10/input1`, and keyd re-matched it unprompted:
+
+    DEVICE: removed  8089:0019:b9fb0960 LinTx USB Keyboard Mouse
+    DEVICE: match    8089:0019:6f7af444  /etc/keyd/big-green-button.conf
+
+keyd watches for device add and remove, so a replug needs no reload.
+
+### The third component keyd logs
+
+`keyd.rvaiya monitor` and the journal print ids as `8089:0019:6f7af444`.
+That tail is **not** a port or a serial.  From `src/device.c`:
+
+    snprintf(dev->id, sizeof dev->id, "%04x:%04x:%08x",
+             info.vendor, info.product,
+             generate_uid(num_keys, absmask, relmask, dev->name));
+
+-- a djb2 hash of the key count, the abs/rel capability masks and the
+device *name*.  It exists because one vendor:product can present
+several interfaces, which is exactly our case: the keyboard hashes to
+`6f7af444` and the mouse to `b9fb0960`.  So the 3-part form is also
+port-independent and stable across reboots, and is safe to paste from
+the journal if the 2-part form ever needs narrowing.  `DeviceId.parse`
+accepts it, and `DeviceId.matches` ignores the hash, because we never
+learn an attached device's hash and matching on it could only produce
+false negatives.
+
+### Reboots
+
+Yes, it survives them.  Three things have to persist and all do:
+
+* `/etc/keyd/big-green-button.conf` and `/opt/big-green-button/press`
+  are ordinary files;
+* `keyd.service` is `enabled`, so systemd starts it at boot; and
+* the match is on vendor:product, which does not change.
+
+The one thing that *is* new at every login is the session environment:
+`XAUTHORITY` points at `.mutter-Xwaylandauth.<random>`, and the display
+number is not guaranteed to be `:0` -- this machine has both an `X0`
+and an `X1` socket in `/tmp/.X11-unix`.  The hook therefore asks the
+operator's own systemd user manager for the live values instead of
+remembering any of them.  See below.
+
+### What would break it
+
+* **A second device reporting `8089:0019`.**  It is a generic id, so
+  another cheap HID button or keypad could share it, and keyd would
+  grab that too and swallow its Return.  Narrow with the 3-part id from
+  the journal if it happens.
+* **A firmware mode change** that starts sending `kpenter` -- already
+  bound, so this is covered.
+* **Anything else grabbing the device first**, which is why
+  `check` exists.
+
+Note that piggy's membership of group `input` is *not* needed by this
+design: keyd runs as root and opens the device itself, and the only
+thing we read is world-readable `/proc/bus/input/devices`.  It can be
+reverted if it was added only for this.
 
 ## Why keyd rather than our own daemon
 
