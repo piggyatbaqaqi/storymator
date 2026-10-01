@@ -1,0 +1,58 @@
+#!/bin/sh
+# Invoked by keyd on each big green button press.  See
+# docs/big-green-button.md.
+#
+# Once per PHYSICAL press.  keyd drops kernel autorepeat before the
+# action layer sees it (device.c: "Ignore repeat events", value == 2)
+# and runs command() only on key down (keyboard.c: OP_COMMAND under
+# "if (pressed)"), so holding the button does not re-fire this.  That
+# matters: this button repeats 28 times over a 1.2 s hold.
+#
+# keyd double-forks and points stdio at /dev/null, so we are not
+# blocking the daemon and there is nowhere to print -- hence LOG.
+#
+# keyd runs this as root.  A button on a desk does not need root, so we
+# hand it back and do the real work as the desk operator.
+#
+# EDIT OPERATOR_CMD: it is the one line that calls your own software.
+set -eu
+
+OPERATOR=piggy
+DISPLAY_NAME=:0
+
+# Overridable from the environment so the tests can drive this script
+# without a button.  keyd's environment comes from systemd, not from any
+# user, and OPERATOR_CMD runs AFTER privilege is dropped, so an override
+# buys the operator's rights and not root's.
+OPERATOR_CMD=${OPERATOR_CMD:-'xeyes -display :0'}      # <-- your software
+LOG=${LOG:-/var/log/big-green-button.log}
+
+if [ "${1:-}" != "--dropped" ]; then
+    # Logged before dropping privilege, because /var/log belongs to root.
+    # The subshell swallows dash's own "cannot create" complaint, which
+    # outlives a plain 2>/dev/null on the redirection itself.
+    ( printf '%s press\n' "$(date -Is)" >>"$LOG" ) 2>/dev/null || true
+    if [ "$(id -u)" -eq 0 ]; then
+        exec setpriv --reuid "$OPERATOR" --regid "$OPERATOR" \
+            --init-groups -- "$0" --dropped
+    fi
+fi
+
+# The operator from here.  A GUI command needs the session's X
+# authority and message bus, and keyd handed us root's environment,
+# which has neither.  Under GNOME Wayland the XWayland auth file is
+# named with a random suffix regenerated at every login, so glob for it
+# rather than hardcoding one that will be wrong after the next reboot.
+runtime=/run/user/$(id -u)
+xauth=
+for f in "$runtime"/.mutter-Xwaylandauth.*; do
+    if [ -e "$f" ]; then xauth=$f; fi
+done
+
+exec env \
+    DISPLAY="$DISPLAY_NAME" \
+    XAUTHORITY="$xauth" \
+    XDG_RUNTIME_DIR="$runtime" \
+    DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus" \
+    HOME="$(getent passwd "$(id -u)" | cut -d: -f6)" \
+    /bin/sh -c "$OPERATOR_CMD"
