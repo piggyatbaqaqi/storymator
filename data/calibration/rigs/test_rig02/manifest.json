@@ -1,0 +1,349 @@
+{
+  "kind": "session",
+  "session": "test_rig02",
+  "purpose": "Re-measure the N-E-S-W disc plane after the camera was raised, using ref_2 targets whose id block (40-55) no longer collides with charuco_0001 (0-30).",
+  "captured": "2026-10-01T00:24:47.911868-04:00/2026-10-01T00:29:58.687259-04:00",
+  "captured_note": "File mtimes, not shutter times; written directly rather than through bin/collect-captures.",
+  "operator": "piggy",
+  "rig": {
+    "camera": {
+      "name": "v4k_01",
+      "calibration": "../../distortion/v4k_01/v4k_01.json",
+      "focus_absolute": null,
+      "focus_note": "NOT RECORDED. The stored calibration was made at focus_absolute 134; an earlier hand-held test at this height used 100. charuco_0001 reprojects here at 1.262 +- 0.097 px against that calibration's 0.707, which is elevated but not diagnostic from single frames of a board on paper.",
+      "recovered_pose": {
+        "height_above_disc_mm": 340.3,
+        "lateral_offset_mm": 273.9,
+        "distance_to_disc_centre_mm": 436.8,
+        "incidence_at_disc_centre_deg": 38.8
+      }
+    },
+    "target": {
+      "print": "../../targets/prints/ref_2.json",
+      "square_mm": 11.905,
+      "marker_ids": "40-55",
+      "placement": {
+        "N": 0,
+        "E": 1,
+        "S": 2,
+        "W": 3
+      },
+      "radius_mm": {
+        "N": 140.5,
+        "E": 165.4,
+        "S": 138.2,
+        "W": 175.5
+      },
+      "bearing_from_N_deg": {
+        "E": [
+          91.1,
+          0.7
+        ],
+        "S": [
+          184.5,
+          1.4
+        ],
+        "W": [
+          271.4,
+          1.4
+        ]
+      },
+      "radius_fit_residual_mm": 2.36
+    },
+    "second_camera": {
+      "name": null,
+      "model": "CZUR Fancy Pro",
+      "role": "illumination only; uncalibrated and unnamed"
+    },
+    "disc": {
+      "diameter_mm": 419.1,
+      "note": "as test_rig01; not re-measured"
+    }
+  },
+  "lighting": [
+    "room light",
+    "white terminal",
+    "CZUR Fancy Pro camera light",
+    "NO window light -- unlike test_rig01, which had diffuse sunlight and was therefore not reproducible"
+  ],
+  "sets": {
+    "hamster": {
+      "note": "reference hamster artwork pegged on the disc, rotated about 45 deg between frames",
+      "frames": [
+        {
+          "index": 1,
+          "file": "ref_2_nesw-1.png",
+          "sha256_16": "0cdf2d40fd0eaf11",
+          "mtime": "2026-10-01T00:24:47.911868-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 2,
+          "file": "ref_2_nesw-2.png",
+          "sha256_16": "5dac41f28e393840",
+          "mtime": "2026-10-01T00:24:58.852895-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 3,
+          "file": "ref_2_nesw-3.png",
+          "sha256_16": "96da09f6427068a3",
+          "mtime": "2026-10-01T00:25:09.337227-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 4,
+          "file": "ref_2_nesw-4.png",
+          "sha256_16": "4bd496c5c91a2b1b",
+          "mtime": "2026-10-01T00:25:17.240940-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 5,
+          "file": "ref_2_nesw-5.png",
+          "sha256_16": "e7051542815c341d",
+          "mtime": "2026-10-01T00:25:24.214957-04:00",
+          "ref_2_boards_detected": [
+            0,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 6,
+          "file": "ref_2_nesw-6.png",
+          "sha256_16": "b682d07b34acaeac",
+          "mtime": "2026-10-01T00:25:32.018976-04:00",
+          "ref_2_boards_detected": [
+            0,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 7,
+          "file": "ref_2_nesw-7.png",
+          "sha256_16": "4a8353ade5564cbe",
+          "mtime": "2026-10-01T00:25:39.743995-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 8,
+          "file": "ref_2_nesw-8.png",
+          "sha256_16": "e788a24215bc9cf4",
+          "mtime": "2026-10-01T00:25:48.215016-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            3
+          ],
+          "duplicate_marker_ids": []
+        },
+        {
+          "index": 9,
+          "file": "ref_2_nesw-9.png",
+          "sha256_16": "4e5e65d8602dd679",
+          "mtime": "2026-10-01T00:26:04.031054-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": []
+        }
+      ]
+    },
+    "charuco": {
+      "note": "charuco_0001 pegged on the disc in place of the artwork, same rotations",
+      "frames": [
+        {
+          "index": 1,
+          "file": "ref_2_nesw_charuco_0001-1-1.png",
+          "sha256_16": "3df813c0b13f0b98",
+          "mtime": "2026-10-01T00:29:18.873257-04:00",
+          "ref_2_boards_detected": [
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.285,
+            "distance_mm": 527
+          }
+        },
+        {
+          "index": 2,
+          "file": "ref_2_nesw_charuco_0001-1-2.png",
+          "sha256_16": "9b942bbb8bec3c7b",
+          "mtime": "2026-10-01T00:29:24.333257-04:00",
+          "ref_2_boards_detected": [
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.237,
+            "distance_mm": 475
+          }
+        },
+        {
+          "index": 3,
+          "file": "ref_2_nesw_charuco_0001-1-3.png",
+          "sha256_16": "0630ec4c59e27566",
+          "mtime": "2026-10-01T00:29:29.050257-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.183,
+            "distance_mm": 383
+          }
+        },
+        {
+          "index": 4,
+          "file": "ref_2_nesw_charuco_0001-1-4.png",
+          "sha256_16": "5cfaba655ffe1407",
+          "mtime": "2026-10-01T00:29:33.683257-04:00",
+          "ref_2_boards_detected": [
+            0,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.497,
+            "distance_mm": 336
+          }
+        },
+        {
+          "index": 5,
+          "file": "ref_2_nesw_charuco_0001-1-5.png",
+          "sha256_16": "905fb79bcbe734fe",
+          "mtime": "2026-10-01T00:29:37.840257-04:00",
+          "ref_2_boards_detected": [
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.265,
+            "distance_mm": 347
+          }
+        },
+        {
+          "index": 6,
+          "file": "ref_2_nesw_charuco_0001-1-6.png",
+          "sha256_16": "938823c3a72a1d46",
+          "mtime": "2026-10-01T00:29:42.136257-04:00",
+          "ref_2_boards_detected": [
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.262,
+            "distance_mm": 414
+          }
+        },
+        {
+          "index": 7,
+          "file": "ref_2_nesw_charuco_0001-1-7.png",
+          "sha256_16": "d8d57d6c763d415c",
+          "mtime": "2026-10-01T00:29:46.595439-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.196,
+            "distance_mm": 493
+          }
+        },
+        {
+          "index": 8,
+          "file": "ref_2_nesw_charuco_0001-1-8.png",
+          "sha256_16": "32d883db75042b64",
+          "mtime": "2026-10-01T00:29:51.777258-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.259,
+            "distance_mm": 536
+          }
+        },
+        {
+          "index": 9,
+          "file": "ref_2_nesw_charuco_0001-1-9.png",
+          "sha256_16": "22cc05f9f5ad5c5e",
+          "mtime": "2026-10-01T00:29:58.687259-04:00",
+          "ref_2_boards_detected": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "duplicate_marker_ids": [],
+          "charuco_0001": {
+            "markers": 31,
+            "reprojection_rms_px": 1.17,
+            "distance_mm": 528
+          }
+        }
+      ]
+    }
+  },
+  "results": "../../../../docs/planning/test-rig02.md"
+}
