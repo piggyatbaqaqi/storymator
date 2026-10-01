@@ -20,9 +20,15 @@
       "x_resolution_dpi": 532.672,
       "y_resolution_dpi": 532.672,
       "centre": "both",
-      "colour": "Monochrome"
+      "colour": "Monochrome",
+      "paper_size": "US Letter",
+      "media_type": "Stationery",
+      "feed": "short edge first",
+      "print_quality": "Normal",
+      "ignore_page_margins": false
     },
-    "note": "Scale 100 % and Print Scaling None, and it still came out 4.7 % small. The fault is in Width and Height: the artwork is 4318 x 5588 px at 508 dpi, which is exactly 8.5 x 11 in, and 4318/532.672 = 8.1063 -- so the image is laid down at 532.672 dpi to fit the printable area. Predicted scale 0.95369. See docs/planning/printing-the-target-at-size.md."
+    "note": "Scale 100 % and Print Scaling None, and it still came out 4.7 % small. The fault is in Width and Height: the artwork is 4318 x 5588 px at 508 dpi, which is exactly 8.5 x 11 in, and 4318/532.672 = 8.1063 -- so the image is laid down at 532.672 dpi to fit the printable area. Predicted scale 0.95369. See docs/planning/printing-the-target-at-size.md. RESOLVED: the resolution field is locked until 'Ignore Page Margins' is checked. With it checked, Width and Height read 8.5 x 11 and the sheet prints full size. Safe here because PAGE_MARGIN_MM insets everything 15 mm against a 5-6.5 mm unprintable border, so only blank paper is clipped.",
+    "axes": "Short edge first on US Letter, so the process (feed) axis is 'down' on the sheet, 279.4 mm, and the laser scan axis is 'across'. Fuser shrinkage is usually worse along the process axis, so if the 0.131 per cent residue is the fuser the prediction is sy < sx. ref_2 measured the other way by +0.025 +- 0.105 per cent, which is not significant either way."
   },
   "nominal": {
     "square_mm": 12.5,

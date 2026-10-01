@@ -54,11 +54,20 @@ artwork is 4318 × 5588 px, which is 8.500 × 11.000 in at its own
 508 dpi. The image is being laid down at 532.672 dpi to fit the
 printable area, a scale of 0.95369.
 
-**Before printing, make Width read 8.500 and Height 11.000**, by
-setting the resolution boxes to 508. `PAGE_MARGIN_MM` insets
+**Before printing, check "Ignore Page Margins"** — the resolution
+boxes are locked until you do — **then set the resolution to 508 so
+Width reads 8.500 and Height 11.000.** `PAGE_MARGIN_MM` insets
 everything 15 mm against an unprintable border of 5.0–6.5 mm, so
 printing at true size clips only blank paper. See
 [../../../../docs/planning/printing-the-target-at-size.md](../../../../docs/planning/printing-the-target-at-size.md).
+
+**On a full-size sheet the diagonal will not fit the calipers.** The
+layout was capped so the outer diagonal came to exactly 152.71 mm,
+which is the whole of the jaw travel; at 4.7 % small it was a
+comfortable 145 mm. Take the **four axis spans** (107.84 mm, 71 % of
+travel) and skip the diagonals — they only ever bounded shear, none
+has been detected on either sheet, and both read 0.35–0.50 % short at
+95 % travel because the jaws splay.
 
 A residue of about **0.131 %** is expected to survive even a correct
 print — that is the gap between the dialog's predicted 0.95369 and
