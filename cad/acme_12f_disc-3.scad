@@ -46,9 +46,10 @@ ls_count     = 4;
 ls_start     = 90;  // first hole due north, on the +Y axis beyond the peg bar;
                     // the pattern then runs N, W, S, E at 90 deg
 m4_clear  = 4.5;    // 4 mm bolt with acrylic-friendly clearance.
-                    // The flange specifies #8 screws through 3/16 in holes; if the
-                    // fastener follows the flange rather than rev 2, this is 4.7625
-                    // and the countersink wants a #8 head.
+                    // The whole assembly is M4: flange_ring_24_to_16_half.scad and
+                    // projector_mount_parametric_promethean.scad both carry this
+                    // same 4.5 mm as bolt_hole_dia, written 4.5 / 25.4 because
+                    // those two files work in inches.
 m4_csk_d  = 9.2;    // head is ~8.96 max, so it sits just below flush
 m4_csk_a  = 90;     // countersink included angle
 
