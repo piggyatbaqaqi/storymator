@@ -4,26 +4,25 @@
 // Peg bar sits in a shallow slot on the top face; +Y is "up" (north) on the disc.
 //
 // Rev 3 is the cost-and-weight revision, and it is also the disc that drops
-// into the 24-to-19.5 inch transition flange: the sheet halves to 1/4",
-// the mounting pattern moves out to the flange's 18.25 in bolt circle and
-// drops from six holes to four, and the outer edge is left square because
-// the flange's step pocket is what the rim now registers against.
+// into the 24-to-16.5 inch stepped overhang flange cap: the sheet halves to
+// 1/4", the mounting pattern drops from six holes to four, and the outer edge
+// is left square because the flange's step pocket is what the rim now
+// registers against.
 //
-// 19.5 in x 1/4 in is 1.44 kg of acrylic against rev 2's 2.07 kg, a 30 %
-// saving despite the larger disc.
+// 16.5 in x 1/4 in is 1.03 kg of acrylic against rev 2's 2.07 kg at 1/2 in,
+// half the weight, and the hole count and the square rim are machining time.
 //
-// NOTE: disc_d grew from rev 2's 16.5 in. An 18.25 in bolt circle does not
-// fit on a 16.5 in disc at all -- the holes would fall 22.2 mm outside the
-// rim -- so the diameter has to come from the mating part.  It is taken from
-// acrylic_disc_dia in flange_ring_24_to_19_half.scad, which specifies this
-// bolt circle for "disc retention".  If the disc is meant to stay 16.5 in,
-// the bolt circle is the number that has to change, and the assert below
-// will say so.
+// The screws sit 5/8 in in from the rim, which is the constraint the operator
+// stated, so the bolt circle is derived from it rather than typed in.  On a
+// 16.5 in disc that lands on the 15.25 in bolt circle that
+// flange_ring_24_to_16_half.scad specifies, and the assert below keeps the two
+// files from drifting apart: change the disc diameter and the flange has to be
+// told, because the screws stay 5/8 in from a rim that has moved.
 
 $fn = 160;
 
 /* [Disc] */
-disc_d = 19.5 * 25.4;  // 19-1/2 in (495.3 mm), per the flange's acrylic_disc_dia
+disc_d = 16.5 * 25.4;  // 16-1/2 in (419.1 mm), the 12F standard diameter
 disc_t = 6.35;         // 1/4 in nominal. Measure your sheet; cast acrylic often runs a bit off.
                        // The outer edge is deliberately square -- see the header.
 
@@ -41,10 +40,10 @@ bar_hole_dx = [-bar_hole_sp / 2, bar_hole_sp / 2];
 m2_clear    = 2.4;
 
 /* [Flange mounting, M4 countersunk] */
-ls_bolt_circle_d = 18.25 * 25.4;      // 18-1/4 in (463.55 mm), the flange's acrylic_bolt_circle
-ls_r      = ls_bolt_circle_d / 2;     // 231.775 mm
-ls_count  = 4;
-ls_start  = 90;     // first hole due north, on the +Y axis beyond the peg bar;
+ls_rim_inset = 0.625 * 25.4;          // 5/8 in (15.875 mm), rim to hole CENTER
+ls_r         = disc_d / 2 - ls_rim_inset;   // 193.675 mm, so an 15.25 in bolt circle
+ls_count     = 4;
+ls_start     = 90;  // first hole due north, on the +Y axis beyond the peg bar;
                     // the pattern then runs N, W, S, E at 90 deg
 m4_clear  = 4.5;    // 4 mm bolt with acrylic-friendly clearance.
                     // The flange specifies #8 screws through 3/16 in holes; if the
@@ -90,11 +89,20 @@ module flange_holes() {
             translate([ls_r, 0, 0]) m4_hole();
 }
 
-// The bolt circle has to leave real material at the rim, which is the check
-// rev 2 never needed because its pattern sat well inside the disc.
-assert(disc_d / 2 - ls_r - m4_csk_d / 2 > 5,
-       str("Bolt circle leaves only ", disc_d / 2 - ls_r - m4_csk_d / 2,
-           " mm between countersink and rim: raise disc_d or pull ls_bolt_circle_d in"));
+// The mating part names a bolt circle; this file derives one from the rim
+// inset.  They have to agree, and the one that is wrong is whichever file was
+// edited without the other.
+flange_bolt_circle_d = 15.25 * 25.4;    // flange_ring_24_to_16_half.scad
+assert(abs(2 * ls_r - flange_bolt_circle_d) < 0.1,
+       str("Bolt circle is ", 2 * ls_r, " mm but the flange is cut for ",
+           flange_bolt_circle_d, " mm: a 5/8 in inset on a ", disc_d / 25.4,
+           " in disc does not match flange_ring_24_to_16_half.scad"));
+
+// The inset has to leave real material at the rim, which is the check rev 2
+// never needed because its pattern sat well inside the disc.
+assert(ls_rim_inset - m4_csk_d / 2 > 5,
+       str("Inset leaves only ", ls_rim_inset - m4_csk_d / 2,
+           " mm between countersink and rim"));
 
 // A 1/4 in sheet is thin enough that the countersink and the slot are no
 // longer obviously free, so both are now checked.
