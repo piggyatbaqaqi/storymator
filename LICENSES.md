@@ -39,9 +39,9 @@ kind of thing that improves by being given back.
 `pegs/` is **CC-BY-SA-4.0** too, matching `distortion/` — the same
 kind of thing, caliper readings and analysis of our own bar.
 
-**Code is code wherever it sits.** Six Python files live inside data
+**Code is code wherever it sits.** Eight Python files live inside data
 directories and are **GPL-3.0-or-later** like the rest of the source.
-All six carry an SPDX header naming both their own licence and the
+All eight carry an SPDX header naming both their own licence and the
 licence of the directory around them, because that boundary is the one
 place in this repository a reader could reasonably guess wrong:
 
@@ -50,6 +50,7 @@ place in this repository a reader could reasonably guess wrong:
 | `acme_paper/acme_paper.py`, `acme_paper/src/*.py` | CC-BY-4.0 |
 | `distortion/v4k_01/anisotropy_scan.py`, `make_calibration.py` | CC-BY-SA-4.0 |
 | `pegs/honbay_0001/analyse.py` | CC-BY-SA-4.0 |
+| `corpora/corpus.py`, `corpora/corpus_test.py` | CC-BY-SA-4.0 |
 
 Mixing the two CC licences across directories is fine, and the
 compatibility runs one way: CC-BY-4.0 material (`acme_paper`) may be

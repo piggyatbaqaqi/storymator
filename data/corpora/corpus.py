@@ -20,6 +20,9 @@ normal state, not a broken one.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
@@ -54,25 +57,66 @@ class Corpus:
 
 def load(manifest_path: Path) -> Corpus:
     """Parse a manifest into a :class:`Corpus`."""
-    raise NotImplementedError
+    raw = json.loads(Path(manifest_path).read_text())
+    sheets = [
+        Sheet(
+            file=s["file"],
+            pass_name=s["pass"],
+            medium=s["medium"],
+            drawing=s["drawing"],
+            marks=tuple(s["marks"]),
+            pairs_with_cleanup=s["pairs_with_cleanup"],
+            sha256_16=s["sha256_16"],
+            stored_px=tuple(s["stored_px"]),
+            oriented_px=tuple(s["oriented_px"]),
+        )
+        for s in raw["sheets"]
+    ]
+    return Corpus(name=raw["name"], title=raw["title"],
+                  sheets=sheets, raw=raw)
 
 
 def root(corpus: Corpus,
          environ: Optional[Dict[str, str]] = None) -> Optional[Path]:
-    """Where the artwork actually is, or ``None`` if it is not here."""
-    raise NotImplementedError
+    """Where the artwork actually is, or ``None`` if it is not here.
+
+    ``STORYMATOR_CORPORA`` wins outright when it is set, and names a
+    directory holding corpora by name.  It does **not** fall back to the
+    manifest's default on a miss: someone who sets the variable has said
+    where the corpora are, and silently reading a different copy is how
+    you end up measuring the wrong one.
+    """
+    env = os.environ if environ is None else environ
+    override = env.get("STORYMATOR_CORPORA")
+    if override:
+        candidate = Path(override).expanduser() / corpus.name
+    else:
+        location = corpus.raw.get("location")
+        if not isinstance(location, dict):
+            return None
+        default = location.get("default_path")
+        if not isinstance(default, str):
+            return None
+        candidate = Path(default).expanduser()
+    return candidate if candidate.is_dir() else None
 
 
 def digest(path: Path, chars: int = DIGEST_CHARS) -> str:
     """The manifest's flavour of digest: leading hex of a SHA-256."""
-    raise NotImplementedError
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()[:chars]
 
 
 def by_pass(corpus: Corpus, pass_name: str) -> List[Sheet]:
     """The sheets of one pass, in manifest order."""
-    raise NotImplementedError
+    return [s for s in corpus.sheets if s.pass_name == pass_name]
 
 
 def pairing(corpus: Corpus) -> Dict[str, str]:
     """Rough drawing number to the cleanup number it became."""
-    raise NotImplementedError
+    return {s.drawing: s.pairs_with_cleanup
+            for s in corpus.sheets
+            if s.pairs_with_cleanup is not None}

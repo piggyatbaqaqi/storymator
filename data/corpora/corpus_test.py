@@ -30,11 +30,6 @@ import pytest
 
 import corpus as C
 
-# Removed one line at a time as corpus.py grows an implementation.
-# Until then HEAD stays green, which is what keeps bisect usable.
-skeleton = pytest.mark.xfail(raises=NotImplementedError,
-                             reason="corpus.py is still a skeleton")
-
 _HERE: Path = Path(__file__).resolve().parent
 MANIFEST: Path = _HERE / "manrun_cycle_2001_wwc" / "manifest.json"
 
@@ -68,37 +63,31 @@ def test_manifest_is_valid_json() -> None:
     json.loads(MANIFEST.read_text())
 
 
-@skeleton
 def test_loads(manrun: C.Corpus) -> None:
     assert manrun.name == "manrun_cycle_2001_wwc"
     assert len(manrun.sheets) == 24
 
 
-@skeleton
 def test_twelve_of_each_pass(manrun: C.Corpus) -> None:
     assert len(C.by_pass(manrun, "cleanup")) == 12
     assert len(C.by_pass(manrun, "rough")) == 12
 
 
-@skeleton
 def test_cleanups_are_numbered_one_to_twelve(manrun: C.Corpus) -> None:
     assert [s.drawing for s in C.by_pass(manrun, "cleanup")] == CLEANUP_NUMBERS
 
 
-@skeleton
 def test_roughs_carry_the_inserted_inbetweens(manrun: C.Corpus) -> None:
     """1.5 and 6.5 are the artist's own inbetweens, and must survive."""
     assert [s.drawing for s in C.by_pass(manrun, "rough")] == ROUGH_NUMBERS
 
 
-@skeleton
 def test_pairing_is_a_bijection(manrun: C.Corpus) -> None:
     got = C.pairing(manrun)
     assert got == EXPECTED_PAIRING
     assert sorted(got.values(), key=int) == CLEANUP_NUMBERS
 
 
-@skeleton
 def test_only_cleanups_lack_a_pair(manrun: C.Corpus) -> None:
     for s in manrun.sheets:
         if s.pass_name == "cleanup":
@@ -107,7 +96,6 @@ def test_only_cleanups_lack_a_pair(manrun: C.Corpus) -> None:
             assert s.pairs_with_cleanup is not None, s.file
 
 
-@skeleton
 def test_asterisks_are_on_roughs_one_six_and_ten(manrun: C.Corpus) -> None:
     """Verified across all 24 corners at native resolution."""
     marked = {s.drawing for s in manrun.sheets if "asterisk" in s.marks}
@@ -115,28 +103,24 @@ def test_asterisks_are_on_roughs_one_six_and_ten(manrun: C.Corpus) -> None:
     assert not any(s.marks for s in C.by_pass(manrun, "cleanup"))
 
 
-@skeleton
 def test_media_match_the_pass(manrun: C.Corpus) -> None:
     for s in manrun.sheets:
         expected = "graphite" if s.pass_name == "cleanup" else "blue pencil"
         assert s.medium == expected, s.file
 
 
-@skeleton
 def test_digests_are_well_formed(manrun: C.Corpus) -> None:
     for s in manrun.sheets:
         assert len(s.sha256_16) == C.DIGEST_CHARS, s.file
         int(s.sha256_16, 16)
 
 
-@skeleton
 def test_oriented_size_is_the_stored_size_transposed(manrun: C.Corpus) -> None:
     """Every sheet carries EXIF orientation 6, so the axes swap."""
     for s in manrun.sheets:
         assert list(s.oriented_px) == list(reversed(list(s.stored_px))), s.file
 
 
-@skeleton
 def test_sheets_are_not_all_the_same_size(manrun: C.Corpus) -> None:
     """The finding that forces edge-anchored geometry. Do not 'fix'."""
     sizes = {tuple(s.stored_px) for s in manrun.sheets}
@@ -148,7 +132,6 @@ def test_sheets_are_not_all_the_same_size(manrun: C.Corpus) -> None:
 
 # ---------------------------------------------------------- correspondence
 
-@skeleton
 def test_every_described_sheet_is_on_disk(manrun: C.Corpus,
                                           artwork: Path) -> None:
     missing = [s.file for s in manrun.sheets
@@ -156,7 +139,6 @@ def test_every_described_sheet_is_on_disk(manrun: C.Corpus,
     assert not missing, f"described but absent: {missing}"
 
 
-@skeleton
 def test_no_sheet_on_disk_is_undescribed(manrun: C.Corpus,
                                          artwork: Path) -> None:
     described = {s.file for s in manrun.sheets}
@@ -164,7 +146,6 @@ def test_no_sheet_on_disk_is_undescribed(manrun: C.Corpus,
     assert found == described, f"undescribed: {sorted(found - described)}"
 
 
-@skeleton
 def test_digests_still_match(manrun: C.Corpus,
                              artwork: Path) -> None:
     changed = [s.file for s in manrun.sheets
@@ -172,7 +153,6 @@ def test_digests_still_match(manrun: C.Corpus,
     assert not changed, f"content changed since the manifest: {changed}"
 
 
-@skeleton
 def test_stored_sizes_still_match(manrun: C.Corpus,
                                   artwork: Path) -> None:
     from PIL import Image
@@ -186,7 +166,6 @@ def test_stored_sizes_still_match(manrun: C.Corpus,
 
 # ------------------------------------------------------------- the helpers
 
-@skeleton
 def test_digest_matches_hashlib(tmp_path: Path) -> None:
     import hashlib
     p = tmp_path / "x.bin"
@@ -194,13 +173,11 @@ def test_digest_matches_hashlib(tmp_path: Path) -> None:
     assert C.digest(p) == hashlib.sha256(b"storymator").hexdigest()[:16]
 
 
-@skeleton
 def test_root_is_none_when_nothing_resolves(manrun: C.Corpus) -> None:
     nowhere = {"STORYMATOR_CORPORA": "/nonexistent"}
     assert C.root(manrun, environ=nowhere) is None
 
 
-@skeleton
 def test_root_prefers_the_environment(manrun: C.Corpus,
                                       tmp_path: Path) -> None:
     (tmp_path / manrun.name / "12F").mkdir(parents=True)
