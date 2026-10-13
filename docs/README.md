@@ -67,6 +67,17 @@ Two attributions the manuscript is careful about and so should we be:
 Ollie Johnston; **Successive Breaking of Joints** from Richard Williams,
 who credited Art Babbit.
 
+## Bibliography
+
+[bibliography.bib](bibliography.bib) — BibTeX for everything this
+project cites: the two governing documents, the animation-craft lineage
+the seven principles come through, and the models assessed in
+[planning/inking-and-tween-plugins.md](planning/inking-and-tween-plugins.md).
+Every entry was checked against the publisher's or arXiv's own listing;
+where a venue comes from the authors' repository rather than the
+listing, a `note` field says so. **A citation is not a licence** — see
+[LICENSES.md](../LICENSES.md).
+
 ## Bench procedures
 
 * [calibrating-a-camera.md](calibrating-a-camera.md) — lens calibration

@@ -1055,6 +1055,13 @@ calibration board.
 
 ## Sources
 
+BibTeX for the published work below is in
+[bibliography.bib](../bibliography.bib): `li2025tooncomposer`,
+`xing2024tooncrafter`, `wan2025`, `xing2023dynamicrafter`,
+`chen2023videocrafter1`, `guo2024gimmvfi`, `framefusion`,
+`simoserra2016learning`, `zhang2023controlnet`, `meng2024anidoc`.
+
+
 * ToonComposer — <https://github.com/TencentARC/ToonComposer>,
   <https://arxiv.org/abs/2508.10881>,
   <https://huggingface.co/TencentARC/ToonComposer>

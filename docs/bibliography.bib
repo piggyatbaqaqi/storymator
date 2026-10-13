@@ -1,0 +1,229 @@
+% storymator bibliography
+%
+% Conventions
+% -----------
+% Keys are lowercase surname + year + first significant title word, which
+% is the style of the first entry Monte supplied (li2025tooncomposer).
+%
+% Every entry below was checked against the publisher's or arXiv's own
+% listing on 2026-10-13, except li2025tooncomposer, which is quoted
+% verbatim as supplied.  Where a venue is recorded that the arXiv listing
+% does not itself state, it comes from the authors' own repository and is
+% marked in a `note` field, so a reader can tell a checked venue from a
+% reported one.
+%
+% Several of these are discussed, with their licensing, in
+% docs/planning/inking-and-tween-plugins.md.  A citation here is not an
+% endorsement and emphatically not a licence: see LICENSES.md.
+
+
+% =====================================================================
+% Project sources -- the governing documents
+% =====================================================================
+
+@unpublished{boulos2026desk,
+  title        = {{AI}-Enabled Traditional Animation Desk --- coarse scoping},
+  author       = {Boulos, Daniel and Yarroll, La Monte H. P.},
+  year         = {2026},
+  month        = aug,
+  note         = {The governing document for this repository.
+                  Everything here is a subproject of it.},
+}
+
+@unpublished{boulos2015toolbox,
+  title        = {The Animator's Toolbox},
+  author       = {Boulos, Daniel},
+  year         = {2015},
+  note         = {Unfinished manuscript, supplied 2026-09-10 as this
+                  project's authority on what makes an inbetween
+                  unusable.  The source of the seven principles as the
+                  project uses them; see
+                  docs/planning/inbetween-acceptance.md.},
+}
+
+
+% =====================================================================
+% Animation craft -- the lineage the seven principles come through
+% =====================================================================
+
+@book{thomas1981illusion,
+  title        = {The Illusion of Life: {D}isney Animation},
+  author       = {Thomas, Frank and Johnston, Ollie},
+  year         = {1981},
+  publisher    = {Abbeville Press},
+  address      = {New York},
+}
+
+@book{williams2001survival,
+  title        = {The Animator's Survival Kit},
+  author       = {Williams, Richard},
+  year         = {2001},
+  publisher    = {Faber and Faber},
+  address      = {London},
+  note         = {Source of the unfolding-box argument and of successive
+                  breaking of joints, which Williams credits to Art
+                  Babbit.},
+}
+
+
+% =====================================================================
+% Cartoon interpolation and post-keyframing
+% =====================================================================
+
+@article{li2025tooncomposer,
+  title={ToonComposer: Streamlining Cartoon Production with Generative Post-Keyframing},
+  author={Li, Lingen and Wang, Guangzhi and Zhang, Zhaoyang and Li, Yaowei and Li, Xiaoyu and Dou, Qi and Gu, Jinwei and Xue, Tianfan and Shan, Ying},
+  journal={arXiv preprint arXiv:2508.10881},
+  year={2025}
+}
+
+@article{xing2024tooncrafter,
+  title        = {{ToonCrafter}: Generative Cartoon Interpolation},
+  author       = {Xing, Jinbo and Liu, Hanyuan and Xia, Menghan and
+                  Zhang, Yong and Wang, Xintao and Shan, Ying and
+                  Wong, Tien-Tsin},
+  journal      = {arXiv preprint arXiv:2405.17933},
+  year         = {2024},
+  eprint       = {2405.17933},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  note         = {SIGGRAPH Asia 2024, journal track, per the authors'
+                  repository; the arXiv listing does not state a venue.},
+}
+
+@article{meng2024anidoc,
+  title        = {{AniDoc}: Animation Creation Made Easier},
+  author       = {Meng, Yihao and Ouyang, Hao and Wang, Hanlin and
+                  Wang, Qiuyu and Wang, Wen and Cheng, Ka Leong and
+                  Liu, Zhiheng and Shen, Yujun and Qu, Huamin},
+  journal      = {arXiv preprint arXiv:2412.14173},
+  year         = {2024},
+  eprint       = {2412.14173},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+}
+
+
+% =====================================================================
+% Video foundation models -- the substrate, and ToonCrafter's lineage
+% =====================================================================
+
+@article{wan2025,
+  title        = {{Wan}: Open and Advanced Large-Scale Video Generative
+                  Models},
+  author       = {{Team Wan}},
+  journal      = {arXiv preprint arXiv:2503.20314},
+  year         = {2025},
+  eprint       = {2503.20314},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  note         = {Apache-2.0.  The foundation model ToonComposer adapts.},
+}
+
+@article{xing2023dynamicrafter,
+  title        = {{DynamiCrafter}: Animating Open-domain Images with
+                  Video Diffusion Priors},
+  author       = {Xing, Jinbo and Xia, Menghan and Zhang, Yong and
+                  Chen, Haoxin and Yu, Wangbo and Liu, Hanyuan and
+                  Wang, Xintao and Wong, Tien-Tsin and Shan, Ying},
+  journal      = {arXiv preprint arXiv:2310.12190},
+  year         = {2023},
+  eprint       = {2310.12190},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  note         = {ECCV 2024 oral per the authors' repository.
+                  ToonCrafter is finetuned from this.},
+}
+
+@article{chen2023videocrafter1,
+  title        = {{VideoCrafter1}: Open Diffusion Models for
+                  High-Quality Video Generation},
+  author       = {Chen, Haoxin and Xia, Menghan and He, Yingqing and
+                  Zhang, Yong and Cun, Xiaodong and Yang, Shaoshu and
+                  Xing, Jinbo and Liu, Yaofang and Chen, Qifeng and
+                  Wang, Xintao and Weng, Chao and Shan, Ying},
+  journal      = {arXiv preprint arXiv:2310.19512},
+  year         = {2023},
+  eprint       = {2310.19512},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  note         = {The root of ToonCrafter's weight lineage, and the link
+                  that carries the non-commercial research restriction.
+                  See LICENSES.md.},
+}
+
+
+% =====================================================================
+% Frame interpolation -- the deterministic baselines
+% =====================================================================
+
+@article{guo2024gimmvfi,
+  title        = {Generalizable Implicit Motion Modeling for Video Frame
+                  Interpolation},
+  author       = {Guo, Zujin and Li, Wei and Loy, Chen Change},
+  journal      = {arXiv preprint arXiv:2407.08680},
+  year         = {2024},
+  eprint       = {2407.08680},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  note         = {NeurIPS 2024 per the authors' repository; the arXiv
+                  listing does not state a venue.  Interpolates at
+                  arbitrary timesteps, so it can take a chart.},
+}
+
+@misc{framefusion,
+  title        = {{FrameFusion-Model}: Compact image interpolation model
+                  for generating in-between frames},
+  author       = {{BurguerJohn}},
+  howpublished = {\url{https://github.com/BurguerJohn/FrameFusion-Model}},
+  note         = {Software repository.  No associated paper found;
+                  licence unverified as of 2026-10-13.},
+}
+
+
+% =====================================================================
+% Sketch cleanup and line art
+% =====================================================================
+
+@article{simoserra2016learning,
+  title        = {Learning to Simplify: Fully Convolutional Networks for
+                  Rough Sketch Cleanup},
+  author       = {Simo-Serra, Edgar and Iizuka, Satoshi and
+                  Sasaki, Kazuma and Ishikawa, Hiroshi},
+  journal      = {ACM Transactions on Graphics},
+  volume       = {35},
+  number       = {4},
+  year         = {2016},
+  publisher    = {ACM},
+  note         = {Proceedings of SIGGRAPH 2016.  The pretrained models
+                  are released under a non-commercial Creative Commons
+                  licence, which is a blocker for this project; see
+                  LICENSES.md.},
+}
+
+@article{simoserra2018mastering,
+  title        = {Mastering Sketching: Adversarial Augmentation for
+                  Structured Prediction},
+  author       = {Simo-Serra, Edgar and Iizuka, Satoshi and
+                  Ishikawa, Hiroshi},
+  journal      = {ACM Transactions on Graphics},
+  volume       = {37},
+  number       = {1},
+  year         = {2018},
+  publisher    = {ACM},
+}
+
+@inproceedings{zhang2023controlnet,
+  title        = {Adding Conditional Control to Text-to-Image Diffusion
+                  Models},
+  author       = {Zhang, Lvmin and Rao, Anyi and Agrawala, Maneesh},
+  booktitle    = {Proceedings of the IEEE/CVF International Conference on
+                  Computer Vision (ICCV)},
+  year         = {2023},
+  eprint       = {2302.05543},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  note         = {ControlNet.  The SD1.5 lineart models descend from
+                  this; their weights carry CreativeML OpenRAIL-M,
+                  accepted for this project 2026-10-13.},
+}
