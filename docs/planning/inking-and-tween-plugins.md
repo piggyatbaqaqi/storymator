@@ -997,6 +997,102 @@ beside `cells`, rather than into the cell record. If Monte's "how
 record" meant something that holds all of them, that is the one place
 this schema departs from the outline and it should be said out loud.
 
+### 13.3 Field size is a width; aspect ratio is the shape
+
+Monte, 2026-10-13: *"Do we need an aspect ratio in addition to a field
+size? … it is possible to use a 16:9 ratio with a 12F sheet, though it's
+usually 4:3."*
+
+**Yes, and they are independent.** A field size is the *width* of the
+camera field in field units. The aspect ratio supplies the height. 12F at
+4:3, 12F at Academy and 12F at 16:9 are three different rectangles that
+happen to share a width, so **a field size alone does not name a
+rectangle** and the schema cannot omit the ratio.
+
+One refinement worth building in from the start: **record the number, not
+the nickname.** The standard field chart is Academy **1.37:1**, which
+everyone calls 4:3. But 4:3 is 1.3333, and 1.37 vs 1.3333 is **2.7 % of
+the height** — about a quarter inch on a 12-field chart, which is the
+kind of discrepancy that surfaces at composite time and gets blamed on
+something else.
+
+### 13.4 And a finding: our `10F/` is not a 10 field
+
+Checking the question against the corpus turned up a mismatch.
+
+`12Fto10F` keeps the central **10/12 of both dimensions**, so the output
+inherits the scan's aspect exactly:
+
+| | px | aspect |
+|---|---|---|
+| 12F scan | 3281 × 2305 | 1.4234 |
+| `10F/` crop | 2734 × 1921 | **1.4232** |
+
+1.4232 is **not** 4:3 (1.3333), not Academy (1.3700) and not 16:9
+(1.7778). It is the *paper's* proportion, because a proportional crop
+cannot change the shape it started with. **This argument needs no scale
+at all**, which is what makes it solid.
+
+The scale makes it starker. Peg centres measure 800.4 px apart in these
+scans; against ACME's nominal 4.0000 in that is 200.1 ppi, and against
+the bar this project actually measured —
+[honbay_0001](../../data/calibration/pegs/honbay_0001/README.md), 4.0624
+in — it is 197.0 ppi. Either way **the `10F` crop is 13.7–13.9 inches
+wide, not 10.** (Which punch made the 2001 holes is unknown, so both are
+quoted rather than one chosen.)
+
+So **`10F` names a paper crop — the sheet less a 1/12 border — not a
+camera field.** The name asserts a field; the geometry does not deliver
+one. Nothing downstream is broken by this yet, because nothing has used
+it as a field. It wants deciding before something does: rename the
+directory, or change the crop.
+
+**And a true field crop needs the pegs.** The field centre is fixed
+relative to the *peg bar*, not to the sheet edges — a sheet trimmed
+slightly off-square still shoots true, because the camera is registered
+to the pegs. So cropping a real field means locating the pegs first,
+which is `comfyui_acme`'s job and is exactly what the present `10F` crop
+destroys (§12.1). The two findings are the same finding seen twice.
+
+### 13.5 Where each belongs in the schema
+
+Aspect is a property of the **production**; field size and centre are
+properties of a **camera instruction on a row**:
+
+```json
+{
+  "format": {
+    "aspect_ratio": "1.37:1",
+    "aspect_decimal": 1.37,
+    "name": "Academy",
+    "note": "not 4:3 -- 1.37 vs 1.3333 is 2.7% of height"
+  },
+  "rows": [
+    {
+      "frame": 1,
+      "cells": [{"level": "A", "drawing": "1"}],
+      "camera": {"field": {"size": 10.0, "north": 0.0, "east": 0.0}}
+    }
+  ]
+}
+```
+
+Three notes:
+
+**Both the ratio string and its decimal.** The string is what an animator
+writes; the decimal is what code compares. Storing only the string means
+every consumer parses `"16:9"`, and one of them will do it wrong.
+
+**Field size carries a centre offset.** Field instructions are notated
+`10F N2 E3` — size *and* position. A size-only field is only the centred
+case, and a pan is a sequence of centres, so the offsets have to exist
+before pans can be expressed at all.
+
+**Aspect sits at production level, overridable per row.** It is the
+delivery format and effectively constant, so repeating it on every row
+invites two rows to disagree. A per-row override costs nothing and covers
+the rare format change.
+
 ### 13.2 What this changes in the build order
 
 **The exposure sheet is the better first target, and it is also easier.**

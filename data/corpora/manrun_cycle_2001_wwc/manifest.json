@@ -35,7 +35,7 @@
     }
   },
   "reading": {
-    "field_sizes": "12F and 10F are FIELD SIZES, not frame counts: 2734/3281 = 1921/2305 = 0.8333 = 10/12.",
+    "field_sizes": "12F and 10F are field NAMES, not frame counts: 2734/3281 = 1921/2305 = 0.8333 = 10/12. But the crop is proportional, so the output keeps the paper's aspect (1.4232) -- which is not 4:3, not Academy 1.37 and not 16:9 -- and at the measured scale it is 13.7-13.9 in wide, not 10. So 10F is a PAPER CROP, not a camera field. See planning note section 13.4.",
     "exif": "All files carry orientation=6, so identify reports 2305x3281 while viewers show 3281x2305. Call exif_transpose or you work on a sideways page.",
     "structure": "Two passes of one 12-drawing run cycle. Twelve graphite cleanups numbered 1-12; twelve blue roughs numbered 1..10 with 1.5 and 6.5 inserted, so the cleanup pass renumbered. Pairing confirmed by overlay, not arithmetic.",
     "asterisks": "Rough 1, 6 and 10 only; no cleanup carries one. Hypothesis: they mark keys or extremes -- 1 and 6 are half a cycle apart. PUT TO DANIEL 2026-10-13, ANSWER OUTSTANDING.",
@@ -74,7 +74,8 @@
         86,
         93
       ]
-    }
+    },
+    "scale_note": "200.1 ppi against ACME's nominal 4.0000 in peg centres, or 197.0 ppi against the bar this project measured (honbay_0001, 4.0624 in). Which punch made the 2001 holes is unknown, so both are carried rather than one chosen."
   },
   "sheets": [
     {
