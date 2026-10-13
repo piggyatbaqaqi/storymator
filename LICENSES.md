@@ -174,6 +174,56 @@ message, which is why it sits beside them in `docs/licensing/` rather
 than being summarised here alone. Anyone downstream relies on the same
 message.
 
+## Model weights — OpenRAIL-M accepted, 2026-10-13
+
+**Asked and answered the same day.** The inking and inbetweening audit
+raised whether **CreativeML OpenRAIL-M** could enter the pipeline, since
+it is not a FOSS licence — it attaches field-of-use restrictions and
+carries them downstream. Monte's decision:
+
+> OpenRAIL-M licenses are acceptable. The field-of-use restrictions are
+> neither a commercial nor ethical concern for our project.
+
+So the SD-lineage ControlNets and preprocessors are available. That
+matters most for the **colour/render stage**, where a ControlNet's job
+is to redraw and redrawing is the point. It does not make a ControlNet
+the right tool for *inking*, which was always an architectural
+objection rather than a licensing one —
+[the assessment](docs/planning/inking-and-tween-plugins.md) §3.1.
+
+**The decision does not reach the other two restrictions**, which are a
+different class and were never OpenRAIL questions:
+
+| artefact | weights | status |
+|---|---|---|
+| Wan 2.1 / 2.2, ToonComposer, Anime2Sketch preprocessors | Apache-2.0 / MIT | **clean** |
+| SD1.5 / SD2.1 ControlNets and preprocessors | CreativeML OpenRAIL-M | **accepted** — this decision |
+| `sketch_simplification` | **CC non-commercial** | **blocker**, unaffected |
+| ToonCrafter | declares Apache-2.0; root is VideoCrafter1, **non-commercial research** | **open**, unaffected |
+| GIMM-VFI, FrameFusion | unverified | **verify on adoption** |
+
+### Trace the chain, and record the chain
+
+The ToonCrafter row is the cautionary one, and the first pass of the
+assessment got it wrong in both directions. It is tagged Apache-2.0 on
+its own model card — *"Feel free to use it under the Apache-2.0
+license"* — and finetuned from DynamiCrafter (Apache-2.0, THL A29
+Limited), which is finetuned from **VideoCrafter1**, which says:
+
+> "We develop this repository for RESEARCH purposes, so it can only be
+> used for personal/research/non-commercial purposes."
+
+The restriction sits three links up, in a README disclaimer rather than
+a LICENSE file, under a model card that affirmatively declares
+otherwise. Whether it survives two rounds of finetuning into a contrary
+declaration is a genuine question, and not one to settle by reading
+README files.
+
+**The rule this suggests for checkpoints:** trace the lineage to a root
+that states its own terms, and record the *chain* here rather than the
+conclusion, so the next reader can check it instead of trusting it. A
+model card's licence tag is a claim about the last link only.
+
 ## Decisions still to make
 
 * **`-or-later` vs `-only`** — this file says `-or-later`, the FSF's
@@ -185,19 +235,9 @@ message.
   tidiness, not a requirement.
 
 * **Model weights are a third category, and none are adopted yet.**
-  Neither GPL nor CC fits a checkpoint, and the inking/inbetweening
-  candidates are not uniformly open. Audited 2026-10-13 in
+  Neither GPL nor CC fits a checkpoint. Audited 2026-10-13 in
   [docs/planning/inking-and-tween-plugins.md](docs/planning/inking-and-tween-plugins.md)
-  §5. The findings that need a decision before any of it is wired in:
-
-  | artefact | weights | status |
-  |---|---|---|
-  | Wan 2.1 / 2.2, ToonComposer, Anime2Sketch preprocessors | Apache-2.0 / MIT | **clean** |
-  | SD1.5 LineArt ControlNets | CreativeML OpenRAIL-M | **not FOSS — carries use restrictions downstream** |
-  | `sketch_simplification` | CC non-commercial | **blocker** |
-  | ToonCrafter | unclear (DynamiCrafter → SVD lineage) | **verify; the Apache-2.0 code licence does not cover the checkpoint** |
-  | GIMM-VFI, FrameFusion | unverified | **verify** |
-
-  The question for this file is whether OpenRAIL-M is acceptable
-  anywhere in the pipeline, and how a checkpoint's licence gets
-  recorded when one is adopted.
+  §5; **OpenRAIL-M is settled** (see below). What is left to decide is
+  how a checkpoint's licence gets recorded here when one is first
+  adopted, and the two non-commercial questions in the table below —
+  neither of which is on the critical path.

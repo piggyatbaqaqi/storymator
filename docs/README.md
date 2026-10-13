@@ -96,7 +96,10 @@ who credited Art Babbit.
   inking; Wan and FrameFusion are baselines rather than the engine;
   ToonComposer takes keyframe sketches at chosen frame indices, which
   is the only interface on offer that accepts a timing chart. Carries
-  a licence audit — two candidates are encumbered and three unverified.
+  a licence audit: OpenRAIL-M accepted 2026-10-13, which clears the
+  SD-lineage ControlNets for the colour stage; `sketch_simplification`
+  and ToonCrafter remain blocked on non-commercial terms, neither on
+  the critical path.
 * [planning/acme-registration-plugin.md](planning/acme-registration-plugin.md)
   — design for the capture-and-register stage as a ComfyUI 0.35 plugin.
   Carries the rig questions that have to be answered before code.

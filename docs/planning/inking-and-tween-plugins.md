@@ -85,11 +85,18 @@ diagnostic if it tests *your* drawings. A cleanup stage that
 regenerates the line has broken the pencil test before the tweener
 ever runs.
 
-There is a licence objection too. The SD1.5 lineage carries
-**CreativeML OpenRAIL-M**, which is not a FOSS licence — it attaches
-use restrictions and carries them downstream. Against the project's
-standing rule, that wants deciding before it enters the pipeline, not
-after.
+There was a licence objection too, and it is **withdrawn**. The SD1.5
+lineage carries **CreativeML OpenRAIL-M**, and Monte settled on
+2026-10-13 that OpenRAIL-M is acceptable here: the field-of-use
+restrictions are neither a commercial nor an ethical concern for this
+project. See [LICENSES.md](../../LICENSES.md).
+
+**That leaves the architectural objection standing alone, which is the
+one that always mattered.** The ControlNets are now ours to use; using
+them to clean a drawing would still regenerate the artist's line. The
+decision changes where they belong, not whether the round trip is
+sound — and where they belong is the colour stage, which §8 already
+said.
 
 ### 3.2 The split that the inking stage actually needs
 
@@ -261,11 +268,34 @@ ComfyUI nodes today, and runs comfortably in 24 GB at 512×320. It is
 the fastest route to a moving picture.
 
 But: 2 frames in, ~16 out, **pacing fixed by the model** — so it hits
-the same acceptance §3 wall as Wan. And its code being Apache-2.0 does
-not settle the weights, whose lineage runs through DynamiCrafter to
-Stable Video Diffusion and the Stability community licence.
-**Needs verification before use; do not assume the code licence covers
-the checkpoint.**
+the same acceptance §3 wall as Wan.
+
+**On the licence, traced 2026-10-13, because the first pass of this
+note got it wrong.** It said the weights descended from Stable Video
+Diffusion and the Stability community licence. They do not. The actual
+chain is:
+
+| link | what it says |
+|---|---|
+| **ToonCrafter** | HF card tagged Apache-2.0: *"Feel free to use it under the Apache-2.0 license."* Finetuned from DynamiCrafter-interpolation (512×320). |
+| **DynamiCrafter** | Apache-2.0, copyright THL A29 Limited (Tencent). Finetuned from VideoCrafter1. |
+| **VideoCrafter1** | *"We develop this repository for RESEARCH purposes, so it can only be used for personal/research/non-commercial purposes."* Codebase builds on Stable Diffusion. |
+
+So the question at the root is **not** OpenRAIL and is therefore *not*
+answered by the 2026-10-13 decision. It is a **non-commercial research
+restriction**, which is the same class of problem as §3.3 and a
+different class from the ControlNets.
+
+Two things make it arguable rather than settled: the restriction sits
+in a README disclaimer rather than in a LICENSE file, and ToonCrafter
+affirmatively declares Apache-2.0 two links downstream. Whether a
+disclaimer upstream survives two rounds of finetuning into a contrary
+declaration is a real question and not one to answer by reading
+README files.
+
+**Still open, and still a reason not to build on it.** It is a third
+baseline whose pacing we cannot control anyway, so the cost of leaving
+the question unanswered is low.
 
 Worth having as a third baseline. Not worth building the suite around,
 now that ToonComposer exists.
@@ -278,7 +308,7 @@ now that ToonComposer exists.
 | 2 | **GIMM-VFI** | yes (arbitrary *t*) | no | unverified | deterministic baseline, upper rung |
 | 3 | **FrameFusion** | yes (arbitrary *t*) | no | unverified | deterministic baseline, floor; harness calibration |
 | 4 | **Wan 2.2 / 2.1 FLF2V** | **no** | no | Apache-2.0 | base weights; generative baseline |
-| 5 | **ToonCrafter** | **no** | yes | code Apache-2.0, **weights unclear** | third baseline |
+| 5 | **ToonCrafter** | **no** | yes | declares Apache-2.0 over a **non-commercial research** root (§4.4) | third baseline |
 
 Also worth a look later, not now: **AniDoc** (sketch colourisation with
 line propagation) and **LVCD** for the colour stage; **MangaNinja** for
@@ -297,16 +327,24 @@ anything new, and three of these would have failed quietly.
 | ToonComposer | MIT | MIT | **clean** |
 | Anime2Sketch-derived preprocessors | MIT | MIT | **clean** |
 | `acme/*` legibility cleanup | GPLv3 (ours) | n/a | **clean** |
-| SD1.5 LineArt ControlNets | Apache-2.0 | **CreativeML OpenRAIL-M** | **not FOSS — use restrictions, decide first** |
-| `sketch_simplification` | free non-commercial | **CC non-commercial** | **blocker** |
-| ToonCrafter | Apache-2.0 | **unclear (DynamiCrafter → SVD)** | **verify before use** |
+| SD1.5 LineArt ControlNets | Apache-2.0 | CreativeML OpenRAIL-M | **accepted 2026-10-13** — field-of-use restrictions are not a concern here |
+| `sketch_simplification` | free non-commercial | **CC non-commercial** | **blocker** — a different licence from OpenRAIL; the 2026-10-13 decision does not reach it |
+| ToonCrafter | Apache-2.0 | declares Apache-2.0; root is VideoCrafter1, **non-commercial research** | **open** — see §4.4; not an OpenRAIL question |
 | GIMM-VFI, FrameFusion | unverified | unverified | **verify before use** |
 
-The pattern is worth naming: **the permissive pieces are the ones that
-were released as products of industrial labs with legal review (Alibaba,
-Tencent ARC); the encumbered ones are academic releases.** The
-intuition that research code is freer than corporate code is backwards
-here.
+Two patterns worth naming.
+
+**The permissive pieces are the industrial releases** (Alibaba,
+Tencent ARC), the encumbered ones academic. The intuition that research
+code is freer than corporate code is backwards here.
+
+**And a licence declaration is not a licence audit.** ToonCrafter says
+Apache-2.0 and means it; the restriction is two links upstream, where
+nobody looking at the model card would see it. The first pass of this
+note named the wrong upstream, which is the same mistake in the other
+direction. **Trace the chain to a root that states its own terms, and
+record the chain rather than the conclusion** — that is what §4.4 now
+does, so the next reader can check it instead of trusting it.
 
 ---
 
@@ -488,8 +526,15 @@ with the colour stage, which ToonComposer may well absorb anyway.
    sparse-sketch interface takes frame *indices*. If a chart can
    specify a fraction that falls between frames, the mapping needs a
    rule.
-3. **The licence decisions in §5**, particularly whether OpenRAIL-M is
-   acceptable anywhere in this pipeline. Standing rule says ask.
+3. ~~**Whether OpenRAIL-M is acceptable anywhere in this pipeline.**~~
+   **Answered 2026-10-13: yes**, the field-of-use restrictions are
+   neither a commercial nor an ethical concern for this project. This
+   clears the SD-lineage ControlNets and preprocessors, which matters
+   most for the colour stage. It does **not** clear
+   `sketch_simplification` (CC non-commercial, §3.3) or ToonCrafter
+   (non-commercial research root, §4.4) — both are a different class of
+   restriction. Those two remain open, and neither is on the critical
+   path.
 4. **Still open from acceptance §7: is there paired data?** Keys with
    the inbetweens an assistant actually drew. It is the gate on
    fine-tuning any of this, and nothing substitutes for it.
@@ -504,6 +549,9 @@ with the colour stage, which ToonComposer may well absorb anyway.
 * Wan 2.1 FLF2V in ComfyUI — <https://docs.comfy.org/tutorials/video/wan/wan-flf>
 * FrameFusion — <https://github.com/BurguerJohn/FrameFusion-Model>
 * GIMM-VFI — <https://github.com/GSeanCDAT/GIMM-VFI>
-* ToonCrafter — <https://github.com/Doubiiu/ToonCrafter>
+* ToonCrafter — <https://github.com/Doubiiu/ToonCrafter>,
+  <https://huggingface.co/Doubiiu/ToonCrafter> (licence tag and parent model)
+* ToonCrafter's weight lineage — <https://github.com/Doubiiu/DynamiCrafter>,
+  <https://github.com/AILab-CVC/VideoCrafter> (the non-commercial research root)
 * sketch simplification — <https://github.com/bobbens/sketch_simplification>
 * VFI survey — <https://github.com/CMLab-Korea/Awesome-Video-Frame-Interpolation>
