@@ -67,6 +67,44 @@ Two attributions the manuscript is careful about and so should we be:
 Ollie Johnston; **Successive Breaking of Joints** from Richard Williams,
 who credited Art Babbit.
 
+## Dependencies, and where they are declared
+
+Three tiers, kept apart on purpose:
+
+| tier | file | why there |
+|---|---|---|
+| **node-pack runtime** | `comfyui/<pack>/requirements.txt` | the ComfyUI Manager installs it into every user's ComfyUI, so it carries what the pack needs to run and nothing else |
+| **repository tooling** | [`requirements-dev.txt`](../requirements-dev.txt) | pytest, mypy, flake8, bibtexparser — installed by whoever works on the repo, by nobody else |
+| **the environment** | the `storymator` conda env | numpy, scipy, Pillow, OpenCV and torch come from here, and are deliberately *not* pip-declared, so nobody installs a second conflicting set |
+
+**There is no top-level `pyproject.toml` and should not be one.** This
+repository is a workspace of independently installable components —
+`big_green_button/` and `comfyui_acme/` each carry their own
+`pytest.ini` — rather than a single distribution. A top-level
+`pyproject.toml` would assert otherwise. When a pack is published to the
+Comfy registry it gets its **own** `pyproject.toml`, because that is
+where the registry reads `[tool.comfy] PublisherId` and
+`[project] name`/`version` from. That matters most for
+`comfyui_penciltest`, which is meant to leave
+([planning/inking-and-tween-plugins.md](planning/inking-and-tween-plugins.md)
+§14).
+
+### Three gaps, recorded rather than fixed
+
+* **mypy and flake8 have no configuration file** anywhere — no
+  `setup.cfg`, `.flake8` or `mypy.ini`. CLAUDE.md requires new code to
+  pass both, so "passes mypy" currently means "passes whatever mypy is
+  on the path, with its defaults", which is not reproducible between
+  machines or over time.
+* **The `storymator` conda environment is undocumented.** There is no
+  `environment.yml`, and running the suite under the wrong environment
+  does not fail — it silently collects fewer tests. That is an
+  experienced failure, not a hypothetical one, and `requirements-dev.txt`
+  does nothing about it.
+* **The `bin/` CLIs' runtime dependencies are undeclared.** They import
+  numpy, scipy, Pillow and OpenCV and rely on the conda environment
+  having them.
+
 ## Bibliography
 
 [bibliography.bib](bibliography.bib) — BibTeX for everything this

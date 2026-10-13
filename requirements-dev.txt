@@ -1,0 +1,40 @@
+# Tools this repository's own development needs.  Nothing here ships.
+#
+# The boundary that matters
+# -------------------------
+# A ComfyUI custom node pack's requirements.txt is installed into every
+# user's ComfyUI by the Manager, so it carries runtime dependencies and
+# nothing else.  comfyui_acme/requirements.txt is deliberately down to a
+# single line for that reason.  comfyui_penciltest will be tighter still,
+# because it is meant to be contributed upstream.
+#
+# So development tooling goes here instead, at the top level, where it is
+# installed by whoever works on the repository and by nobody else.
+#
+# Runtime libraries are NOT listed here
+# -------------------------------------
+# numpy, scipy, Pillow and OpenCV are supplied by the `storymator` conda
+# environment and, for the node packs, by ComfyUI itself.  Listing them
+# would invite someone to `pip install -r` their way into a second,
+# conflicting set.  See the note on the environment below.
+
+# Testing.  pytest.ini lives per component -- big_green_button/ and
+# comfyui_acme/ each have their own -- so there is no top-level config
+# to match this.
+pytest
+
+# Type checking and style, both required by CLAUDE.md for new code.
+# Neither has a configuration file anywhere in the repository yet, so
+# "passes mypy" currently means "passes whatever mypy is on the path,
+# with its defaults".  Worth fixing; see docs/README.md.
+mypy
+flake8
+
+# Reads docs/bibliography.bib.
+#
+# Pinned to the 2.x line on purpose: v1 and v2 are different libraries
+# wearing one name.  v1 is `bibtexparser.load(fh)` returning objects with
+# an ENTRYTYPE key; v2 is `bibtexparser.parse_file(path)` returning a
+# Library with .entries, .failed_blocks and typed fields.  Code written
+# against one raises AttributeError on the other.
+bibtexparser>=2.0.0b9
