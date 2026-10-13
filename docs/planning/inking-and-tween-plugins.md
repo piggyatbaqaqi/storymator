@@ -541,6 +541,291 @@ with the colour stage, which ToonComposer may well absorb anyway.
 
 ---
 
+## 10. A correction: the arc check is degenerate for a single inbetween
+
+Found 2026-10-13 while working out what the first tests assert.
+Acceptance §2's Arcs row says:
+
+> Track a feature […] across key → inbetween → key. […] Fit an arc
+> through the neighbouring keys; measure the inbetween's deviation from
+> it, and the interior angle at the inbetween.
+
+**Three distinct non-collinear points determine exactly one circle.** So
+the deviation of inbetween *I* from the circle through (key *A*, *I*,
+key *B*) is **identically zero for every *I***, including deliberately
+awful ones. Measured over 20,000 random inbetweens scattered ±20 units
+around a 10-unit key separation, the worst deviation found was
+**3.6 × 10⁻¹²** — floating-point noise.
+
+That sentence bundles two checks, and only one of them survives on a
+single inbetween:
+
+| check | needs | measured behaviour |
+|---|---|---|
+| **interior angle at the inbetween** | 3 points — **one inbetween is enough** | discriminates cleanly: **180.0°** dead centre (the straight line the principle forbids), 146.6° gentle arc, 58.1° sharp corner, 43.2° off-path spike |
+| **deviation from an arc** | the arc determined *independently* of the candidate: **≥3 keys**, or ≥2 inbetweens, or the artist's own drawn guide | with three keys: **0.000** for a drawing on the key arc, **1.960** for one taking the chord shortcut |
+
+Consequences for the plugin suite:
+
+* `HarnessArcDeviation` (§6.4) **splits into two nodes** with different
+  fixture requirements — `HarnessInteriorAngle` and
+  `HarnessArcDeviation`.
+* **Build the interior angle first.** It works on the narrowest case —
+  two keys and one inbetween — which acceptance §7 Q4 suggests is the
+  common one, and it catches the straight-line failure the manuscript
+  names in so many words: *"no part of the move would be on a purely
+  straight line"*.
+* `HarnessArcDeviation` needs a fixture with **three keys or two
+  inbetweens**, so whether it is in the first slice depends on the
+  answer to §11.1.
+
+**This sharpens the harness rather than weakening it.** As written, the
+deviation check would have returned zero on every candidate and been
+believed — a passing measurement that measured nothing. Worth catching
+before it was a number in a funding document.
+
+Verification script kept out of the repository: it is six lines of
+circle-fitting and reproduces from the table above. If it should live
+in `acme/` as a test instead, say so.
+
+---
+
+## 11. Decisions needed before the first test
+
+Per the project's TDD rule the tests get written and confirmed before
+any implementation, so these are the answers the test bodies depend on.
+Split by whether they actually block.
+
+### 11.1 Blocking — a test cannot be written without these
+
+**1. Fixtures — mostly answered by the ManRunCycle corpus, with one gap
+left and one correction.** The corpus is read in detail in §12. What it
+settles:
+
+| test | needs | status |
+|---|---|---|
+| rough → clean cleanup | aligned rough/clean pairs | **12 pairs, already in register** (§12) |
+| `HarnessArcDeviation` | three keys, or two inbetweens (§10) | **real material now** — a 12-drawing sequence on one peg bar |
+| `HarnessSpacingError` | a sequence with known spacing | **partly** — drawing numbers, including 1.5 and 6.5, but no chart |
+| `HarnessJointOnset` | a joint chain, plus a known-bad variant | **real half**; the bad half must still be authored |
+| `InkReadTimingChart` | a page with a real chart, and Daniel's reading | **still nothing** |
+
+So the split still stands, but it has moved:
+
+* **The harness still wants synthetic for the *failing* half, and
+  should.** You cannot photograph a drawing that opens three joints at
+  exactly the same instant; you author one and assert rejection.
+  Acceptance §6 wants *"deliberately bad candidates"* and those have to
+  be constructed. `acme/synth.py` is the precedent. What the corpus adds
+  is the *passing* half — real drawings an assistant actually made, so
+  the harness can be shown not to reject good work.
+* **The chart reader is still blocked and is now the only thing that
+  is.** No sheet in the corpus carries a chart. The ask is unchanged and
+  small: **one photographed page with a chart on it, plus Daniel's
+  reading of it.** Worth making this week, because it is the only
+  input the §8 build order cannot start without.
+
+**The correction: use `12F/`, not `10F/`.** The 10F crop removes the
+outer 1/12 of each dimension, which is exactly where the peg holes are.
+Measured: the bottom band of a 10F frame is blank paper. No pegs means
+no registration landmarks, which makes every `comfyui_acme` node
+inapplicable to it. **10F is a viewing crop, not a working set.**
+
+**2. What is in a `TIMING_CHART`?** This is the specification, so its
+shape propagates into every test downstream. The sub-questions:
+
+* **Frame numbers, fractions, or both?** I think both and they are not
+  redundant: the chart's *marks* give fractions along the path, its
+  *numbers* give frame positions, and the mapping between them is the
+  whole content. ToonComposer's interface wants indices; acceptance §2's
+  *"must land at 0.5 of the way along the path"* wants fractions.
+* **Is the fraction read off the chart's geometry, or derived from the
+  frame numbers?** It must be **read**. Deriving it is a formula, and
+  the manuscript calls formula *"a nail in the coffin"*. This is the
+  single most consequential line in the data model and it means the
+  reader must locate mark positions sub-pixel, not just count marks.
+* **How is a hold represented?** Two marks at the same position with
+  different frame numbers — so the model must permit duplicate
+  fractions, and `HarnessSpacingError` must not divide by a zero gap.
+* **Does `provenance` allow `defaulted` at all?** §6.1 proposed
+  `read / asserted / defaulted`. Given acceptance §3's rule, a defaulted
+  chart is a rule violation. I would make it representable but
+  **poisoning** — it appears in the `HARNESS_REPORT` and nothing can
+  launder it. The alternative is a hard error. Your call.
+
+**3. The pack layout, and a name collision worth fixing now.**
+§6 proposed four packs. Two sub-decisions:
+
+* **`comfyui_acme` or a new pack for cleanup?** Cleanup is downstream of
+  registration and uses the same `ACME_CALIBRATION` and the same von
+  Kries white balance, which argues for keeping it in `comfyui_acme`.
+  That gives **three packs, not four**: `comfyui_acme` (capture,
+  register, clean), `comfyui_tween`, `comfyui_harness`.
+* **Do not call it `ink`.** `acme/ink.py` already means *the marker ink
+  on the peg crowns*, documented at length in
+  [ink-landmarks.md](ink-landmarks.md). A drawing-cleanup module also
+  called ink would make every future reference ambiguous. I recommend
+  **`acme/clean.py`** with nodes `AcmeClean*` — which is also the
+  governing document's own word (*"cleanup, paint and compositing"*),
+  and it leaves the name "ink" free for the actual inking stage in §3.2,
+  which is the thing we are deliberately not building yet.
+
+### 11.2 Proceeding on these defaults unless you say otherwise
+
+Stated so they are visible rather than buried in a test body. None of
+them need an answer to start.
+
+**4. The joint decomposition is an input, not an inference.**
+`HarnessJointOnset` takes the chain as a parameter and the first
+fixtures hand-author it. Deriving it from the drawing is the research
+problem acceptance §4 discusses; the harness does not need to wait for
+it. Daniel's tag-vocabulary floor (acceptance §7 Q3) can land later
+without changing the node signature.
+
+**5. Thresholds live in configuration; tests assert measurements.** What
+spacing error constitutes a reject is a studio judgment, not an
+engineering one — acceptance §2 gives 0.5-read-as-0.3 as a clear
+failure, but says nothing about 0.05. So tests assert *measured values*
+on known fixtures, and the reject thresholds sit in a config file where
+they are Daniel's to tune, under the project's CLI/env/config precedence
+rule. This unblocks the tests without needing the numbers.
+
+**6. Harness measurements are in millimetres on the page.** Registration
+already produces a common coordinate system and the codebase works in mm
+(`default_residual_mm`). Millimetres make measurements comparable across
+captures at different camera distances; pixels do not.
+
+**7. The tracked feature starts as the ink centroid.** Acceptance §2
+wants *"centre of mass in a wide shot, hand or head in a medium"*. The
+first is the first moment of the binarised drawing — deterministic and
+testable today. "Hand or head" needs the tag vocabulary, so it waits
+with decision 4. Means the arc checks are honest for wide shots and
+approximate for medium ones at the start, which should be recorded in
+the report rather than hidden.
+
+### 11.3 Can wait
+
+**8. Desktop or laptop 5090** (§2). Blocks model work, not tests.
+
+**9. Non-integer chart positions** (§9 Q2). Needs a real chart to
+know whether it ever happens.
+
+---
+
+## 12. The ManRunCycle corpus, read 2026-10-13
+
+`~/lab/storymator/training_data/ManRunCycle_Rough_CleanUp_2001_WWC`.
+Opened and measured rather than taken on the folder name, because what
+is in it changes §11.
+
+### 12.1 Shape
+
+| entry | what |
+|---|---|
+| `12F/` | 24 PNGs, 8.8 MB each, **327 MB** — the full sheet, pegs included |
+| `10F/` | the same 24, rotated and cropped, 2734×1921, **201 MB** |
+| `12Fto10F` | **a bash script, not a directory**: `magick $a -rotate 90 -crop 2734x1921+273+192` |
+
+The crop keeps exactly the central **10/12** of each dimension —
+2734/3281 = 1921/2305 = 0.8333 — which is what establishes that
+**12F and 10F are field sizes, not frame counts.**
+
+**An EXIF trap.** The files carry `orientation=6`, so `identify` reports
+2305×3281 (portrait) while every viewer shows 3281×2305 (landscape).
+A loader that does not call `exif_transpose` silently works on a
+sideways page. That deserves its own test.
+
+### 12.2 What the 24 sheets are
+
+Two passes of one run cycle:
+
+* **files 1–12 — graphite cleanups**, numbered 1 … 12.
+* **files 13–24 — blue-pencil roughs**, numbered (in file order)
+  3, 1, **1.5**, 2, 4, 5, 6, **6.5**, 7, 8, 9, 10.
+
+The roughs run 1 … 10 with **1.5 and 6.5** inserted. Ten drawings plus
+two inbetweens is twelve, and the cleanups are 1 … 12 — so the cleanup
+pass **renumbered**. Confirmed by overlay rather than by arithmetic:
+rough 1 ↔ clean 1, rough 1.5 ↔ clean 2, rough 2 ↔ clean 3,
+rough 3 ↔ clean 4, same poses in the same place on the page.
+
+**So the fractional numbers are the artist's own inbetweens**, and the
+corpus is a partial answer to acceptance §7 Q1 — paired keys and the
+inbetweens an assistant actually drew — without the chart that would
+have made it a complete one.
+
+**The ✗ marks.** A small ✗ sits under 1, 6 and 10, and under no other
+drawing — not under 1.5 or 6.5. In a ten-drawing run, 1 and 6 are half
+a cycle apart, which is where the two contacts fall, so the obvious
+reading is that ✗ marks a key or extreme. **That is a guess and should
+be put to Daniel, not assumed.** If it is right, the corpus carries its
+own key/inbetween labelling and `HarnessJointOnset` has its chain
+endpoints for free.
+
+### 12.3 Measurements
+
+* **Peg geometry**: two oblong slots flanking one round hole, the round
+  one carrying a **white reinforcement patch**. Detection must not
+  assume bare paper around a hole — this one is repaired.
+* **Scale**: adjacent peg features sit 800.1 and 800.7 px apart. Against
+  ACME's 4-inch spacing that is **200 px/inch**, consistent across both
+  passes.
+* **Capture repeatability**: the same three features land within
+  **3.5 px** between the rough capture and the clean capture, as a
+  consistent translation.
+* **Registration**: overlaying clean 1 on rough 1 on the raw pixel grid
+  puts the lines on top of each other. **The cleanup was traced in
+  register, on the same pegs.** The visible differences are editorial —
+  the coat tail, the cane, a shoulder correction — which is the signal
+  an inking model would have to learn.
+
+**A number from this session not to reuse.** A first pass compared the
+rough's blue-ink centroid with the clean's grey-ink centroid and got an
+offset of (+148, +311) px. That is confounded: different masks, very
+different line widths, and the rough carries construction marks and two
+faint guide lines at lower left that the clean does not. The overlay is
+the honest instrument and it says registered. Recorded because the
+confounded number is the kind that gets quoted later.
+
+### 12.4 What it does and does not buy
+
+**Buys:** twelve aligned rough→clean pairs, so the inking stage has real
+supervision and real fixtures; a twelve-drawing sequence in one
+coordinate system, so §10's arc-deviation check is testable on real
+drawings and not only synthetic ones; and a blue-rough / graphite-clean
+split that is exactly the chroma separation `acme/ink.py` already
+performs and that
+[acme-registration-plugin.md](acme-registration-plugin.md) §9 argued for
+— *separate the pencils, don't threshold them*.
+
+**Does not buy:** a timing chart, on any sheet. It is also one scene,
+one character, one action, and a **cycle** rather than a key pair with a
+chart. And the roughs are **tie-downs, not construction-line roughs** —
+considerably cleaner than the general rough-cleanup case, so a model
+that does well here has not yet been tested on the hard one.
+
+### 12.5 Before any of it is committed
+
+**Provenance.** This is Wiki Wiki Cartoons production artwork from 2001.
+It is not ours, and this repository publishes under GPL-3.0-or-later
+with CC-BY-SA-4.0 documentation. **Committing it as test fixtures
+publishes it.** The standing rule is to ask, and this wants Daniel's
+explicit permission with the terms written down the way the CalibrX
+reply is kept in `docs/licensing/` — not an assumption from the fact
+that he supplied the files.
+
+**Size.** 327 MB for `12F/` against a repository already carrying 948 MB
+in `data/` and a 672 MB `.git`, with no LFS configured. Three options,
+in the order I would consider them: keep the corpus out of tree and
+commit a `manifest.json` describing it, in the style
+`data/captures/*/manifest.json` already uses; commit a small derived
+subset, say two pairs, at reduced resolution; or configure LFS. The
+first costs nothing and keeps the tests pointed at a path that can be
+checked for presence and skipped, which `acme/ink_test.py` already does
+with `skipif`.
+
+---
+
 ## Sources
 
 * ToonComposer — <https://github.com/TencentARC/ToonComposer>,
@@ -555,3 +840,5 @@ with the colour stage, which ToonComposer may well absorb anyway.
   <https://github.com/AILab-CVC/VideoCrafter> (the non-commercial research root)
 * sketch simplification — <https://github.com/bobbens/sketch_simplification>
 * VFI survey — <https://github.com/CMLab-Korea/Awesome-Video-Frame-Interpolation>
+* ManRunCycle corpus (§12) — `~/lab/storymator/training_data/ManRunCycle_Rough_CleanUp_2001_WWC`,
+  supplied by Dr. Daniel Boulos; Wiki Wiki Cartoons, 2001

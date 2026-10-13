@@ -99,7 +99,10 @@ who credited Art Babbit.
   a licence audit: OpenRAIL-M accepted 2026-10-13, which clears the
   SD-lineage ControlNets for the colour stage; `sketch_simplification`
   and ToonCrafter remain blocked on non-commercial terms, neither on
-  the critical path.
+  the critical path. §10 corrects the acceptance note's arc check, which
+  is degenerate for a single inbetween. §11 lists the decisions the
+  first tests depend on; §12 reads the ManRunCycle corpus — twelve
+  aligned rough/clean pairs, no timing chart, use `12F/` not `10F/`.
 * [planning/acme-registration-plugin.md](planning/acme-registration-plugin.md)
   — design for the capture-and-register stage as a ComfyUI 0.35 plugin.
   Carries the rig questions that have to be answered before code.
