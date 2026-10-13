@@ -1,0 +1,475 @@
+{
+  "schema": "storymator.corpus/1",
+  "name": "manrun_cycle_2001_wwc",
+  "title": "Man run cycle, rough and cleanup",
+  "provenance": {
+    "owner": "Wiki Wiki Cartoons",
+    "created": "2001",
+    "supplied_by": "Dr. Daniel Boulos",
+    "captured": "2026-09-20",
+    "rights": "Wiki Wiki Cartoons owns these images outright. Not published: the artwork is deliberately kept out of this repository, which publishes. Monte, 2026-10-13."
+  },
+  "location": {
+    "note": "Out of tree by decision. Set STORYMATOR_CORPORA or pass the path explicitly; tests skip when it is absent.",
+    "default_path": "~/lab/storymator/training_data/ManRunCycle_Rough_CleanUp_2001_WWC",
+    "working_set": "12F"
+  },
+  "directories": {
+    "12F": {
+      "sheets": 24,
+      "px": [
+        3281,
+        2305
+      ],
+      "note": "full sheet, peg holes present. Use this one."
+    },
+    "10F": {
+      "sheets": 24,
+      "px": [
+        2734,
+        1921
+      ],
+      "note": "derived: rotate 90 then the central 10/12 of each dimension. THE CROP REMOVES THE PEG HOLES, so 10F carries no registration landmarks."
+    },
+    "12Fto10F": {
+      "kind": "bash script, not a directory",
+      "command": "magick $a -rotate 90 -crop 2734x1921+273+192"
+    }
+  },
+  "reading": {
+    "field_sizes": "12F and 10F are FIELD SIZES, not frame counts: 2734/3281 = 1921/2305 = 0.8333 = 10/12.",
+    "exif": "All files carry orientation=6, so identify reports 2305x3281 while viewers show 3281x2305. Call exif_transpose or you work on a sideways page.",
+    "structure": "Two passes of one 12-drawing run cycle. Twelve graphite cleanups numbered 1-12; twelve blue roughs numbered 1..10 with 1.5 and 6.5 inserted, so the cleanup pass renumbered. Pairing confirmed by overlay, not arithmetic.",
+    "asterisks": "Rough 1, 6 and 10 only; no cleanup carries one. Hypothesis: they mark keys or extremes -- 1 and 6 are half a cycle apart. PUT TO DANIEL 2026-10-13, ANSWER OUTSTANDING.",
+    "ground_lines": "Faint lines at lower left of the roughs are ground lines, perhaps with a hint of shadow (Monte, 2026-10-13).",
+    "absent": "No timing chart on any sheet, and no exposure sheet. Numbers and asterisks are the only annotation."
+  },
+  "measurements": {
+    "px_per_inch": 200,
+    "peg_spacing_px": [
+      800.1,
+      800.7
+    ],
+    "peg_spacing_note": "against ACME's 4-inch centres",
+    "peg_geometry": "two oblong slots flanking one round hole; the round hole carries a white reinforcement patch, so detection must not assume bare paper",
+    "pass_to_pass_agreement_px": 3.5,
+    "registration": "Overlaying cleanup 1 on rough 1 on the raw pixel grid puts the lines on each other: the cleanup was traced in register on the same pegs. Twelve aligned pairs.",
+    "do_not_reuse": "A blue-centroid vs grey-centroid comparison gave a (+148,+311) px rough-to-clean offset. It is confounded by mismatched masks, line widths and the roughs' ground lines. The overlay is the honest instrument and says registered."
+  },
+  "sheets": [
+    {
+      "file": "20260920-001539.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "1",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "ab63b7986825a001",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-001712.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "2",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "c68655b7c8c00dcd",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-001823.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "3",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "9c3a6987e604dbce",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-001938.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "4",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "f5d75efdee434154",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002042.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "5",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "bb0caa3b8d8f7cde",
+      "stored_px": [
+        2305,
+        3217
+      ],
+      "oriented_px": [
+        3217,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002145.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "6",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "5ebea2845b5b518a",
+      "stored_px": [
+        2309,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2309
+      ]
+    },
+    {
+      "file": "20260920-002247.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "7",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "1415a12010a284f8",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002353.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "8",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "6bab139bfb457ffa",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002455.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "9",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "9fb5231c6d7c4bd6",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002555.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "10",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "99aa6d96bbcdc4f7",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002656.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "11",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "db650377d9d1df61",
+      "stored_px": [
+        2313,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2313
+      ]
+    },
+    {
+      "file": "20260920-002756.png",
+      "pass": "cleanup",
+      "medium": "graphite",
+      "drawing": "12",
+      "marks": [],
+      "pairs_with_cleanup": null,
+      "sha256_16": "39954d79a623a3e1",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002857.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "3",
+      "marks": [],
+      "pairs_with_cleanup": "4",
+      "sha256_16": "38f69f4cb85b1873",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-002955.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "1",
+      "marks": [
+        "asterisk"
+      ],
+      "pairs_with_cleanup": "1",
+      "sha256_16": "f8b43bc1dfc6aee4",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003055.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "1.5",
+      "marks": [],
+      "pairs_with_cleanup": "2",
+      "sha256_16": "c412cee18ed0a43a",
+      "stored_px": [
+        2313,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2313
+      ]
+    },
+    {
+      "file": "20260920-003155.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "2",
+      "marks": [],
+      "pairs_with_cleanup": "3",
+      "sha256_16": "07423239e12c1d2a",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003255.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "4",
+      "marks": [],
+      "pairs_with_cleanup": "5",
+      "sha256_16": "889f78d9957b7b86",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003357.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "5",
+      "marks": [],
+      "pairs_with_cleanup": "6",
+      "sha256_16": "dd2a07f006ceed39",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003457.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "6",
+      "marks": [
+        "asterisk"
+      ],
+      "pairs_with_cleanup": "7",
+      "sha256_16": "785b099d267b0aee",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003558.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "6.5",
+      "marks": [],
+      "pairs_with_cleanup": "8",
+      "sha256_16": "237e9355f3e0d1ed",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003659.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "7",
+      "marks": [],
+      "pairs_with_cleanup": "9",
+      "sha256_16": "4db576a05daf6ea5",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003801.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "8",
+      "marks": [],
+      "pairs_with_cleanup": "10",
+      "sha256_16": "363e1b840e96d389",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-003902.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "9",
+      "marks": [],
+      "pairs_with_cleanup": "11",
+      "sha256_16": "5726fa3c8c3e5817",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    },
+    {
+      "file": "20260920-004001.png",
+      "pass": "rough",
+      "medium": "blue pencil",
+      "drawing": "10",
+      "marks": [
+        "asterisk"
+      ],
+      "pairs_with_cleanup": "12",
+      "sha256_16": "967d27d2b6b7a58a",
+      "stored_px": [
+        2305,
+        3281
+      ],
+      "oriented_px": [
+        3281,
+        2305
+      ]
+    }
+  ]
+}

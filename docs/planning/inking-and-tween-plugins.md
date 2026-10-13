@@ -620,10 +620,11 @@ So the split still stands, but it has moved:
   is the *passing* half — real drawings an assistant actually made, so
   the harness can be shown not to reject good work.
 * **The chart reader is still blocked and is now the only thing that
-  is.** No sheet in the corpus carries a chart. The ask is unchanged and
-  small: **one photographed page with a chart on it, plus Daniel's
-  reading of it.** Worth making this week, because it is the only
-  input the §8 build order cannot start without.
+  is.** No sheet in the corpus carries a chart. **Requested 2026-10-13:**
+  Monte has asked Daniel for a hand-written exposure sheet and a prose
+  description of it. Note that an exposure sheet is *not* a timing chart
+  — see §13 — so this unblocks `XSheetLoad` and leaves `ChartRead`
+  waiting on a photographed page with a chart on it.
 
 **The correction: use `12F/`, not `10F/`.** The 10F crop removes the
 outer 1/12 of each dimension, which is exactly where the peg holes are.
@@ -631,8 +632,10 @@ Measured: the bottom band of a 10F frame is blank paper. No pegs means
 no registration landmarks, which makes every `comfyui_acme` node
 inapplicable to it. **10F is a viewing crop, not a working set.**
 
-**2. What is in a `TIMING_CHART`?** This is the specification, so its
-shape propagates into every test downstream. The sub-questions:
+**2. What is in a `TIMING_CHART`?** **Reframed 2026-10-13 — see §13**,
+which separates the exposure sheet from the timing chart and proposes a
+schema for the first. The sub-questions below apply to the *chart*, the
+smaller and later of the two:
 
 * **Frame numbers, fractions, or both?** I think both and they are not
   redundant: the chart's *marks* give fractions along the path, its
@@ -653,22 +656,14 @@ shape propagates into every test downstream. The sub-questions:
   **poisoning** — it appears in the `HARNESS_REPORT` and nothing can
   launder it. The alternative is a hard error. Your call.
 
-**3. The pack layout, and a name collision worth fixing now.**
-§6 proposed four packs. Two sub-decisions:
-
-* **`comfyui_acme` or a new pack for cleanup?** Cleanup is downstream of
-  registration and uses the same `ACME_CALIBRATION` and the same von
-  Kries white balance, which argues for keeping it in `comfyui_acme`.
-  That gives **three packs, not four**: `comfyui_acme` (capture,
-  register, clean), `comfyui_tween`, `comfyui_harness`.
-* **Do not call it `ink`.** `acme/ink.py` already means *the marker ink
-  on the peg crowns*, documented at length in
-  [ink-landmarks.md](ink-landmarks.md). A drawing-cleanup module also
-  called ink would make every future reference ambiguous. I recommend
-  **`acme/clean.py`** with nodes `AcmeClean*` — which is also the
-  governing document's own word (*"cleanup, paint and compositing"*),
-  and it leaves the name "ink" free for the actual inking stage in §3.2,
-  which is the thing we are deliberately not building yet.
+**3. ~~The pack layout~~ — answered 2026-10-13, and differently from
+the suggestion here.** I had proposed folding cleanup into
+`comfyui_acme` because it shares the calibration. Monte's constraint
+overrides that: the plugins are meant to be contributed upstream to
+ToonComposer, which does not want ACME infrastructure. **§14 has the
+split by upstreamability, the name `comfyui_penciltest`, and the
+import-firewall test.** The `ink` name collision stands and is avoided
+there too.
 
 ### 11.2 Proceeding on these defaults unless you say otherwise
 
@@ -754,13 +749,14 @@ corpus is a partial answer to acceptance §7 Q1 — paired keys and the
 inbetweens an assistant actually drew — without the chart that would
 have made it a complete one.
 
-**The ✗ marks.** A small ✗ sits under 1, 6 and 10, and under no other
-drawing — not under 1.5 or 6.5. In a ten-drawing run, 1 and 6 are half
+**The asterisks.** A small **asterisk** — not a cross — sits under 1, 6
+and 10, and under no other drawing: not under 1.5 or 6.5, and under none
+of the twelve cleanups. Verified across all 24 corners at native
+resolution. In a ten-drawing run, 1 and 6 are half
 a cycle apart, which is where the two contacts fall, so the obvious
-reading is that ✗ marks a key or extreme. **That is a guess and should
-be put to Daniel, not assumed.** If it is right, the corpus carries its
-own key/inbetween labelling and `HarnessJointOnset` has its chain
-endpoints for free.
+reading is that ✗ marks a key or extreme. **That is a guess. Monte put it to Daniel on 2026-10-13; the answer is
+outstanding.** If it is right, the corpus carries its own key/inbetween
+labelling and `HarnessJointOnset` has its chain endpoints for free.
 
 ### 12.3 Measurements
 
@@ -782,8 +778,9 @@ endpoints for free.
 **A number from this session not to reuse.** A first pass compared the
 rough's blue-ink centroid with the clean's grey-ink centroid and got an
 offset of (+148, +311) px. That is confounded: different masks, very
-different line widths, and the rough carries construction marks and two
-faint guide lines at lower left that the clean does not. The overlay is
+different line widths, and the rough carries construction marks and the
+**ground lines, with perhaps a hint of shadow** (Monte, 2026-10-13), at
+lower left that the clean does not. The overlay is
 the honest instrument and it says registered. Recorded because the
 confounded number is the kind that gets quoted later.
 
@@ -806,23 +803,253 @@ that does well here has not yet been tested on the hard one.
 
 ### 12.5 Before any of it is committed
 
-**Provenance.** This is Wiki Wiki Cartoons production artwork from 2001.
-It is not ours, and this repository publishes under GPL-3.0-or-later
-with CC-BY-SA-4.0 documentation. **Committing it as test fixtures
-publishes it.** The standing rule is to ask, and this wants Daniel's
-explicit permission with the terms written down the way the CalibrX
-reply is kept in `docs/licensing/` — not an assumption from the fact
-that he supplied the files.
+**Settled 2026-10-13.** Monte: *"WikiWikiCartoons owns these images
+outright and we don't plan to publish the original art at this time."*
+So the corpus stays **out of tree**, and an in-tree `manifest.json`
+describes it: `data/corpora/manrun_cycle_2001_wwc/manifest.json`.
 
-**Size.** 327 MB for `12F/` against a repository already carrying 948 MB
-in `data/` and a 672 MB `.git`, with no LFS configured. Three options,
-in the order I would consider them: keep the corpus out of tree and
-commit a `manifest.json` describing it, in the style
-`data/captures/*/manifest.json` already uses; commit a small derived
-subset, say two pairs, at reduced resolution; or configure LFS. The
-first costs nothing and keeps the tests pointed at a path that can be
-checked for presence and skipped, which `acme/ink_test.py` already does
-with `skipif`.
+That resolves both problems at once. The provenance problem — this
+repository publishes, so committing the artwork would publish artwork
+that is not ours to publish. And the size problem — 327 MB for `12F/`
+against a repository already carrying 948 MB in `data/` and a 672 MB
+`.git`, with no LFS configured.
+
+**The manifest is the contract.** It records what each sheet is, so the
+reading in §12.2 is not lost, and it carries `sha256_16` per file so a
+test can verify it is pointed at the corpus it thinks it is. Tests
+locate the corpus by a configured path and **skip when it is absent** —
+the pattern `acme/ink_test.py` already uses — so a checkout without the
+artwork still runs green.
+
+---
+
+## 13. The exposure sheet and the timing chart are two instruments
+
+Monte, 2026-10-13: *"Are you asking for a data model for an exposure
+sheet? By 'read off the chart geometry' do you mean that the order of
+the frames is the order on the exposure sheet?"*
+
+No, and the question exposes a conflation in §11.1 worth fixing
+properly. **An exposure sheet and a timing chart are different
+documents carrying different information, and this project needs
+both.**
+
+| | answers | lives on | consumed by |
+|---|---|---|---|
+| **exposure sheet** | *which drawing is exposed on which frame* — holds, layering, cycles, and later track, EFX and camera | a production document, one per scene | **ToonComposer's frame indices**, directly |
+| **timing chart** | *where a drawing sits along the path* between its neighbours | the drawing itself, upper right corner | the harness's spacing test (acceptance §2) |
+
+The exposure sheet is **temporal**: drawing 3 is held for two frames, so
+it occupies frames 7 and 8. The timing chart is **spatial**: drawing 1.5
+sits a third of the way from 1 to 2, not halfway. Neither derives from
+the other.
+
+### Why "read off the chart geometry" matters, and the corpus proves it
+
+The number on a drawing is a **name**, not a position. Drawing "1.5"
+is called that because it was inserted between 1 and 2 — it says nothing
+about where it sits in space. A slow-in puts it at 0.3; a slow-out puts
+it at 0.7.
+
+**Deriving the fraction from the number is a formula**, and the
+manuscript is explicit that formula is *"a nail in the coffin of
+character animation"*. Acceptance §3 turned that into the hard rule:
+*the system must never infer timing; it reads the chart and obeys it.*
+
+§12 shows the concern is live rather than theoretical: this corpus's
+roughs are numbered **1, 1.5, 2 … 6, 6.5, 7**. Nothing in those names
+says where 1.5 and 6.5 sit, and assuming halfway is exactly the
+inference the rule forbids. **That is what "read off the geometry"
+meant** — measure the mark positions on the chart; do not compute the
+fraction from the numbering or from the row order.
+
+### Where each attaches
+
+The chart does **not** belong in the exposure sheet. It is a property of
+a *drawing*, or of the *segment between two keys*, so it is keyed by
+level and drawing and carried alongside:
+
+```
+exposure sheet  ──(frame → level → drawing)──►  ToonComposer sketch slots
+timing chart    ──(drawing → fraction)──────►  HarnessSpacingError
+```
+
+A drawing can appear on many frames (a hold) and still have one position
+on the path. Putting the fraction in a row would duplicate it per frame
+and invite the two copies to disagree.
+
+### 13.1 A proposed exposure-sheet schema
+
+Following Monte's outline. Metadata outermost, rows in frame order, each
+row an **ordered list of cells, outermost to innermost**.
+
+```json
+{
+  "schema": "storymator.xsheet/1",
+  "production": {
+    "studio": "Wiki Wiki Cartoons",
+    "show": null, "act": null, "scene": null, "sequence": null,
+    "animator": null,
+    "description": "man run cycle, cane and top hat",
+    "frame_rate": 24,
+    "field_size": "12F"
+  },
+  "levels": [
+    {"id": "A", "name": "man", "note": "the only level in this scene"}
+  ],
+  "rows": [
+    {
+      "frame": 1,
+      "cells": [
+        {"level": "A", "drawing": "1"}
+      ]
+    },
+    {
+      "frame": 2,
+      "cells": [
+        {"level": "A", "drawing": "1"}
+      ]
+    }
+  ]
+}
+```
+
+Four design notes, each of which is a decision rather than an obvious
+choice:
+
+**Cells are ordered *and* carry a level id.** Monte's outline says
+ordered outermost to innermost, which is more general than a traditional
+sheet's fixed columns — a cel can change depth mid-scene. But the fixed
+columns bought an invariant worth keeping: that level A is *normally*
+the same thing throughout. Carrying `level` as well as position means a
+reader can detect an accidental re-ordering between frames rather than
+silently compositing in the wrong order. Cheap, and it makes a good
+test.
+
+**Holds need no special case.** The same `drawing` repeated on
+successive rows *is* a hold. Cycles likewise, until someone wants them
+expressed compactly — at which point that is a notation on top, not a
+change to the rows.
+
+**`drawing` is a string, not a number.** Because `"1.5"` and `"6.5"`
+exist, and because sheets carry things like `"X"` for a blank. Sorting
+is by the sheet, never by parsing the name.
+
+**Room for the later fields is in the cell *and* the row.** Track, EFX
+and camera are not all the same shape: dialogue and sound belong to the
+**frame**, as does a camera instruction such as field size, pan, zoom or
+tracking — they are not per-layer. So I would add them to the **row**,
+beside `cells`, rather than into the cell record. If Monte's "how
+record" meant something that holds all of them, that is the one place
+this schema departs from the outline and it should be said out loud.
+
+### 13.2 What this changes in the build order
+
+**The exposure sheet is the better first target, and it is also easier.**
+It is a hand-written document that a human can transcribe, so it does
+not require the sub-pixel mark measurement the chart does, and it maps
+straight onto ToonComposer's interface. Monte has requested one from
+Daniel together with a prose description (2026-10-13).
+
+So §8's step 1 splits:
+
+1a. **`XSheetLoad` / `XSheetValidate`** over the JSON above — pure data,
+    no models, no rig, fully testable the day the schema is agreed.
+1b. **`ChartRead`** — still blocked on a photographed page with a chart,
+    and still the only blocked thing.
+
+---
+
+## 14. Packaging, and keeping the rig out of it
+
+Monte, 2026-10-13: *"This set of tools is not part of the acme
+subpackage… I'm concerned about ACME-specific parameters slipping into
+this new code base. The goal is to contribute the ComfyUI plugins back
+to the ToonComposer project, and they don't necessarily need or want the
+ACME infrastructure."*
+
+Right, and that goal should drive the split. **Divide by how far each
+piece can travel, not by pipeline stage.**
+
+| pack | contents | travels to |
+|---|---|---|
+| `ComfyUI-ToonComposer` | the model wrapper and nothing else — load, sketch injection at frame indices, sampling, offload | **upstream.** Zero project opinions, so it is contributable |
+| `comfyui_penciltest` | x-sheet types and I/O, cleanup, the harness, tween orchestration across backends | publishable on its own; useful to any 2D shop, rig-agnostic |
+| `comfyui_acme` | pegs, sheet detection, registration, lens, capture | **stays here.** It is our bench |
+
+The thing ToonComposer's maintainers would want is the first pack only.
+Our x-sheet and our harness are opinionated — they encode Daniel's seven
+principles and this studio's vocabulary — and that is a feature for us
+and a liability upstream. Keeping them in a separate pack means the
+contribution is small, reviewable, and free of anything they would have
+to argue about.
+
+### 14.1 The name
+
+**`comfyui_penciltest`** for the middle pack. It is the product name
+the governing document already uses, it is traditional-animation
+vocabulary any 2D animator reads instantly, it names the *output*
+rather than a mechanism so it survives swapping FrameFusion for
+ToonComposer, and it contains no rig, no vendor and no ACME.
+
+Alternatives considered: `comfyui_xsheet` names the central data type
+but undersells the cleanup and harness halves; `comfyui_inbetween`
+excludes cleanup; `comfyui_assistant` is evocative of the studio role
+acceptance §3 puts the machine in, but collides badly with "AI
+assistant" in every search.
+
+Node prefix `PencilTest*`, category `penciltest/`. Note the category
+should *not* be `storymator/…` — the pack is meant to leave.
+
+### 14.2 The firewall, as a test rather than a rule
+
+"ACME-specific parameters slipping in" is exactly the kind of thing that
+happens gradually and is expensive to undo, so it should fail the build
+rather than rely on vigilance. Two rules, both testable:
+
+**No import of the rig.** `comfyui_penciltest` may not import `acme` or
+`comfyui_acme`, directly or transitively. That is an `ast`-walk over
+every module in the pack, asserting no `Import`/`ImportFrom` names the
+rig — a dozen lines, and it fails loudly the first time someone reaches
+for a convenience.
+
+**No physical constants.** The subtler leak is not an import but a
+default: peg spacing, 200 px/inch, a field size, an ACME hole diameter.
+The rule is that the pack **takes scale as an explicit input and
+hardcodes no physical quantity.** Its public surface should speak in
+pixels and in fractions, with a `px_per_mm` passed in where real units
+are needed. Harder to test mechanically than the import rule, so it
+belongs in the pack's README as a stated contract and in review.
+
+The direction is one-way: **`comfyui_acme` may depend on
+`comfyui_penciltest`, never the reverse.** The rig knows about pencil
+tests; pencil tests do not know they came off a peg bar.
+
+### 14.3 Should the printed roughs be re-scanned with pegs visible?
+
+Monte asks, given the stage's inputs are already registered.
+
+**No — and the reason is the same concern that prompted the question.**
+
+* **The originals already have pegs and are already registered.** §12
+  measured the two passes agreeing within 3.5 px, with peg spacing at
+  200 px/inch. A fresh scan of a reprint cannot beat that.
+* **A reprint is second-generation.** You would be measuring the printer
+  and the scanner, not the drawings — line weight, dot gain and paper
+  all change. For a cleanup model that learns what a pencil line looks
+  like, that is the wrong signal.
+* **Pegs in frame are a liability for this pack, not an asset.**
+  `comfyui_penciltest` is supposed to accept registered images and know
+  nothing about how they got registered. Training or testing it on
+  frames with peg holes in them teaches it to expect holes, which is
+  precisely the ACME contamination the pack is meant to avoid.
+
+**What is worth capturing instead**, in priority order: the exposure
+sheet and chart pages Daniel has been asked for; and, separately and for
+`comfyui_acme`'s own validation rather than this pack's, the **original**
+artwork through the real rig — the 12F scans are a reference set the
+registration code can be measured against, which is better than another
+calibration board.
 
 ---
 

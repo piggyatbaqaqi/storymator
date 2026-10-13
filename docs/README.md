@@ -103,6 +103,10 @@ who credited Art Babbit.
   is degenerate for a single inbetween. §11 lists the decisions the
   first tests depend on; §12 reads the ManRunCycle corpus — twelve
   aligned rough/clean pairs, no timing chart, use `12F/` not `10F/`.
+  §13 separates the exposure sheet from the timing chart — different
+  documents, both needed — and proposes an x-sheet JSON schema. §14 is
+  the packaging: split by how far each pack can travel, the middle one
+  named `comfyui_penciltest`, with the rig kept out by a test.
 * [planning/acme-registration-plugin.md](planning/acme-registration-plugin.md)
   — design for the capture-and-register stage as a ComfyUI 0.35 plugin.
   Carries the rig questions that have to be answered before code.

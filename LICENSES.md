@@ -224,6 +224,38 @@ that states its own terms, and record the *chain* here rather than the
 conclusion, so the next reader can check it instead of trusting it. A
 model card's licence tag is a claim about the last link only.
 
+## Reference artwork — Wiki Wiki Cartoons, held out of tree
+
+**Settled 2026-10-13.** The `ManRunCycle_Rough_CleanUp_2001_WWC` corpus —
+24 sheets of a man run cycle, rough and cleanup, drawn 2001, captured
+2026-09-20 — is **owned outright by Wiki Wiki Cartoons**. Monte:
+
+> WikiWikiCartoons owns these images outright and we don't plan to
+> publish the original art at this time.
+
+**So it is not in this repository, and that is deliberate rather than
+incidental.** This repository publishes; committing the artwork would
+publish artwork that is not ours to publish. What is committed is a
+description:
+
+| | |
+|---|---|
+| the artwork | out of tree, default `~/lab/storymator/training_data/ManRunCycle_Rough_CleanUp_2001_WWC` |
+| in tree | [`data/corpora/manrun_cycle_2001_wwc/manifest.json`](data/corpora/manrun_cycle_2001_wwc/manifest.json) — what each sheet is, `sha256_16` per file, and the measurements |
+| the manifest's own licence | **CC-BY-SA-4.0**, with `data/` — it is our description, not their artwork |
+
+Tests locate the corpus by configured path and **skip when it is
+absent**, so a checkout without the artwork still runs green. The
+`sha256_16` entries let a test confirm it is pointed at the corpus it
+thinks it is.
+
+**This is a third category.** `LICENSES.md` previously covered our source
+(GPL), our data (CC) and inbound model weights. Third-party material we
+hold but do not redistribute is none of those: nothing is granted and
+nothing is claimed. If more supplied artwork arrives, it goes the same
+way — out of tree, manifest in — and the question to ask first is
+whether publication is intended, not what licence to stamp on it.
+
 ## Decisions still to make
 
 * **`-or-later` vs `-only`** — this file says `-or-later`, the FSF's
