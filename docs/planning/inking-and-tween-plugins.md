@@ -784,6 +784,86 @@ Verified by regenerating all 24 into a scratch directory and checking
 that every number and asterisk is complete, and that outside the pasted
 corner the new outputs are **bit-identical** to the old ones.
 
+### 12.7 Capturing the printed roughs on the rig
+
+Monte, 2026-10-13: the 10F crops are *"printed landscape at the top of a
+prepunched 10F sheet, so the printed images get real punch holes"*, and
+the motive for capturing them is *"realistic images to feed into my live
+ComfyUI pipeline"*.
+
+**That reverses the recommendation in §14.3, which answered a question
+nobody asked.** §14.3 weighed a re-capture as *training* data, where a
+reprint is strictly worse than the original. As *pipeline input* it is
+strictly better, because the 12F scans contain none of what the pipeline
+exists to cope with.
+
+**Two corpora, two jobs, and the error is using either for the other's:**
+
+| | good for | useless for |
+|---|---|---|
+| **12F originals** | cleanup and inbetween supervision; pose and line fidelity; the pairing | anything about capture — no perspective, no rig lighting, no lens |
+| **rig captures of the printouts** | `AcmeDetectSheet`, `AcmeRegister`, lens distortion, exposure, shadow, end-to-end smoke tests | line fidelity, and anything colorimetric (see below) |
+
+**The win worth naming: these come with ground truth.** The twelve
+originals are already mutually registered to ~3.5 px (§12.3). Print them,
+capture them, and the registration pipeline has a known answer to be
+scored against **on real drawings** — which is the one thing a ChArUco
+board cannot provide, because a board is not a drawing and does not fail
+the way a drawing fails.
+
+With one honest caveat: what a capture recovers is *print placement
+error* compounded with *capture and registration error*, and the residual
+does not say which. They separate cheaply — **print one sheet twice and
+capture both**; the difference isolates print placement repeatability.
+That is an afternoon, and it is a number this project wants anyway, since
+the desk concept involves printing.
+
+#### Do not composite the pegs into the digital 10F
+
+Monte has considered moving the peg holes up into the cropped 10F so it
+matches the printout. **Recommend against**, on three grounds:
+
+* **A composited hole is not a hole.** It has no shadow, no torn fibre,
+  no deformation of the sheet around it. `acme` finds pegs by the chroma
+  of inked crowns and by fitting rectangles in luminance — cues a paste
+  does not have. It would teach a detector the wrong thing and the
+  detector would then fail on real paper.
+* **It would be geometrically false.** The original's punch-to-artwork
+  relationship is not the printout's, because print placement intervenes.
+  The composite would assert a registration that the physical sheet does
+  not have.
+* **The better version is already planned.** Real punches, in real paper,
+  under the real rig. The composite is a worse substitute for the thing
+  the capture gives you directly.
+
+Its one honest use is a synthetic stand-in for pipeline smoke tests
+*before* any rig captures exist — low value, given the captures are a
+session's work.
+
+#### Two things to settle before printing
+
+**Scale.** The 10F crop is **13.7–13.9 inches wide** (§13.4), which is
+wider than a 10-field sheet. So the print is being scaled, and the
+capture's px/mm is not the original's. Anything that compares a capture
+back to an original needs that factor, and it is one caliper measurement
+on one printout. Worth recording in the manifest next to the 197–200 ppi
+of the scans.
+
+**Medium — and this one is easy to miss.** The roughs are blue pencil;
+the printout is toner or inkjet. Pencil pigment sits in the tooth of the
+paper and graphite is partly specular; toner is a fused film. They are
+not the same stimulus. `acme/ink.py` separates pencils by the **angle of
+(a\*, b\*) in CIE Lab**, measured over the inked corpus, and
+[acme-registration-plugin.md](acme-registration-plugin.md) §9 makes
+*separate the pencils, don't threshold them* a design rule.
+
+So these captures are realistic for **geometry** and actively misleading
+for **colour**. Use them for registration, detection, exposure and
+end-to-end flow. **Do not tune the pencil separation on them** — that
+wants real pencil on real paper, which is a different and much easier
+capture to stage, because it needs no printer at all: a few scrap
+drawings in the right media under the rig.
+
 ### 12.2 What the 24 sheets are
 
 Two passes of one run cycle:
@@ -1179,7 +1259,15 @@ tests; pencil tests do not know they came off a peg bar.
 
 Monte asks, given the stage's inputs are already registered.
 
-**No — and the reason is the same concern that prompted the question.**
+> **Answered differently once the purpose was stated — see §12.7.**
+> Monte's reason for wanting the capture is realistic input for the live
+> ComfyUI pipeline, which is a different goal from training fidelity.
+> For *that* purpose the answer is yes. What follows is still right
+> about what the capture is **not** good for, and wrong only in
+> treating training fidelity as the only reason to capture.
+
+**No, for the purpose of feeding this pack** — and the reason is the
+same concern that prompted the question.
 
 * **The originals already have pegs and are already registered.** §12
   measured the two passes agreeing within 3.5 px, with peg spacing at
