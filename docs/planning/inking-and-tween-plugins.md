@@ -1015,7 +1015,20 @@ and invite the two copies to disagree.
 ### 13.1 A proposed exposure-sheet schema
 
 Following Monte's outline. Metadata outermost, rows in frame order, each
-row an **ordered list of cells, outermost to innermost**.
+row an **ordered list of cels, outermost to innermost**.
+
+> **Vocabulary, corrected 2026-10-13.** The unit is a **cel**, from
+> celluloid. *"There is no such thing as a 'cell' in animation"*
+> (Monte). Earlier drafts of this section wrote `cells`, which is now
+> `cels` throughout. This is the acceptance note's rule in action —
+> *the code should use these words and no others* — and it is worth
+> enforcing mechanically rather than by vigilance; see §14.4.
+>
+> Note the repository's other uses of "cell" are **correct and should
+> stay**: *cell phone* in the capture lighting notes, and the grid or
+> mesh cells in [sheet-flattening.md](sheet-flattening.md),
+> [calibrating-a-camera.md](../calibrating-a-camera.md) and the
+> coverage analysis. Those are not animation terms.
 
 ```json
 {
@@ -1034,13 +1047,13 @@ row an **ordered list of cells, outermost to innermost**.
   "rows": [
     {
       "frame": 1,
-      "cells": [
+      "cels": [
         {"level": "A", "drawing": "1"}
       ]
     },
     {
       "frame": 2,
-      "cells": [
+      "cels": [
         {"level": "A", "drawing": "1"}
       ]
     }
@@ -1051,7 +1064,7 @@ row an **ordered list of cells, outermost to innermost**.
 Four design notes, each of which is a decision rather than an obvious
 choice:
 
-**Cells are ordered *and* carry a level id.** Monte's outline says
+**Cels are ordered *and* carry a level id.** Monte's outline says
 ordered outermost to innermost, which is more general than a traditional
 sheet's fixed columns — a cel can change depth mid-scene. But the fixed
 columns bought an invariant worth keeping: that level A is *normally*
@@ -1069,11 +1082,11 @@ change to the rows.
 exist, and because sheets carry things like `"X"` for a blank. Sorting
 is by the sheet, never by parsing the name.
 
-**Room for the later fields is in the cell *and* the row.** Track, EFX
+**Room for the later fields is in the cel *and* the row.** Track, EFX
 and camera are not all the same shape: dialogue and sound belong to the
 **frame**, as does a camera instruction such as field size, pan, zoom or
 tracking — they are not per-layer. So I would add them to the **row**,
-beside `cells`, rather than into the cell record. If Monte's "how
+beside `cels`, rather than into the cel record. If Monte's "how
 record" meant something that holds all of them, that is the one place
 this schema departs from the outline and it should be said out loud.
 
@@ -1150,7 +1163,7 @@ properties of a **camera instruction on a row**:
   "rows": [
     {
       "frame": 1,
-      "cells": [{"level": "A", "drawing": "1"}],
+      "cels": [{"level": "A", "drawing": "1"}],
       "camera": {"field": {"size": 10.0, "north": 0.0, "east": 0.0}}
     }
   ]
@@ -1254,6 +1267,26 @@ belongs in the pack's README as a stated contract and in review.
 The direction is one-way: **`comfyui_acme` may depend on
 `comfyui_penciltest`, never the reverse.** The rig knows about pencil
 tests; pencil tests do not know they came off a peg bar.
+
+### 14.4 A vocabulary test, for the same reason
+
+The acceptance note's appendix ends by fixing the project's vocabulary
+and saying **the code should use these words and no others**. That has
+now been breached twice in this document — the marks on the roughs were
+called crosses when they are asterisks, and the exposure sheet's unit was
+called a cell when it is a **cel**. Both were caught by Monte reading
+carefully, which is not a mechanism.
+
+It is the same argument as §14.2's import firewall: a rule that matters
+should fail the build rather than depend on vigilance. A test over
+`comfyui_penciltest`'s own sources rejecting a short banned list —
+`cell`/`cells` first — is a dozen lines.
+
+It works **in the new pack specifically** because the pack has no grids,
+no meshes and no phones, so there is no legitimate "cell" to allow for.
+Running the same check over the whole repository would false-positive on
+the calibration maths and the lighting notes, so the check stays scoped
+to the pack rather than being made clever.
 
 ### 14.3 Should the printed roughs be re-scanned with pegs visible?
 

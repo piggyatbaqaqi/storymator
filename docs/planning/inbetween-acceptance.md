@@ -333,4 +333,13 @@ words and no others: *key pose* (storytelling anchor; rarely more than
 two per second), *extreme* (contains the outer motion of an element),
 *breakdown* (a frame between keys containing an extreme), *inbetween*
 (everything remaining between breakdowns and keys), *slow-in*,
-*slow-out*, *feet* (16 frames of 35 mm; 3 feet = 2 seconds), *pegs*.
+*slow-out*, *feet* (16 frames of 35 mm; 3 feet = 2 seconds), *pegs*,
+*cel*.
+
+> **Added 2026-10-13.** *cel* — from celluloid; the manuscript uses it
+> throughout (*"one painted cel to the next"*, *"held cels"*) without
+> defining it separately, so it is listed here rather than quoted.
+> **It is never "cell".** Monte: *"There is no such thing as a 'cell'
+> in animation."* Recorded because the exposure-sheet schema in
+> [inking-and-tween-plugins.md](inking-and-tween-plugins.md) §13.1 got
+> it wrong first.
