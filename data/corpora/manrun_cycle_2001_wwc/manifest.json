@@ -17,11 +17,8 @@
   "directories": {
     "12F": {
       "sheets": 24,
-      "px": [
-        3281,
-        2305
-      ],
-      "note": "full sheet, peg holes present. Use this one."
+      "px": "varies; see reading.sheet_sizes",
+      "note": "full sheet, peg holes present. Use this one. NOTE: the sheets are not all the same size -- see reading.sheet_sizes."
     },
     "10F": {
       "sheets": 24,
@@ -29,11 +26,12 @@
         2734,
         1921
       ],
-      "note": "derived: rotate 90 then the central 10/12 of each dimension. THE CROP REMOVES THE PEG HOLES, so 10F carries no registration landmarks."
+      "note": "derived: rotate 90 then the central 10/12 of each dimension. THE CROP REMOVES THE PEG HOLES, so 10F carries no registration landmarks. Since 2026-10-13 the 12Fto10F script also pastes the drawing-number corner back into the top right, so 10F keeps the sheet's identity."
     },
     "12Fto10F": {
       "kind": "bash script, not a directory",
-      "command": "magick $a -rotate 90 -crop 2734x1921+273+192"
+      "command": "rotate 90; crop 2734x1921+273+192; composite the NorthEast 340x360 metadata corner of the rotated sheet into the output's NorthEast corner; set EXIF orientation to TopLeft",
+      "modified": "2026-10-13"
     }
   },
   "reading": {
@@ -42,7 +40,17 @@
     "structure": "Two passes of one 12-drawing run cycle. Twelve graphite cleanups numbered 1-12; twelve blue roughs numbered 1..10 with 1.5 and 6.5 inserted, so the cleanup pass renumbered. Pairing confirmed by overlay, not arithmetic.",
     "asterisks": "Rough 1, 6 and 10 only; no cleanup carries one. Hypothesis: they mark keys or extremes -- 1 and 6 are half a cycle apart. PUT TO DANIEL 2026-10-13, ANSWER OUTSTANDING.",
     "ground_lines": "Faint lines at lower left of the roughs are ground lines, perhaps with a hint of shadow (Monte, 2026-10-13).",
-    "absent": "No timing chart on any sheet, and no exposure sheet. Numbers and asterisks are the only annotation."
+    "absent": "No timing chart on any sheet, and no exposure sheet. Numbers and asterisks are the only annotation.",
+    "sheet_sizes": {
+      "note": "Stored sizes are NOT uniform, so absolute pixel coordinates do not transfer between sheets. Anchor to an edge instead. One sheet is 64 px narrower than the rest.",
+      "counts": {
+        "2305x3217": 1,
+        "2305x3281": 20,
+        "2309x3281": 1,
+        "2313x3281": 2
+      }
+    },
+    "scan_edges": "Three sheets carry a thin dark scan-edge strip along one edge (frames 11, 15, 16 by file order), and one has an edge strip at the right (frame 5). Harmless, but an ink detector will find them."
   },
   "measurements": {
     "px_per_inch": 200,
@@ -54,7 +62,19 @@
     "peg_geometry": "two oblong slots flanking one round hole; the round hole carries a white reinforcement patch, so detection must not assume bare paper",
     "pass_to_pass_agreement_px": 3.5,
     "registration": "Overlaying cleanup 1 on rough 1 on the raw pixel grid puts the lines on each other: the cleanup was traced in register on the same pegs. Twelve aligned pairs.",
-    "do_not_reuse": "A blue-centroid vs grey-centroid comparison gave a (+148,+311) px rough-to-clean offset. It is confounded by mismatched masks, line widths and the roughs' ground lines. The overlay is the honest instrument and says registered."
+    "do_not_reuse": "A blue-centroid vs grey-centroid comparison gave a (+148,+311) px rough-to-clean offset. It is confounded by mismatched masks, line widths and the roughs' ground lines. The overlay is the honest instrument and says registered.",
+    "metadata_corner": {
+      "note": "Measured over all 24 sheets, in the rotated frame, as distance from the top-right corner.",
+      "worst_from_right_px": 254,
+      "worst_from_right_sheet": "rough 6.5",
+      "worst_from_top_px": 267,
+      "worst_from_top_sheet": "cleanup 1",
+      "box_used": "340x360 anchored NorthEast",
+      "clearance_px": [
+        86,
+        93
+      ]
+    }
   },
   "sheets": [
     {

@@ -719,16 +719,70 @@ is in it changes §11.
 |---|---|
 | `12F/` | 24 PNGs, 8.8 MB each, **327 MB** — the full sheet, pegs included |
 | `10F/` | the same 24, rotated and cropped, 2734×1921, **201 MB** |
-| `12Fto10F` | **a bash script, not a directory**: `magick $a -rotate 90 -crop 2734x1921+273+192` |
+| `12Fto10F` | **a bash script, not a directory** |
 
 The crop keeps exactly the central **10/12** of each dimension —
 2734/3281 = 1921/2305 = 0.8333 — which is what establishes that
 **12F and 10F are field sizes, not frame counts.**
 
-**An EXIF trap.** The files carry `orientation=6`, so `identify` reports
-2305×3281 (portrait) while every viewer shows 3281×2305 (landscape).
-A loader that does not call `exif_transpose` silently works on a
-sideways page. That deserves its own test.
+**The sheets are not all the same size.** Four distinct stored sizes:
+
+| stored | count | note |
+|---|---|---|
+| 2305×3281 | 20 | the common case |
+| 2305×3217 | **1** | **64 px narrower in the rotated frame** |
+| 2309×3281 | 1 | |
+| 2313×3281 | 2 | |
+
+This matters more than it looks: **absolute pixel coordinates do not
+transfer between sheets.** Anything keyed to a position must anchor to
+an edge. An absolute crop near the right-hand edge runs off the narrow
+sheet, and ImageMagick returns a short tile rather than an error.
+
+**An EXIF trap, and a bug it was hiding.** The files carry
+`orientation=6`, so `identify` reports 2305×3281 (portrait) while every
+viewer shows 3281×2305 (landscape). A loader that does not call
+`exif_transpose` silently works on a sideways page. That deserves its
+own test.
+
+Worse, the conversion script rotated the raster and left the tag alone,
+so **every 10F output claimed it still needed rotating** — `identify`
+said 2734×1921 while PIL's `exif_transpose` returned 1921×2734. Fixed
+2026-10-13 by setting the tag to match the raster; see §12.6.
+
+**Three sheets carry a thin dark scan-edge strip** along one edge, and
+one has a strip at the right. Harmless to the eye, but an ink detector
+finds them, so anything measuring ink near an edge should inset.
+
+### 12.6 Keeping the drawing number in the 10F crop
+
+The 10F field is the central 10/12, and **the drawing number is written
+outside it** — upper right corner of the sheet, past the field edge. So
+the original crop threw away the only identity each drawing carries,
+which is why §12.2's reading had to be reconstructed by overlay rather
+than read off the file.
+
+`12Fto10F` now lifts that corner and composites it into the top right of
+the 10F output. Three things about the geometry, each measured:
+
+**The box is 340 × 360, anchored to the corner rather than given
+absolute coordinates.** Across all 24 sheets the left-most metadata ink
+sits **254 px** from the right edge (rough 6.5) and the lowest sits
+**267 px** below the top (cleanup 1), so the box clears the worst case by
+86 px across and 93 px down. Anchoring is not a stylistic preference:
+with four different sheet widths, an absolute *x* slides across the
+sheet, and on the narrow one it runs past the edge and yields a short
+tile that then composites in the wrong place.
+
+**It lands on blank paper.** Ink in the destination corner totals 94
+pixels across all 24 frames, which is dust.
+
+**The EXIF tag is now set to match the raster** (`-orient TopLeft`), so
+the outputs stop claiming they need rotating.
+
+Verified by regenerating all 24 into a scratch directory and checking
+that every number and asterisk is complete, and that outside the pasted
+corner the new outputs are **bit-identical** to the old ones.
 
 ### 12.2 What the 24 sheets are
 
