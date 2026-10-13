@@ -183,3 +183,21 @@ message.
   them, which is where the GPL/CC boundary needs marking. Elsewhere
   `LICENSE` plus this file is unambiguous; adding them repo-wide is
   tidiness, not a requirement.
+
+* **Model weights are a third category, and none are adopted yet.**
+  Neither GPL nor CC fits a checkpoint, and the inking/inbetweening
+  candidates are not uniformly open. Audited 2026-10-13 in
+  [docs/planning/inking-and-tween-plugins.md](docs/planning/inking-and-tween-plugins.md)
+  §5. The findings that need a decision before any of it is wired in:
+
+  | artefact | weights | status |
+  |---|---|---|
+  | Wan 2.1 / 2.2, ToonComposer, Anime2Sketch preprocessors | Apache-2.0 / MIT | **clean** |
+  | SD1.5 LineArt ControlNets | CreativeML OpenRAIL-M | **not FOSS — carries use restrictions downstream** |
+  | `sketch_simplification` | CC non-commercial | **blocker** |
+  | ToonCrafter | unclear (DynamiCrafter → SVD lineage) | **verify; the Apache-2.0 code licence does not cover the checkpoint** |
+  | GIMM-VFI, FrameFusion | unverified | **verify** |
+
+  The question for this file is whether OpenRAIL-M is acceptable
+  anywhere in the pipeline, and how a checkpoint's licence gets
+  recorded when one is adopted.

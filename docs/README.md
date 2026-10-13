@@ -90,6 +90,13 @@ who credited Art Babbit.
   its A/B fork mistakenly bundled fidelity target with representation.
   Daniel's answer is B's fidelity on A's substrate — pixels, not
   vectors. See §1 of the acceptance note.
+* [planning/inking-and-tween-plugins.md](planning/inking-and-tween-plugins.md)
+  — **current.** Assessment of the candidate models for the inking and
+  inbetweening plugin suite. LineArt ControlNet is the wrong tool for
+  inking; Wan and FrameFusion are baselines rather than the engine;
+  ToonComposer takes keyframe sketches at chosen frame indices, which
+  is the only interface on offer that accepts a timing chart. Carries
+  a licence audit — two candidates are encumbered and three unverified.
 * [planning/acme-registration-plugin.md](planning/acme-registration-plugin.md)
   — design for the capture-and-register stage as a ComfyUI 0.35 plugin.
   Carries the rig questions that have to be answered before code.
