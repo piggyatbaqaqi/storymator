@@ -2,7 +2,7 @@
 
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Code, not data: the surrounding directory is CC-BY-4.0.
-import glob, os
+import glob
 import numpy as np
 from PIL import Image
 from scipy import ndimage

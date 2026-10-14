@@ -157,8 +157,7 @@ def test_a_rejected_set_is_reported_as_a_failure() -> None:
     assert bad[0].accepted is False
 
 
-def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one(
-) -> None:
+def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one() -> None:
     """The bug the first integration run found.
 
     Verifying each control the instant it is set reports width 3264 as

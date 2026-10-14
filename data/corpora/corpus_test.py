@@ -28,7 +28,7 @@ from typing import Dict, List
 
 import pytest
 
-import corpus as C
+from . import corpus as C
 
 _HERE: Path = Path(__file__).resolve().parent
 MANIFEST: Path = _HERE / "manrun_cycle_2001_wwc" / "manifest.json"

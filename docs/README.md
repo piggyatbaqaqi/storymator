@@ -99,13 +99,28 @@ where the registry reads `[tool.comfy] PublisherId` and
 
 ### Three gaps, recorded rather than fixed
 
-* **flake8 has no configuration file** anywhere — no `setup.cfg` or
-  `.flake8`. It happens to pass at its default 79 columns, which is what
-  the code already holds to, so the gap is reproducibility rather than
-  breakage. **mypy was the same until 2026-10-14** and now has
-  [`comfyui/mypy.ini`](../comfyui/mypy.ini), which covers the ComfyUI
-  packs only — `bin/`, `fixes/` and `data/` are still checked with
-  whatever is on the path.
+* ~~flake8 and mypy have no configuration file.~~ **Closed
+  2026-10-14.** [`.flake8`](../.flake8) sets **100 columns** and covers
+  the whole repository — flake8 walks up, so one file serves a run from
+  the root and from inside a pack alike. mypy needs **two** configs,
+  because the packs need a different base directory:
+  [`mypy.ini`](../mypy.ini) at the root for `big_green_button/`, `bin/`
+  and `data/`, and [`comfyui/mypy.ini`](../comfyui/mypy.ini) run from
+  `comfyui/` for the packs. Each file says why.
+
+### What is still red, and deliberately visible
+
+`mypy big_green_button bin data` reports **24 errors in three files**,
+all under `data/calibration/`. Unlike the 21 in `comfyui_acme`, these
+are not one mechanical class — they are numpy typing: `operator`,
+`index`, `slice`, `dtype`, `call-overload`. Real work rather than a
+sed, so they were not done as a side effect of adding a config, and
+they are left reporting rather than silenced per-file: a count on every
+run is harder to forget than a comment.
+
+`.flake8` instead waives per file, naming each code, for six one-shot
+analysis scripts that are dense on purpose. Anything not named still
+fires there, so a genuine bug in one of them is still caught.
 * ~~The `storymator` conda environment is undocumented.~~ **Closed
   2026-10-14** by [`environment.yml`](../environment.yml). One thing it
   cannot supply: `comfy_api` is not a package but a ComfyUI checkout on

@@ -1,0 +1,44 @@
+# flake8 for the whole repository.  flake8 walks up from the directory
+# it is run in, so this one file covers a run from the root and a run
+# from inside comfyui/comfyui_acme alike.
+#
+# The one convention: 100 columns, not PEP-8's 79.
+#
+# Existing code sits at 79 and nothing here asks it to change -- 79 is
+# under 100, so every line that passed still passes.  The limit is
+# raised because the alternative is lines like
+#
+#     def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one(
+#     ) -> None:
+#
+# which is what 79 columns plus a return annotation produces, and which
+# is less readable than the thing it was protecting.
+
+[flake8]
+max-line-length = 100
+
+exclude =
+    .git,
+    __pycache__,
+    .mypy_cache,
+    .pytest_cache,
+# Scratch, kept for reference rather than maintained.  It also holds a
+# tracked editor backup (dtect_peg_bar_orientation.py~) that probably
+# wants removing from git rather than linting.
+    snippets
+
+# One-shot analysis scripts, dense on purpose.
+#
+# These regenerate the statistics quoted in their directories' READMEs
+# and are read as arithmetic rather than maintained as software -- hence
+# the semicolons and the aligned columns, which is E7xx and E2xx.  The
+# codes are listed one at a time rather than excluded wholesale, so that
+# anything NOT listed still fires: an undefined name or a genuine bug in
+# one of these would still be caught.
+per-file-ignores =
+    data/calibration/pegs/honbay_0001/analyse.py:E221,E225,E231,E302,E305,E702,F541
+    data/calibration/acme_paper/src/measure_hole_size.py:E302,E305,E401,E701,E702
+    data/calibration/acme_paper/src/measure_round_hole.py:E302,E305,E701,E702
+    data/calibration/distortion/v4k_01/anisotropy_scan.py:E231,E302,E305,E401,E501,E701,E702,F541
+    data/calibration/distortion/v4k_01/make_calibration.py:E231,E401,E402,E701,E702
+    data/calibration/acme_paper/acme_paper.py:E702,E731
