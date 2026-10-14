@@ -493,23 +493,52 @@ already has `comfy-build` and `comfy-deploy` for exactly that.
 
 ## 8. What to build first
 
-Unchanged in shape from acceptance §5, with the model work sequenced
-behind it:
+> **Reordered 2026-10-14, and the reason is worth more than the order.**
+> The list below used to run cleanup → harness → FrameFusion →
+> ToonComposer, which sequenced the work by dependency. Monte: *"At what
+> point do we start using the ToonComposer APIs? It feels like we're
+> rebuilding from scratch."*
+>
+> The duplication half of that is answerable — ToonComposer ships a
+> generator and nothing else, no harness, no exposure sheet, no arcs
+> check, so none of the harness work repeats it. **The sequencing half
+> is not.** Ordering by dependency put the project's largest unretired
+> risk fourth, and that risk is not "is the integration fiddly" but
+> **"does a 14B model run usefully on this machine at all"**.
+>
+> §7 argues it does: 61 frames is not what a key pair needs, fp8 is
+> native on Blackwell, and 98 GB of host RAM is a good ratio for block
+> swap. **That is an argument, not a measurement**, and everything
+> downstream is costed against it. A harness built to judge a generator
+> that cannot run here would be a well-tested waste.
+>
+> So the spike goes first. Not the integration — the one question.
 
+0. **Spike: does ToonComposer run here?** One key pair from the corpus,
+   driven from a script, 9–17 frames at 480p. Measure peak VRAM, wall
+   clock, and whether the output is worth looking at. **Throwaway code,
+   kept downloads.** It either validates §7 or rewrites the plan, and
+   nothing after this point is honestly estimable until it is known.
 1. **Finish legibility cleanup and chart reading** (`comfyui_ink`).
    Judged on registration residual and chart-reading accuracy against
    the animator's own reading. No models, no licences, known cost.
 2. **`HarnessJointOnset` plus `HarnessSpacingError`.** Before any
-   generator. They are what makes everything after step 3 mean
-   something.
-3. **FrameFusion as the calibration baseline.** Hours of work. It will
+   generator. They are what makes the generative steps mean something.
+3. **ToonComposer integration** — the real plugin work, and the only
+   candidate that accepts the specification. Promoted above FrameFusion
+   because FrameFusion can happen at any time and this cannot.
+4. **FrameFusion as the calibration baseline.** Hours of work. It will
    be timing-exact and will fail joint onset on every chain. If the
    harness does not catch that, fix the harness.
-4. **ToonComposer integration** — the real plugin work, and the only
-   candidate that accepts the specification.
 5. **Wan FLF2V and ToonCrafter as generative baselines**, through
    `TweenResampleToChart`, so their pacing error is a number in the
    report.
+
+**The general lesson, since this project keeps meeting it:** a build
+order that follows dependencies retires risk in whatever order the
+dependencies happen to fall, which is not the order that matters. Ask of
+each step *what would we most hate to learn late*, and do that first
+even when nothing depends on it yet.
 
 **What not to do first:** the inking stage. It is not on the pencil-test
 path (§3.2), its best open model is unlicensable (§3.3), and the
