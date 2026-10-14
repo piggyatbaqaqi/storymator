@@ -2,6 +2,10 @@
 
 from typing import List
 
-PHASE_1: List[type] = []
+from .arcs import PencilTestInteriorAngle
 
-__all__ = ["PHASE_1"]
+PHASE_1: List[type] = [
+    PencilTestInteriorAngle,
+]
+
+__all__ = [c.__name__ for c in PHASE_1] + ["PHASE_1"]

@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 #: A position on the page, in millimetres.
 Point = Tuple[float, float]
@@ -53,12 +53,20 @@ DEFAULT_CORNER_DEGREES: float = 90.0
 
 @dataclass(frozen=True)
 class AngleReading:
-    """One interior angle, and what it means at the given thresholds."""
+    """One interior angle, and what it means at the given thresholds.
+
+    ``excess`` is how far past a threshold the angle went, in degrees:
+    positive is a failure and says by how much, negative is a pass and
+    says by how much.  One signed number rather than two flags and a
+    subtraction, so that readings taken at different thresholds can
+    still be ranked against each other.
+    """
 
     index: int
     degrees: float
     straight: bool
     corner: bool
+    excess: float
 
     @property
     def accepted(self) -> bool:
@@ -125,5 +133,53 @@ def read_path(
             degrees=degrees,
             straight=degrees >= straight_degrees,
             corner=degrees <= corner_degrees,
+            excess=max(degrees - straight_degrees,
+                       corner_degrees - degrees),
         ))
     return readings
+
+
+def worst_reading(
+    readings: Sequence[AngleReading],
+) -> Optional[AngleReading]:
+    """The one that fails hardest, or -- if none fail -- the narrowest
+    pass.
+
+    Ranked on ``excess`` rather than on the angle itself, because the
+    two failures run in opposite directions: a corner is worse the
+    smaller it gets and a straight run is worse the larger.  Taking the
+    smallest angle would name a 100-degree pass over a 179-degree
+    straight run, which is the wrong drawing to put in front of an
+    animator.
+
+    ``None`` for a path with no inside; the caller decides what that
+    means, since it is not a failure.
+    """
+    if not readings:
+        return None
+    return max(readings, key=lambda r: r.excess)
+
+
+def report(readings: Sequence[AngleReading]) -> str:
+    """What an animator reads: the verdict, and the number behind it.
+
+    Every reading appears, not only the rejections, and each carries its
+    measured angle.  A report that said only "drawing 2 rejected" would
+    be a verdict with no evidence, and the first question anyone asks of
+    a rejection is *by how much*.
+    """
+    if not readings:
+        return "No inbetweens to judge: a key pair has no inside."
+    refused = [r for r in readings if not r.accepted]
+    noun = "inbetween" if len(readings) == 1 else "inbetweens"
+    lines = [f"{len(readings)} {noun} judged, {len(refused)} refused."]
+    for r in readings:
+        faults = []
+        if r.straight:
+            faults.append("STRAIGHT")
+        if r.corner:
+            faults.append("CORNER")
+        verdict = "+".join(faults) if faults else "ok"
+        lines.append(
+            f"  drawing {r.index}  {r.degrees:6.1f} deg  {verdict}")
+    return "\n".join(lines)

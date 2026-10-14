@@ -195,3 +195,90 @@ def test_every_interior_point_is_reported_even_when_it_passes() -> None:
     assert len(readings) == 2
     assert all(r.accepted for r in readings)
     assert [round(r.degrees, 3) for r in readings] == [146.310, 146.310]
+
+
+# --------------------------------------------------------------- report
+
+def test_a_report_names_how_many_were_judged() -> None:
+    text = arcs.report(arcs.read_path(ARC))
+    assert "2" in text
+
+
+def test_a_report_carries_the_number_behind_each_verdict() -> None:
+    """A rejection with no measurement cannot be argued with, and the
+    first question anyone asks of one is *by how much*."""
+    text = arcs.report(arcs.read_path([A, CORNER, B]))
+    assert "58.1" in text
+
+
+def test_a_report_names_the_drawing() -> None:
+    text = arcs.report(arcs.read_path([A, GENTLE, CORNER, B]))
+    assert "1" in text and "2" in text
+
+
+@pytest.mark.parametrize("point, word", [
+    (STRAIGHT, "straight"),
+    (CORNER, "corner"),
+])
+def test_a_report_says_which_failure_it_was(point: arcs.Point,
+                                            word: str) -> None:
+    """The two failures are different problems with different fixes, so
+    'rejected' alone would not be useful."""
+    text = arcs.report(arcs.read_path([A, point, B])).lower()
+    assert word in text
+
+
+def test_a_report_on_a_bare_key_pair_says_so() -> None:
+    """Rather than printing an empty list, which reads as a pass."""
+    text = arcs.report(arcs.read_path([A, B]))
+    assert text.strip()
+    assert "0" in text or "no" in text.lower()
+
+
+def test_a_passing_report_still_lists_the_drawings() -> None:
+    text = arcs.report(arcs.read_path(ARC))
+    assert "146.3" in text
+
+
+# --------------------------------------------------------- worst_reading
+
+def test_worst_reading_is_none_when_there_is_no_inside() -> None:
+    """Not a failure, so not a reading; the caller decides what to
+    show."""
+    assert arcs.worst_reading(arcs.read_path([A, B])) is None
+
+
+def test_worst_reading_ranks_on_excess_not_on_the_angle() -> None:
+    """The two failures run in opposite directions, so the smallest
+    angle is not the worst drawing.
+
+    This path runs nearly straight and then bends: drawing 1 is 179.7
+    and fails, drawing 2 is 103.2 and passes.  Taking the smallest
+    angle would put the passing drawing in front of the animator and
+    say nothing about the one that is actually wrong.
+    """
+    path = [(0.0, 0.0), (5.0, 0.1), (9.0, 0.2), (10.0, 5.0)]
+    readings = arcs.read_path(path)
+    worst = arcs.worst_reading(readings)
+    assert worst is not None
+    assert worst.index == 1
+    assert worst.degrees == pytest.approx(179.714, abs=1e-3)
+    assert min(arcs.interior_angles(path)) == pytest.approx(103.200,
+                                                            abs=1e-3)
+
+
+def test_excess_is_signed_so_passes_carry_their_margin() -> None:
+    """Negative is a pass, and its size is the room left -- measured to
+    the NEARER threshold.
+
+    A gentle arc at 146.6 sits 28.4 from the straight threshold and
+    56.6 from the corner one, so its margin is 28.4: the straight
+    threshold is the one it would cross first.
+    """
+    reading, = arcs.read_path([A, GENTLE, B])
+    assert reading.accepted
+    assert reading.excess < 0
+    to_straight = arcs.DEFAULT_STRAIGHT_DEGREES - reading.degrees
+    to_corner = reading.degrees - arcs.DEFAULT_CORNER_DEGREES
+    assert -reading.excess == pytest.approx(min(to_straight, to_corner))
+    assert -reading.excess == pytest.approx(28.398, abs=1e-3)

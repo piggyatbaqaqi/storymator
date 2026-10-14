@@ -60,5 +60,12 @@ ln -s /path/to/storymator/comfyui/comfyui_penciltest \
 
 ## Status
 
-Scaffolding and the two rules that keep the pack portable. No nodes yet:
-`PHASE_1` is empty and that is deliberate, not an oversight.
+One node: **Interior Angle (arcs)**, under `penciltest/harness`. It takes
+a `PENCILTEST_PATH` — one tracked point per drawing, keys and inbetweens
+alike — and reports the angle at each inbetween against the arcs
+principle.
+
+**Nothing produces a `PENCILTEST_PATH` yet.** The producer is a feature
+tracker, which is the next node; until then the check is callable from
+Python and from the test suite but cannot be wired into a graph. Said
+here so it reads as a known gap rather than a broken node.

@@ -17,12 +17,10 @@ imports without ComfyUI.
 
 from __future__ import annotations
 
-import asyncio
 import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 from . import hygiene
 
@@ -191,9 +189,25 @@ def test_the_entrypoint_refuses_outside_comfyui() -> None:
     The pack root imports cleanly without ComfyUI on purpose, so the
     failure has to come at the point of use rather than at import, or
     it does not come at all.
+
+    In a subprocess for the same reason as the test above, and for a
+    sharper one: conftest.py now puts ComfyUI on the path so ``nodes/``
+    can be tested, and ``nodes`` imports ``comfy_api``.  An in-process
+    version of this test would therefore skip itself every single run
+    and look like it was passing.
     """
-    if "comfy_api" in sys.modules:
-        pytest.skip("ComfyUI is present; nothing to refuse")
-    import comfyui_penciltest
-    with pytest.raises(RuntimeError, match="ComfyUI 0.35"):
-        asyncio.run(comfyui_penciltest.comfy_entrypoint())
+    probe = (
+        "import asyncio, sys; sys.path.insert(0, {parent!r});"
+        "import comfyui_penciltest as p;"
+        "\ntry:\n"
+        "    asyncio.run(p.comfy_entrypoint())\n"
+        "except RuntimeError as e:\n"
+        "    print('refused:', e)\n"
+        "else:\n"
+        "    print('NOT REFUSED')\n"
+    ).format(parent=str(PACK.parent))
+    done = subprocess.run([sys.executable, "-c", probe],
+                          capture_output=True, text=True, timeout=120)
+    assert done.returncode == 0, done.stderr
+    assert done.stdout.startswith("refused:"), done.stdout
+    assert "ComfyUI 0.35" in done.stdout
