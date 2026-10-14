@@ -1,0 +1,58 @@
+# The storymator environment.
+#
+#     conda env create -f environment.yml      # from the repository root
+#     conda activate storymator
+#
+# WHY THIS FILE EXISTS
+#
+# Running the test suite under the wrong environment does not fail.  It
+# silently collects fewer tests and reports green, which is worse than a
+# red run because nobody investigates a green one.  Until now the
+# `storymator` environment existed only on one machine and was described
+# nowhere, so "run it under storymator" was advice with nothing behind
+# it.  This is the thing behind it.
+#
+# HOW IT WAS BUILT, AND WHY IT LOOKS LIKE THIS
+#
+# The original environment was created with conda for Python alone and
+# pip for everything else -- 23 conda packages, all of them Python's own
+# dependencies, against 198 from pip.  This file reproduces that rather
+# than tidying it into conda packages, because a tidier file would
+# install different builds and the point is to reproduce what the
+# measurements were taken on.
+#
+# The package lists live in the requirements files, so there is one
+# place per tier and this file composes them.  See docs/README.md.
+#
+# WHAT THIS FILE CANNOT GIVE YOU
+#
+# ComfyUI itself.  `comfy_api` is not a package here; it is found by
+# conftest.py putting a ComfyUI checkout on sys.path, from $COMFYUI_ROOT
+# or its default of /data/piggy/src/github.com/Comfy-Org/ComfyUI.
+# Without that checkout, comfyui_acme/tests/test_nodes.py skips -- 32
+# tests, silently.  A complete setup is this environment AND a ComfyUI
+# checkout.
+#
+# OPTIONAL EXTRAS, deliberately absent
+#
+#   datasets   data/calibration/acme_paper/acme_paper.py uses it to
+#              publish the punch-geometry dataset, and degrades quietly
+#              without it.  Not installed in the environment this was
+#              captured from, so not installed here either.
+#
+# `python=3.14` is the pin the original was created with, so a fresh
+# environment picks up the newest 3.14.x rather than the 3.14.6 in use
+# here.  Left loose on purpose: the failure this file guards against is
+# using the wrong ENVIRONMENT, not a patch release.
+
+name: storymator
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.14
+  - pip
+  - pip:
+      - -r requirements.txt
+      - -r requirements-dev.txt

@@ -74,8 +74,16 @@ Three tiers, kept apart on purpose:
 | tier | file | why there |
 |---|---|---|
 | **node-pack runtime** | `comfyui/<pack>/requirements.txt` | the ComfyUI Manager installs it into every user's ComfyUI, so it carries what the pack needs to run and nothing else |
-| **repository tooling** | [`requirements-dev.txt`](../requirements-dev.txt) | pytest, mypy, flake8, bibtexparser — installed by whoever works on the repo, by nobody else |
-| **the environment** | the `storymator` conda env | numpy, scipy, Pillow, OpenCV and torch come from here, and are deliberately *not* pip-declared, so nobody installs a second conflicting set |
+| **`bin/` runtime** | [`requirements.txt`](../requirements.txt) | numpy, scipy, Pillow, OpenCV — what the command-line tools import |
+| **repository tooling** | [`requirements-dev.txt`](../requirements-dev.txt) | pytest, mypy, flake8, bibtexparser, and torch — installed by whoever works on the repo, by nobody else |
+| **the environment** | [`environment.yml`](../environment.yml) | composes the two requirements files onto `python=3.14`, reproducing how the `storymator` env was actually built |
+
+**torch is tooling here, not runtime.** `comfyui_acme/nodes/_convert.py`
+imports it, but inside ComfyUI it is already present — which is why the
+pack's own `requirements.txt` does not name it, exactly as it does not
+name numpy. It is in `requirements-dev.txt` because running
+`comfyui_acme/tests/test_nodes.py` *outside* ComfyUI needs it in the
+interpreter, and without it those 32 tests **skip rather than fail**.
 
 **There is no top-level `pyproject.toml` and should not be one.** This
 repository is a workspace of independently installable components —
@@ -98,14 +106,13 @@ where the registry reads `[tool.comfy] PublisherId` and
   [`comfyui/mypy.ini`](../comfyui/mypy.ini), which covers the ComfyUI
   packs only — `bin/`, `fixes/` and `data/` are still checked with
   whatever is on the path.
-* **The `storymator` conda environment is undocumented.** There is no
-  `environment.yml`, and running the suite under the wrong environment
-  does not fail — it silently collects fewer tests. That is an
-  experienced failure, not a hypothetical one, and `requirements-dev.txt`
-  does nothing about it.
-* **The `bin/` CLIs' runtime dependencies are undeclared.** They import
-  numpy, scipy, Pillow and OpenCV and rely on the conda environment
-  having them.
+* ~~The `storymator` conda environment is undocumented.~~ **Closed
+  2026-10-14** by [`environment.yml`](../environment.yml). One thing it
+  cannot supply: `comfy_api` is not a package but a ComfyUI checkout on
+  `sys.path`, from `$COMFYUI_ROOT`. Without it, 32 node tests skip
+  silently, so a complete setup is the environment **and** a checkout.
+* ~~The `bin/` CLIs' runtime dependencies are undeclared.~~ **Closed
+  2026-10-14** by [`requirements.txt`](../requirements.txt).
 
 ## Glossary
 

@@ -30,6 +30,21 @@ pytest
 mypy
 flake8
 
+# Needed to TEST comfyui_acme, not to ship it.
+#
+# comfyui_acme/nodes/_convert.py imports torch, and inside ComfyUI that
+# is already present -- which is why the pack's own requirements.txt
+# does not name it, exactly as it does not name numpy.  But running
+# comfyui_acme/tests/test_nodes.py outside ComfyUI needs it in this
+# interpreter, and without it those 32 tests SKIP rather than fail.
+# A silent 32-test hole is the thing this file exists to prevent.
+#
+# The environment this was captured from carries a CUDA build
+# (2.13.0+cu130) installed from PyTorch's own index.  Unpinned here
+# because the right wheel depends on the machine; a CPU build is enough
+# for the tests.
+torch
+
 # Reads docs/bibliography.bib.
 #
 # Pinned to the 2.x line on purpose: v1 and v2 are different libraries

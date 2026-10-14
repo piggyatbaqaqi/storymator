@@ -1,0 +1,25 @@
+# Runtime dependencies of the `bin/` command-line tools.
+#
+# These are the libraries the CLIs import directly.  They were previously
+# undeclared and simply assumed to be in the conda environment, which
+# worked right up until somebody tried to run a tool somewhere else.
+#
+# This is the third of the three tiers described in docs/README.md:
+#
+#   comfyui/<pack>/requirements.txt   what a pack needs to RUN inside
+#                                     ComfyUI; installed into every
+#                                     user's install by the Manager
+#   requirements.txt  (this file)     what bin/ needs to run
+#   requirements-dev.txt              what developing the repo needs
+#
+# Deliberately not pinned beyond a floor.  Nothing here is version
+# sensitive, and the environment that matters is pinned by
+# environment.yml instead.
+
+numpy
+scipy
+Pillow
+
+# measure-ink and score-focus only.  contrib rather than plain for the
+# same reason comfyui_acme gives: ArUco lives in contrib.
+opencv-contrib-python>=4.10
