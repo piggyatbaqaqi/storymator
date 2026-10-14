@@ -105,6 +105,15 @@ where the registry reads `[tool.comfy] PublisherId` and
   numpy, scipy, Pillow and OpenCV and rely on the conda environment
   having them.
 
+## Glossary
+
+[glossary.md](glossary.md) — the project's vocabulary, in one place so
+the code can cite it. The rule is the acceptance note's: **use these
+words and no others.** Every entry names its source, because a term
+Daniel's manuscript fixes binds this project in a way a general industry
+usage does not, and a convention this repository invented binds nobody
+but us. §5 lists the words we deliberately do not use.
+
 ## Bibliography
 
 [bibliography.bib](bibliography.bib) — BibTeX for everything this

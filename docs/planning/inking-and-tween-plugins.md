@@ -1018,17 +1018,12 @@ Following Monte's outline. Metadata outermost, rows in frame order, each
 row an **ordered list of cels, outermost to innermost**.
 
 > **Vocabulary, corrected 2026-10-13.** The unit is a **cel**, from
-> celluloid. *"There is no such thing as a 'cell' in animation"*
-> (Monte). Earlier drafts of this section wrote `cells`, which is now
-> `cels` throughout. This is the acceptance note's rule in action —
-> *the code should use these words and no others* — and it is worth
-> enforcing mechanically rather than by vigilance; see §14.4.
->
-> Note the repository's other uses of "cell" are **correct and should
-> stay**: *cell phone* in the capture lighting notes, and the grid or
-> mesh cells in [sheet-flattening.md](sheet-flattening.md),
-> [calibrating-a-camera.md](../calibrating-a-camera.md) and the
-> coverage analysis. Those are not animation terms.
+> celluloid — *"there is no such thing as a 'cell' in animation"*
+> (Monte). Earlier drafts of this section wrote `cells`; it is `cels`
+> throughout now. Definition, sources and the words this project does
+> not use are in **[glossary.md](../glossary.md)**, which became a
+> document of its own on 2026-10-14. Worth enforcing mechanically
+> rather than by vigilance; see §14.4.
 
 ```json
 {
@@ -1270,8 +1265,8 @@ tests; pencil tests do not know they came off a peg bar.
 
 ### 14.4 A vocabulary test, for the same reason
 
-The acceptance note's appendix ends by fixing the project's vocabulary
-and saying **the code should use these words and no others**. That has
+[glossary.md](../glossary.md) fixes the project's vocabulary and carries
+the rule that **the code should use these words and no others**. That has
 now been breached twice in this document — the marks on the roughs were
 called crosses when they are asterisks, and the exposure sheet's unit was
 called a cell when it is a **cel**. Both were caught by Monte reading

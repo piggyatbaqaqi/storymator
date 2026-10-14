@@ -328,18 +328,16 @@ succession, distinct from the principles): cycles, drag, go-beyond-and-
 settle-back, anticipation, blurs and distortions, multiple images,
 vibrations, held cels, tracebacks, moving holds, pure illusion.
 
-**Vocabulary**, as the manuscript fixes it — the code should use these
-words and no others: *key pose* (storytelling anchor; rarely more than
-two per second), *extreme* (contains the outer motion of an element),
-*breakdown* (a frame between keys containing an extreme), *inbetween*
-(everything remaining between breakdowns and keys), *slow-in*,
-*slow-out*, *feet* (16 frames of 35 mm; 3 feet = 2 seconds), *pegs*,
-*cel*.
+**Vocabulary** — *moved 2026-10-14 to [../glossary.md](../glossary.md),
+which is now the register.*
 
-> **Added 2026-10-13.** *cel* — from celluloid; the manuscript uses it
-> throughout (*"one painted cel to the next"*, *"held cels"*) without
-> defining it separately, so it is listed here rather than quoted.
-> **It is never "cell".** Monte: *"There is no such thing as a 'cell'
-> in animation."* Recorded because the exposure-sheet schema in
-> [inking-and-tween-plugins.md](inking-and-tween-plugins.md) §13.1 got
-> it wrong first.
+This appendix carried the vocabulary list because, when it was written,
+there was nowhere else to put it: *"Recorded so the 'local definition' is
+written down in one place and can be cited by the code."* That place now
+exists as a document of its own rather than an appendix to a letter, and
+it carries each term's source — which matters, because a word the
+manuscript fixes binds this project differently from a general industry
+usage.
+
+**The rule the list carried travels with it: the code should use these
+words and no others.**

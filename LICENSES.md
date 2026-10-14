@@ -142,6 +142,15 @@ the SDK's terms before redistributing it alongside the rest.
 Prose and diagrams are **CC-BY-SA-4.0**, matching the calibration data
 they document.
 
+`docs/glossary.md` quotes one sentence from the Wikipedia article
+*Cel*, which is **CC-BY-SA-4.0** — the same licence as `docs/`, so the
+quote is compatible rather than merely fair. Share-alike is satisfied
+because the surrounding document is already share-alike; attribution is
+satisfied by the citation beside the quote, which names the article, the
+licence and the retrieval date. Quote further Wikipedia material the same
+way and nothing else needs to change; quoting material under a
+*different* licence would, so check before pasting.
+
 **Documents under `docs/licensing/` belong to their respective owners**,
 as documented in
 [docs/licensing/README.md](docs/licensing/README.md) — which lists each
