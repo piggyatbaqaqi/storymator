@@ -5,7 +5,8 @@ docs/planning/camera-input-node.md measured it going wrong on real
 hardware.  The fakes below reproduce the specific ways V4L2 lies.
 """
 
-from typing import Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Protocol, Tuple
 
 import numpy as np
 import pytest
@@ -27,7 +28,7 @@ class FakeCamera:
     """
 
     def __init__(self, lies: Optional[Dict[str, float]] = None,
-                 rejects: Tuple[str, ...] = ()):
+                 rejects: Tuple[str, ...] = ()) -> None:
         self.order: List[str] = []
         self.values: Dict[str, float] = {}
         self.reads: List[str] = []
@@ -97,7 +98,7 @@ FULL = CaptureRequest(width=3264, height=2448, focus=134)
 
 # --- ordering -------------------------------------------------------
 
-def test_fourcc_is_requested_before_the_geometry():
+def test_fourcc_is_requested_before_the_geometry() -> None:
     """Measured: 8x throughput turns on this order alone.
 
     3264x2448 in YUYV gave 1.3 fps and 4.53 s to first frame; MJPG
@@ -111,11 +112,11 @@ def test_fourcc_is_requested_before_the_geometry():
     assert cam.order.index("fourcc") < cam.order.index("height")
 
 
-def test_mjpg_is_the_default_fourcc():
+def test_mjpg_is_the_default_fourcc() -> None:
     assert CaptureRequest(width=3264, height=2448).fourcc == "MJPG"
 
 
-def test_autofocus_is_disabled_before_an_absolute_focus_is_set():
+def test_autofocus_is_disabled_before_an_absolute_focus_is_set() -> None:
     """An absolute focus set while autofocus is live does not stick."""
     cam = FakeCamera()
     apply_request(cam, FULL)
@@ -124,7 +125,7 @@ def test_autofocus_is_disabled_before_an_absolute_focus_is_set():
     assert cam.values["autofocus"] == 0
 
 
-def test_autofocus_is_left_alone_when_no_focus_is_requested():
+def test_autofocus_is_left_alone_when_no_focus_is_requested() -> None:
     cam = FakeCamera()
     apply_request(cam, CaptureRequest(width=1280, height=720))
     assert "focus" not in cam.order
@@ -132,14 +133,14 @@ def test_autofocus_is_left_alone_when_no_focus_is_requested():
 
 # --- set-then-verify ------------------------------------------------
 
-def test_every_control_set_is_also_read_back():
+def test_every_control_set_is_also_read_back() -> None:
     cam = FakeCamera()
     apply_request(cam, FULL)
     assert set(cam.reads) == set(cam.order), \
         "a control that is set but never read back is a control that lies"
 
 
-def test_a_silent_substitution_is_reported_as_a_failure():
+def test_a_silent_substitution_is_reported_as_a_failure() -> None:
     """set() returns True, the value is not what was asked for."""
     cam = FakeCamera(lies={"focus": 0.0})
     results = apply_request(cam, FULL)
@@ -149,14 +150,15 @@ def test_a_silent_substitution_is_reported_as_a_failure():
     assert bad[0].actual == 0.0
 
 
-def test_a_rejected_set_is_reported_as_a_failure():
+def test_a_rejected_set_is_reported_as_a_failure() -> None:
     cam = FakeCamera(rejects=("focus",))
     bad = failures(apply_request(cam, FULL))
     assert [r.name for r in bad] == ["focus"]
     assert bad[0].accepted is False
 
 
-def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one():
+def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one(
+) -> None:
     """The bug the first integration run found.
 
     Verifying each control the instant it is set reports width 3264 as
@@ -167,7 +169,7 @@ def test_geometry_is_judged_on_the_finished_format_not_a_half_set_one():
     assert failures(apply_request(cam, FULL)) == []
 
 
-def test_nothing_is_read_back_until_everything_has_been_set():
+def test_nothing_is_read_back_until_everything_has_been_set() -> None:
     """Stated directly, so the ordering cannot drift back.
 
     A later control can also clobber an earlier one, which a readback
@@ -181,11 +183,11 @@ def test_nothing_is_read_back_until_everything_has_been_set():
     assert kinds == ["set"] * half + ["get"] * half
 
 
-def test_a_request_that_takes_cleanly_has_no_failures():
+def test_a_request_that_takes_cleanly_has_no_failures() -> None:
     assert failures(apply_request(FakeCamera(), FULL)) == []
 
 
-def test_brightness_is_passed_through_in_the_driver_scale():
+def test_brightness_is_passed_through_in_the_driver_scale() -> None:
     """Upstream normalised brightness to 0-1; set(0.5) read back 0.0.
 
     The node's own default therefore pegged brightness to minimum on
@@ -197,7 +199,7 @@ def test_brightness_is_passed_through_in_the_driver_scale():
     assert cam.values["brightness"] == 128
 
 
-def test_control_result_ok_requires_both_acceptance_and_readback():
+def test_control_result_ok_requires_both_acceptance_and_readback() -> None:
     assert ControlResult("focus", 134, 134, True).ok
     assert not ControlResult("focus", 134, 134, False).ok
     assert not ControlResult("focus", 134, 0, True).ok
@@ -205,7 +207,7 @@ def test_control_result_ok_requires_both_acceptance_and_readback():
 
 # --- frame conversion -----------------------------------------------
 
-def test_frame_to_rgb_reverses_the_channels_and_scales():
+def test_frame_to_rgb_reverses_the_channels_and_scales() -> None:
     bgr = np.zeros((2, 3, 3), dtype=np.uint8)
     bgr[..., 0] = 255           # blue channel, in BGR
     out = frame_to_rgb(bgr)
@@ -215,7 +217,7 @@ def test_frame_to_rgb_reverses_the_channels_and_scales():
     assert np.allclose(out[..., 0], 0.0)
 
 
-def test_frame_to_rgb_does_not_add_a_batch_dimension():
+def test_frame_to_rgb_does_not_add_a_batch_dimension() -> None:
     """Batching is the node's job, via nodes/_convert.stack_to_tensor."""
     assert frame_to_rgb(np.zeros((4, 5, 3), np.uint8)).shape == (4, 5, 3)
 
@@ -225,17 +227,17 @@ def test_frame_to_rgb_does_not_add_a_batch_dimension():
 PROV = {"frame_size_px": [3264, 2448], "focus_absolute": 134}
 
 
-def test_verify_against_passes_a_consistent_capture():
+def test_verify_against_passes_a_consistent_capture() -> None:
     assert verify_against(PROV, 3264, 2448, 134) == []
 
 
-def test_verify_against_catches_a_frame_size_mismatch():
+def test_verify_against_catches_a_frame_size_mismatch() -> None:
     problems = verify_against(PROV, 1920, 1080, 134)
     assert len(problems) == 1
     assert "1920" in problems[0] and "3264" in problems[0]
 
 
-def test_verify_against_catches_a_focus_mismatch():
+def test_verify_against_catches_a_focus_mismatch() -> None:
     """The mistake already made by hand on the peg profiles.
 
     Shooting at focus 635 against a calibration measured at 134 gives
@@ -247,17 +249,17 @@ def test_verify_against_catches_a_focus_mismatch():
     assert "635" in problems[0] and "134" in problems[0]
 
 
-def test_verify_against_reports_both_mismatches_at_once():
+def test_verify_against_reports_both_mismatches_at_once() -> None:
     assert len(verify_against(PROV, 1920, 1080, 635)) == 2
 
 
-def test_absent_provenance_is_reported_rather_than_passing():
+def test_absent_provenance_is_reported_rather_than_passing() -> None:
     """Cannot-check is not the same as checked-and-fine."""
     problems = verify_against(None, 3264, 2448, 134)
     assert problems, "a calibration with no provenance cannot be verified"
 
 
-def test_provenance_survives_a_calibration_round_trip():
+def test_provenance_survives_a_calibration_round_trip() -> None:
     """Calibration.to_dict/from_dict dropped the provenance block.
 
     Without this the verify input has nothing to check against.
@@ -270,15 +272,15 @@ def test_provenance_survives_a_calibration_round_trip():
 
 # --- device addressing ----------------------------------------------
 
-def test_device_index_accepts_a_bare_integer():
+def test_device_index_accepts_a_bare_integer() -> None:
     assert device_index("3") == 3
 
 
-def test_device_index_accepts_a_dev_node():
+def test_device_index_accepts_a_dev_node() -> None:
     assert device_index("/dev/video3") == 3
 
 
-def test_device_index_resolves_a_by_path_symlink(tmp_path):
+def test_device_index_resolves_a_by_path_symlink(tmp_path: Path) -> None:
     """By-path is the V4K's only stable identity: it reports no USB
     serial, so two of them are indistinguishable by descriptor."""
     node = tmp_path / "video7"
@@ -288,14 +290,14 @@ def test_device_index_resolves_a_by_path_symlink(tmp_path):
     assert device_index(str(link)) == 7
 
 
-def test_device_index_rejects_nonsense():
+def test_device_index_rejects_nonsense() -> None:
     with pytest.raises(ValueError):
         device_index("not-a-camera")
 
 
 # --- re-execution ---------------------------------------------------
 
-def test_capture_token_differs_between_calls():
+def test_capture_token_differs_between_calls() -> None:
     """ComfyUI caches by IS_CHANGED; a cached frame would look like
     perfect repeatability."""
     assert capture_token() != capture_token()
@@ -309,32 +311,32 @@ BAD = [ControlResult("width", 3264, 3264, True),
        ControlResult("focus", 134, 0, True)]
 
 
-def test_a_clean_capture_reports_itself_as_clean():
+def test_a_clean_capture_reports_itself_as_clean() -> None:
     text = capture_report(GOOD, [])
     assert "focus" in text
     assert "134" in text
 
 
-def test_a_failed_control_is_named_with_both_numbers():
+def test_a_failed_control_is_named_with_both_numbers() -> None:
     """Requested and actual: "focus failed" alone does not help."""
     text = capture_report(BAD, [])
     assert "focus" in text
     assert "134" in text and "0" in text
 
 
-def test_a_verification_problem_reaches_the_report_verbatim():
+def test_a_verification_problem_reaches_the_report_verbatim() -> None:
     problem = "focus is 635 but the calibration was measured at 134"
     assert problem in capture_report(GOOD, [problem])
 
 
-def test_control_failures_and_verification_problems_both_appear():
+def test_control_failures_and_verification_problems_both_appear() -> None:
     problem = "frame is 1920x1080 but the calibration was measured at ..."
     text = capture_report(BAD, [problem])
     assert problem in text
     assert "focus" in text
 
 
-def test_a_clean_report_is_distinguishable_from_a_dirty_one():
+def test_a_clean_report_is_distinguishable_from_a_dirty_one() -> None:
     """Downstream and the operator both need a yes/no, not prose to
     parse."""
     assert capture_report(GOOD, []) != capture_report(BAD, [])
@@ -342,14 +344,25 @@ def test_a_clean_report_is_distinguishable_from_a_dirty_one():
 
 # --- holding the camera open ----------------------------------------
 
+class _Handle(Protocol):
+    """All :class:`CaptureSession` asks of what an opener hands back.
+
+    Structural rather than naming the fake below, because the session
+    treats a capture as opaque -- it holds it and releases it -- and a
+    protocol says that where a concrete class would only imply it.
+    """
+
+    def release(self) -> None: ...
+
+
 class FakeOpener:
     """Records opens and releases, so reuse can be asserted."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.opened: List[int] = []
         self.released: List[int] = []
 
-    def __call__(self, index: int):
+    def __call__(self, index: int) -> "_Handle":
         self.opened.append(index)
         opener = self
 
@@ -363,7 +376,7 @@ class FakeOpener:
         return _Capture()
 
 
-def test_the_same_device_is_opened_once_and_reused():
+def test_the_same_device_is_opened_once_and_reused() -> None:
     """Re-opening costs 0.58 s at best and 4.53 s at worst on v4k_01."""
     opener = FakeOpener()
     session = CaptureSession(opener)
@@ -372,7 +385,7 @@ def test_the_same_device_is_opened_once_and_reused():
     assert opener.opened == [3]
 
 
-def test_changing_device_releases_the_old_one():
+def test_changing_device_releases_the_old_one() -> None:
     opener = FakeOpener()
     session = CaptureSession(opener)
     session.open(3)
@@ -381,7 +394,7 @@ def test_changing_device_releases_the_old_one():
     assert opener.released == [3], "the old device must not be left held"
 
 
-def test_close_releases_and_can_be_called_twice():
+def test_close_releases_and_can_be_called_twice() -> None:
     opener = FakeOpener()
     session = CaptureSession(opener)
     session.open(3)
@@ -391,20 +404,20 @@ def test_close_releases_and_can_be_called_twice():
     assert session.index is None
 
 
-def test_a_fresh_session_holds_nothing():
+def test_a_fresh_session_holds_nothing() -> None:
     assert CaptureSession(FakeOpener()).index is None
 
 
 # --- readability of the report --------------------------------------
 
 
-def test_fourcc_name_inverts_fourcc_code():
+def test_fourcc_name_inverts_fourcc_code() -> None:
     from .capture import fourcc_code, fourcc_name
     for code in ("MJPG", "YUYV", "H264"):
         assert fourcc_name(fourcc_code(code)) == code
 
 
-def test_fourcc_name_falls_back_to_hex_when_not_printable():
+def test_fourcc_name_falls_back_to_hex_when_not_printable() -> None:
     """A driver reporting 0, or a control that is not a FOURCC at all,
     must not be rendered as four control characters."""
     from .capture import fourcc_name
@@ -412,7 +425,7 @@ def test_fourcc_name_falls_back_to_hex_when_not_printable():
     assert fourcc_name(1) == "0x00000001"
 
 
-def test_fourcc_is_reported_as_its_four_characters():
+def test_fourcc_is_reported_as_its_four_characters() -> None:
     """A FOURCC is a packed integer, and %g renders it as 1.19644e+09.
 
     Seen on the first real run: the line read "fourcc asked
@@ -426,7 +439,7 @@ def test_fourcc_is_reported_as_its_four_characters():
     assert "e+09" not in text
 
 
-def test_a_wrong_fourcc_shows_both_codes_readably():
+def test_a_wrong_fourcc_shows_both_codes_readably() -> None:
     from .capture import fourcc_code
     text = capture_report([ControlResult("fourcc", fourcc_code("MJPG"),
                                          fourcc_code("YUYV"), True)], [])
