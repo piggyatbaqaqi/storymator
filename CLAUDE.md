@@ -4,7 +4,7 @@
 * Check every change into git with useful comments.
 * Every new module foo.py needs a pytest-compatible foo_test.py that exercises every function and method. Run each new test module and confirm that all tests in it pass.
 * Python code formatting follows PEP-8.
-* All new code gets PEP 484 and PEP 526 type annotation. New code needs to pass mypy type checking.
+* All code carries PEP 484 / PEP 526 annotations, tests and fixtures included. Enforced rather than trusted: comfyui/mypy.ini sets disallow_untyped_defs, so an unannotated function is an error, not a silently skipped body. Where existing code is unannotated, the count may fall and must never rise.
 * Fix preexisting mypy and flake8 fixes when you find them. Make sure the fixes are in their own commit.
 * New markdown documents live in docs/ unless otherwise requested.
 * Functional tests live in tests/ and need not be pytest compatible.
