@@ -1,0 +1,10 @@
+# Nothing. Deliberately.
+#
+# The ComfyUI Manager installs this file into every user's ComfyUI, so
+# it carries what the pack needs to RUN and nothing else.  numpy, scipy
+# and Pillow are already present in any ComfyUI environment, and this
+# pack needs no third-party code beyond them.
+#
+# Development tooling -- pytest, mypy, flake8 -- lives in the storymator
+# repository's top-level requirements-dev.txt, not here.  A tool that
+# only the authors need has no business in a user's install.
