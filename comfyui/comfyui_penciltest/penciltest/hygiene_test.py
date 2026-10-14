@@ -1,5 +1,11 @@
 """What keeps this pack publishable, checked rather than hoped for.
 
+Several lines below carry ``# vocabulary-ok``.  They have to name the
+word the glossary rules out, because that is what they are testing, and
+the marker is how a legitimate use is allowed in place and stays visible
+to a reader rather than being special-cased inside the checker.  A test
+for a rule is the one piece of code guaranteed to break it.
+
 Three groups.  The **helpers** are tested on constructed input, because
 a checker nobody checks is worth nothing -- a firewall that silently
 fails to parse relative imports would pass forever and protect nothing.
@@ -22,13 +28,10 @@ from . import hygiene
 
 PACK: Path = Path(__file__).resolve().parent.parent
 
-skeleton = pytest.mark.xfail(raises=NotImplementedError,
-                             reason="hygiene.py is still a skeleton")
-
 
 # ----------------------------------------------------------- the helpers
 
-@skeleton
+
 def test_pack_files_finds_sources_and_sorts_them(tmp_path: Path) -> None:
     (tmp_path / "b.py").write_text("")
     (tmp_path / "a.py").write_text("")
@@ -37,7 +40,6 @@ def test_pack_files_finds_sources_and_sorts_them(tmp_path: Path) -> None:
     assert [p.name for p in got] == ["a.py", "b.py"]
 
 
-@skeleton
 def test_pack_files_skips_build_artefacts(tmp_path: Path) -> None:
     (tmp_path / "real.py").write_text("")
     for junk in hygiene.SKIP_DIRS:
@@ -47,7 +49,6 @@ def test_pack_files_skips_build_artefacts(tmp_path: Path) -> None:
     assert [p.name for p in got] == ["real.py"]
 
 
-@skeleton
 def test_pack_files_takes_several_suffixes(tmp_path: Path) -> None:
     (tmp_path / "a.py").write_text("")
     (tmp_path / "b.md").write_text("")
@@ -56,25 +57,21 @@ def test_pack_files_takes_several_suffixes(tmp_path: Path) -> None:
     assert sorted(p.name for p in got) == ["a.py", "b.md"]
 
 
-@skeleton
 def test_module_imports_plain_and_dotted() -> None:
     assert hygiene.module_imports("import x") == {"x"}
     assert hygiene.module_imports("import x.y") == {"x.y"}
 
 
-@skeleton
 def test_module_imports_sees_through_an_alias() -> None:
     """``import acme as a`` must not slip past."""
     assert hygiene.module_imports("import x as z") == {"x"}
 
 
-@skeleton
 def test_module_imports_from_form() -> None:
     assert hygiene.module_imports("from x import y") == {"x"}
     assert hygiene.module_imports("from x.y import z") == {"x.y"}
 
 
-@skeleton
 def test_module_imports_keeps_relative_dots() -> None:
     """The dots are the difference between our module and the rig's."""
     assert hygiene.module_imports("from . import y") == {"."}
@@ -82,74 +79,63 @@ def test_module_imports_keeps_relative_dots() -> None:
     assert hygiene.module_imports("from ..a.b import c") == {"..a.b"}
 
 
-@skeleton
 def test_module_imports_collects_every_statement() -> None:
     src = "import a\nfrom b import c\n\ndef f():\n    import d\n"
     assert hygiene.module_imports(src) == {"a", "b", "d"}
 
 
-@skeleton
 def test_forbidden_imports_flags_an_absolute_reach(tmp_path: Path) -> None:
     (tmp_path / "bad.py").write_text("from acme.lens import calibrate\n")
     got = hygiene.forbidden_imports(tmp_path)
     assert {p.name for p in got} == {"bad.py"}
 
 
-@skeleton
 def test_forbidden_imports_flags_a_relative_reach(tmp_path: Path) -> None:
     """``from ..acme.x import y`` is the shortcut someone will try."""
     (tmp_path / "bad.py").write_text("from ..acme.rect import fit_rect\n")
     assert {p.name for p in hygiene.forbidden_imports(tmp_path)} == {"bad.py"}
 
 
-@skeleton
 def test_forbidden_imports_allows_our_own_relatives(tmp_path: Path) -> None:
     (tmp_path / "fine.py").write_text(
         "from .arcs import interior_angle\nimport numpy as np\n")
     assert hygiene.forbidden_imports(tmp_path) == {}
 
 
-@skeleton
 def test_forbidden_imports_does_not_match_a_prefix(tmp_path: Path) -> None:
     """``acmetools`` is not ``acme``."""
     (tmp_path / "fine.py").write_text("import acmetools\n")
     assert hygiene.forbidden_imports(tmp_path) == {}
 
 
-@skeleton
 def test_banned_words_matches_whole_words_only() -> None:
-    assert hygiene.banned_words("a cell here") == [(1, "cell")]
-    assert hygiene.banned_words("cellular automata") == []
+    assert hygiene.banned_words("a cell here") == [(1, "cell")]  # vocabulary-ok
+    assert hygiene.banned_words("cellular automata") == []  # vocabulary-ok
     assert hygiene.banned_words("the cel is fine") == []
 
 
-@skeleton
 def test_banned_words_ignores_case() -> None:
-    assert hygiene.banned_words("Cells and CELL") == [(1, "Cells"),
-                                                      (1, "CELL")]
+    assert hygiene.banned_words("Cells and CELL") == [  # vocabulary-ok
+        (1, "Cells"), (1, "CELL")]  # vocabulary-ok
 
 
-@skeleton
 def test_banned_words_reports_line_numbers() -> None:
-    assert hygiene.banned_words("ok\nok\na cell\n") == [(3, "cell")]
+    assert hygiene.banned_words("ok\nok\na cell\n") == [(3, "cell")]  # vocabulary-ok
 
 
-@skeleton
 def test_banned_words_respects_the_allow_marker() -> None:
-    text = f"a cell  # {hygiene.ALLOW_MARKER}\na cell\n"
-    assert hygiene.banned_words(text) == [(2, "cell")]
+    text = f"a cell  # {hygiene.ALLOW_MARKER}\na cell\n"  # vocabulary-ok
+    assert hygiene.banned_words(text) == [(2, "cell")]  # vocabulary-ok
 
 
-@skeleton
 def test_forbidden_words_scans_prose_too(tmp_path: Path) -> None:
-    (tmp_path / "README.md").write_text("stack of cells\n")
+    (tmp_path / "README.md").write_text("stack of cells\n")  # vocabulary-ok
     got = hygiene.forbidden_words(tmp_path)
     assert {p.name for p in got} == {"README.md"}
 
 
 # ------------------------------------------------------------- applied
 
-@skeleton
 def test_this_pack_never_imports_the_rig() -> None:
     """§14.2. The pack must stay publishable on its own."""
     offenders = hygiene.forbidden_imports(PACK)
@@ -158,7 +144,6 @@ def test_this_pack_never_imports_the_rig() -> None:
         for p, names in sorted(offenders.items()))
 
 
-@skeleton
 def test_this_pack_uses_the_project_vocabulary() -> None:
     """§14.4. The glossary fixes the words; this is the mechanism."""
     offenders = hygiene.forbidden_words(PACK)
@@ -168,7 +153,6 @@ def test_this_pack_uses_the_project_vocabulary() -> None:
         for p, hits in sorted(offenders.items()) for line, word in hits)
 
 
-@skeleton
 def test_the_pack_has_sources_to_check() -> None:
     """Guards against a checker that passes by finding nothing."""
     assert len(hygiene.pack_files(PACK, (".py",))) >= 4

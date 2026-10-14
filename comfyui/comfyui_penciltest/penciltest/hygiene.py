@@ -26,6 +26,8 @@ a reader rather than silently special-cased in the checker.
 
 from __future__ import annotations
 
+import ast
+import re
 from pathlib import Path
 from typing import Dict, List, Sequence, Set, Tuple
 
@@ -51,7 +53,14 @@ def pack_files(root: Path, suffixes: Sequence[str]) -> List[Path]:
 
     Sorted, so a failure names files in a stable order.
     """
-    raise NotImplementedError
+    wanted = set(suffixes)
+    skip = set(SKIP_DIRS)
+    return sorted(
+        p for p in root.rglob("*")
+        if p.is_file()
+        and p.suffix in wanted
+        and not skip.intersection(p.parts)
+    )
 
 
 def module_imports(source: str) -> Set[str]:
@@ -61,7 +70,14 @@ def module_imports(source: str) -> Set[str]:
     import x`` comes back as ``"..acme.lens"`` and can be told apart
     from the absolute ``acme.lens``.
     """
-    raise NotImplementedError
+    found: Set[str] = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            # `import x as z` must not hide x behind its alias.
+            found.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            found.add("." * node.level + (node.module or ""))
+    return found
 
 
 def forbidden_imports(
@@ -69,7 +85,14 @@ def forbidden_imports(
     forbidden: Sequence[str] = FORBIDDEN_IMPORTS,
 ) -> Dict[Path, Set[str]]:
     """Which files import something they must not, and what."""
-    raise NotImplementedError
+    banned = set(forbidden)
+    offenders: Dict[Path, Set[str]] = {}
+    for path in pack_files(root, (".py",)):
+        hits = {name for name in module_imports(path.read_text())
+                if _top_level(name) in banned}
+        if hits:
+            offenders[path] = hits
+    return offenders
 
 
 def banned_words(
@@ -78,10 +101,27 @@ def banned_words(
 ) -> List[Tuple[int, str]]:
     """``(line number, word)`` for each banned word used as a word.
 
-    Whole words only and case-insensitive, so ``cellular`` is fine and
-    ``Cells`` is not.  Lines carrying :data:`ALLOW_MARKER` are skipped.
+    Whole words only and case-insensitive: a longer word that merely
+    contains a banned one is fine, and capitalising does not help.
+    Lines carrying :data:`ALLOW_MARKER` are skipped.
+
+    Worded without examples on purpose -- a docstring naming the banned
+    word would need the marker, and the marker would then be visible in
+    the rendered help.
     """
-    raise NotImplementedError
+    if not banned:
+        return []
+    # Longest first, so the alternation cannot match a short word and
+    # then fail the trailing boundary where a longer one would have fit.
+    alternatives = "|".join(
+        re.escape(w) for w in sorted(banned, key=len, reverse=True))
+    pattern = re.compile(rf"\b(?:{alternatives})\b", re.IGNORECASE)
+    hits: List[Tuple[int, str]] = []
+    for number, line in enumerate(text.splitlines(), start=1):
+        if ALLOW_MARKER in line:
+            continue
+        hits.extend((number, m.group(0)) for m in pattern.finditer(line))
+    return hits
 
 
 def forbidden_words(
@@ -90,4 +130,19 @@ def forbidden_words(
     suffixes: Sequence[str] = (".py", ".md"),
 ) -> Dict[Path, List[Tuple[int, str]]]:
     """Which files use a banned word, where."""
-    raise NotImplementedError
+    offenders: Dict[Path, List[Tuple[int, str]]] = {}
+    for path in pack_files(root, suffixes):
+        hits = banned_words(path.read_text(), banned)
+        if hits:
+            offenders[path] = hits
+    return offenders
+
+
+def _top_level(module: str) -> str:
+    """``"..acme.lens"`` -> ``"acme"``, so a prefix cannot match.
+
+    ``acmetools`` is not ``acme``, and comparing on the whole dotted
+    name would miss ``acme.lens`` while comparing on a prefix would
+    catch ``acmetools``.  The first component is the thing to compare.
+    """
+    return module.lstrip(".").split(".")[0]
