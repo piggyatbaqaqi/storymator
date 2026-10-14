@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from acme.rect import fit_rect, principal_axes
+from .rect import fit_rect, principal_axes
 
 
 def _slot(w=120, h=30, angle_deg=0.0, centre=(200.0, 150.0),

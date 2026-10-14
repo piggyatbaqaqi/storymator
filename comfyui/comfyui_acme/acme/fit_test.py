@@ -21,9 +21,9 @@ and 180 degrees out.
 import numpy as np
 import pytest
 
-from acme.fit import fit_pose
-from acme.model import Calibration, FieldSpec, PegModel, SheetModel
-from acme.synth import camera_homography, render
+from .fit import fit_pose
+from .model import Calibration, FieldSpec, PegModel, SheetModel
+from .synth import camera_homography, render
 
 SIZE = (1280, 960)
 
@@ -68,7 +68,7 @@ def test_a_flipped_sheet_is_not_silently_accepted():
 
 def _paint(cal, image, homography, marks, level):
     """Paint discs on the sheet, positioned in peg-frame millimetres."""
-    from acme.geometry import apply_homography
+    from .geometry import apply_homography
     out = image.copy()
     ys, xs = np.mgrid[0:image.shape[0], 0:image.shape[1]]
     for mm, radius in marks:

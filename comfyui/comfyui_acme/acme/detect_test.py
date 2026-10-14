@@ -8,7 +8,7 @@ attempting the whole module at once.
 import numpy as np
 import pytest
 
-from acme.detect import find_peg_candidates
+from .detect import find_peg_candidates
 
 SHEET = (400, 600)
 

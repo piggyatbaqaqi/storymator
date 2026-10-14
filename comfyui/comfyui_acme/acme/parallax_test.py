@@ -7,7 +7,7 @@ data/calibration/pegs/honbay_0001/README.md.
 import numpy as np
 import pytest
 
-from acme.parallax import correct_parallax, working_distance_mm
+from .parallax import correct_parallax, working_distance_mm
 
 FX, CX, CY = 2625.44, 1640.2, 1204.2
 K = np.array([[FX, 0.0, CX], [0.0, FX, CY], [0.0, 0.0, 1.0]])

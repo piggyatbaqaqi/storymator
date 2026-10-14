@@ -10,11 +10,11 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pytest
 
-from acme.capture import (CaptureRequest, CaptureSession, ControlResult,
-                          apply_request, capture_report, capture_token,
-                          device_index, failures, frame_to_rgb,
-                          verify_against)
-from acme.model import Calibration, FieldSpec, PegModel, SheetModel
+from .capture import (CaptureRequest, CaptureSession, ControlResult,
+                      apply_request, capture_report, capture_token,
+                      device_index, failures, frame_to_rgb,
+                      verify_against)
+from .model import Calibration, FieldSpec, PegModel, SheetModel
 
 
 class FakeCamera:
@@ -399,7 +399,7 @@ def test_a_fresh_session_holds_nothing():
 
 
 def test_fourcc_name_inverts_fourcc_code():
-    from acme.capture import fourcc_code, fourcc_name
+    from .capture import fourcc_code, fourcc_name
     for code in ("MJPG", "YUYV", "H264"):
         assert fourcc_name(fourcc_code(code)) == code
 
@@ -407,7 +407,7 @@ def test_fourcc_name_inverts_fourcc_code():
 def test_fourcc_name_falls_back_to_hex_when_not_printable():
     """A driver reporting 0, or a control that is not a FOURCC at all,
     must not be rendered as four control characters."""
-    from acme.capture import fourcc_name
+    from .capture import fourcc_name
     assert fourcc_name(0) == "0x00000000"
     assert fourcc_name(1) == "0x00000001"
 
@@ -419,7 +419,7 @@ def test_fourcc_is_reported_as_its_four_characters():
     1.19644e+09, reads 1.19644e+09", which is correct, useless, and
     looks like a malfunction. The operator needs to see MJPG.
     """
-    from acme.capture import fourcc_code
+    from .capture import fourcc_code
     code = fourcc_code("MJPG")
     text = capture_report([ControlResult("fourcc", code, code, True)], [])
     assert "MJPG" in text
@@ -427,7 +427,7 @@ def test_fourcc_is_reported_as_its_four_characters():
 
 
 def test_a_wrong_fourcc_shows_both_codes_readably():
-    from acme.capture import fourcc_code
+    from .capture import fourcc_code
     text = capture_report([ControlResult("fourcc", fourcc_code("MJPG"),
                                          fourcc_code("YUYV"), True)], [])
     assert "MJPG" in text and "YUYV" in text

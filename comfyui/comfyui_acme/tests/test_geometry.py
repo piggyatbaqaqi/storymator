@@ -4,9 +4,10 @@ import math
 import numpy as np
 import pytest
 
-from acme.geometry import (apply_homography, homography_from_points,
-                           fit_line, line_intersection, residuals,
-                           rigid_from_points, rms)
+from comfyui_acme.acme.geometry import (apply_homography,
+                                        homography_from_points, fit_line,
+                                        line_intersection, residuals,
+                                        rigid_from_points, rms)
 
 
 def test_homography_recovers_a_known_transform():

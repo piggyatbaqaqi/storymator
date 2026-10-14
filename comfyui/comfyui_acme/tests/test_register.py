@@ -2,10 +2,11 @@
 
 import numpy as np
 
-from acme.fit import fit_pose
-from acme.model import Calibration, FieldSpec, PegModel, SheetModel
-from acme.register import register_image
-from acme.synth import camera_homography, render
+from comfyui_acme.acme.fit import fit_pose
+from comfyui_acme.acme.model import (Calibration, FieldSpec, PegModel,
+                                     SheetModel)
+from comfyui_acme.acme.register import register_image
+from comfyui_acme.acme.synth import camera_homography, render
 
 SIZE = (900, 1100)
 

@@ -18,9 +18,9 @@ import time
 import numpy as np
 import pytest
 
-from acme.capture import (CaptureRequest, Cv2Device, apply_request,
-                          device_index, failures, frame_to_rgb,
-                          verify_against)
+from .capture import (CaptureRequest, Cv2Device, apply_request,
+                      device_index, failures, frame_to_rgb,
+                      verify_against)
 
 cv2 = pytest.importorskip("cv2")
 

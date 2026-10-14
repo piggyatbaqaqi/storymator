@@ -91,11 +91,13 @@ where the registry reads `[tool.comfy] PublisherId` and
 
 ### Three gaps, recorded rather than fixed
 
-* **mypy and flake8 have no configuration file** anywhere — no
-  `setup.cfg`, `.flake8` or `mypy.ini`. CLAUDE.md requires new code to
-  pass both, so "passes mypy" currently means "passes whatever mypy is
-  on the path, with its defaults", which is not reproducible between
-  machines or over time.
+* **flake8 has no configuration file** anywhere — no `setup.cfg` or
+  `.flake8`. It happens to pass at its default 79 columns, which is what
+  the code already holds to, so the gap is reproducibility rather than
+  breakage. **mypy was the same until 2026-10-14** and now has
+  [`comfyui/mypy.ini`](../comfyui/mypy.ini), which covers the ComfyUI
+  packs only — `bin/`, `fixes/` and `data/` are still checked with
+  whatever is on the path.
 * **The `storymator` conda environment is undocumented.** There is no
   `environment.yml`, and running the suite under the wrong environment
   does not fail — it silently collects fewer tests. That is an

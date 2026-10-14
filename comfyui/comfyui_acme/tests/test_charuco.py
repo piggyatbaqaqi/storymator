@@ -9,8 +9,8 @@ the frame corners, and the corners are where distortion is measurable.
 import numpy as np
 import pytest
 
-from acme.lens import (calibrate_charuco, charuco_board, find_charuco,
-                       undistort_points)
+from comfyui_acme.acme.lens import (calibrate_charuco, charuco_board,
+                                    find_charuco, undistort_points)
 
 cv2 = pytest.importorskip("cv2")
 

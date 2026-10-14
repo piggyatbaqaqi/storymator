@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 
-from acme.fit import fit_pose
-from acme.geometry import apply_homography
-from acme.model import Calibration
-from acme.synth import camera_homography, render
+from comfyui_acme.acme.fit import fit_pose
+from comfyui_acme.acme.geometry import apply_homography
+from comfyui_acme.acme.model import Calibration
+from comfyui_acme.acme.synth import camera_homography, render
 
 SIZE = (900, 1100)
 

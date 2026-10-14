@@ -5,7 +5,8 @@ import math
 import numpy as np
 import pytest
 
-from acme.lens import board_points, calibrate, find_board, undistort_points
+from comfyui_acme.acme.lens import (board_points, calibrate, find_board,
+                                    undistort_points)
 
 cv2 = pytest.importorskip("cv2")
 
