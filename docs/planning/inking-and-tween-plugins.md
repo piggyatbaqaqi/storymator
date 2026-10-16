@@ -843,6 +843,100 @@ accept the medium.
 
 ---
 
+## 7b. Specification: how this project uses ToonComposer
+
+Written 2026-10-16, after the spike. Supersedes the loose treatment in
+§4.3, which recommended ToonComposer for the wrong stage.
+
+### 7b.1 What it is
+
+**A post-keyframing model: colour in, colour out.** It takes a painted
+keyframe and one or more sketches at chosen temporal positions, and
+produces painted video. It has no line-in-line-out mode. §7a's sixth
+pass has the evidence.
+
+### 7b.2 Where it sits
+
+| stage | tool |
+|---|---|
+| capture and register | `comfyui_acme` |
+| legibility cleanup | `comfyui_acme` (deterministic CV) |
+| **pencil test** — line in, line out | **not ToonComposer.** Open; see §7b.5 |
+| **colour / paint** — one painted key plus approved drawings, out comes painted footage | **ToonComposer** |
+| acceptance harness | `comfyui_penciltest` |
+
+So it enters **after** a pencil test has been approved and the artist
+has painted **one** key. That is a real workflow and the governing
+document already asks for it — *"rough sketch to fully extrapolated and
+coloured"* — it is simply not the first milestone.
+
+### 7b.3 The interface, as measured
+
+**Inputs**
+
+| | |
+|---|---|
+| colour keyframes | 1 to 4 (`max_num_cond_images: 4`), conventionally at frame 0. **Required.** |
+| sketches | 1 to 4, at any frame indices. This is the slot the timing chart maps onto, and it is still the only one found in any candidate. |
+| prompt | the shipped samples all end *"Anime. High quality."* |
+| frames | **33 is the trained length** (`num_frames: 33` in the checkpoint config). The UI's `minimum=17` is a widget floor, not the model's. |
+
+**Measured costs, RTX 5090 Laptop, 480p, 15 steps**
+
+| | |
+|---|---|
+| peak VRAM | **5.9 GiB** streaming everything, **16.7 GiB** with ~12 GiB resident |
+| speed | **70–97 s/frame**; a 33-frame generation is **~38 minutes** |
+| build | ~20 s with a warm page cache |
+| host RAM | 36.7 GiB resident; the machine has 91 GiB *shared with a desktop* |
+
+**Two defects that must be carried**
+
+1. **Bare parameters break under block swap.** diffsynth wraps module
+   *types*; ToonComposer's `sequence_cond_identifier` and ~330 other
+   tensors are bare and stay on the CPU. Any integration must pin them
+   after `enable_vram_management` or fail with a device mismatch. §7a,
+   third pass.
+2. **The last ~5 frames of 33 are unreliable.** Reproduced on
+   ToonComposer's own sample 3: 28 of 33 frames match the published
+   reference in quality, the rest collapse into colour noise. **This is
+   ours, not theirs** — their reference video is 33 clean frames.
+   Cause under investigation; `tiled=True` is the first suspect, since
+   `app.py` sets it but never uses block swap.
+
+### 7b.4 What to build, when we build it
+
+A `ComfyUI-ToonComposer` wrapper pack, per §14: the model wrapper and
+nothing else, so it can go upstream. Its nodes take a colour image, a
+list of (sketch, frame index) pairs, and the usual sampler controls.
+**The frame indices come from the exposure sheet** (§13), which is what
+makes this project's version worth building rather than a reimplemented
+Gradio app.
+
+Budget it as integration, not installation. The spike needed a
+transitive-closure extractor to reuse six helper functions, because
+`app.py` parses CLI arguments and builds the model at module scope.
+
+### 7b.5 The hole this leaves
+
+**Nothing yet generates a line drawing from two line drawings.** That
+is the first milestone and §4.5's ranking was built around a candidate
+that cannot do it. The remaining candidates do not require colour but
+none accepts a chart:
+
+| | colour required? | accepts a chart? |
+|---|---|---|
+| ToonCrafter | no | no |
+| FrameFusion | no | yes — takes *t* |
+| GIMM-VFI | no | yes — arbitrary *t* |
+
+The two that accept a chart are flow-based interpolators that §4.2
+predicts will fail joint onset by construction. That prediction is now
+more useful than it was: it is the measurement the harness exists to
+make, and the harness is built.
+
+---
+
 ## 8. What to build first
 
 > **Reordered 2026-10-14, and the reason is worth more than the order.**
