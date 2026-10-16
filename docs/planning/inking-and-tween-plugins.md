@@ -516,7 +516,17 @@ RSS so it stops being one.
 num_persistent_param_in_dit=N)` keeps N DiT parameters resident, streams
 the overflow from CPU, and holds the text encoder on CPU entirely. §7
 assumed this would have to be arranged; it is a single call. `N` is the
-knob to sweep, and `None` streams everything.
+knob to sweep.
+
+> **Correction, same day.** An earlier version of this paragraph said
+> `None` streams everything. It is the exact opposite. diffsynth's
+> `enable_vram_management_recursively` reads
+> `if max_num_param is not None and total + num_param > max_num_param`,
+> so **`None` means no cap and the overflow config is never consulted**
+> — the whole 14B DiT stays resident. Passing `None` filled the card to
+> 22.80 GiB and died trying to allocate another 136 MiB. **`0` is what
+> streams everything**; larger values trade host-to-device traffic for
+> VRAM.
 
 **ToonComposer's own checkpoint is 170 MB**, against Wan's 77 GB. The
 adapter is a spatial low-rank adapter and sketch injection, nothing
@@ -531,6 +541,37 @@ installed into the `storymator` environment: it would downgrade torch,
 numpy and Pillow, and the working build here is **2.14.1+cu130**, whose
 arch list includes `sm_120`. The spike runs in a throwaway
 `tooncomposer-spike` environment for that reason.
+
+#### Second pass — the model loads, and two ways to die
+
+**The fp32 worry is dead.** The cast does happen on load: dtypes come
+back `dit=bfloat16 t5=bfloat16 vae=bfloat16`, and **host RSS after build
+is 36.7 GiB**, not the ~63 GB an fp32 DiT would have cost. Build takes
+**38.5 s** with a warm page cache. So §7's host-RAM argument survives,
+with less headroom than it claimed but enough.
+
+**Two distinct out-of-memory failures, and they are not the same
+problem.**
+
+*CUDA OOM*, from passing `None` — see the correction above. The card
+filled to 22.80 GiB of 23.42 and died on a 136 MiB onload. Self-
+inflicted, and the fix is a finite cap.
+
+*Host OOM*, from the kernel: `Killed process (python) total-vm 70.7 GB,
+anon-rss 35.2 GB`. Note what else was in that log — `ZoomWebviewHost`
+among the candidates. **The 91 GiB is shared with a desktop**, so the
+budget is not 91 minus the model but 91 minus the model minus whatever
+the operator happens to be running. A video call during a render is
+enough to change the answer. Worth knowing before this lands on a
+drawing desk that is also somebody's computer.
+
+**One alarming-looking message that is benign.** Loading prints
+`WanModel: 404 zero-filled, 0 not in adapter ckpt`. Those 404 are the
+DeRA and sequence-condition parameters the config switches on
+(`use_dera`, `dera_rank: 144`, `sequence_cond_mode: sparse`) — modules
+that do not exist in the base Wan checkpoint, so they are zero-filled
+and then populated from ToonComposer's own. The `0 not in adapter ckpt`
+is the half that matters: nothing was left unfilled.
 
 **Still open, and the whole point of the exercise:** peak VRAM at a
 given `N`, wall clock per key pair, and whether the generated middle
