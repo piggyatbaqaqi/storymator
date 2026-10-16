@@ -50,16 +50,90 @@ to judge a pose*, *fast enough not to break the flip loop*, and
 *faithful in spacing*. It owes nothing to line quality, model fidelity
 or the seven principles.
 
-## 2. One selection criterion dominates: arbitrary *t*
+## 2. Arbitrary *t* is a convenience, not a requirement
 
-A timing chart is **non-uniform by construction** — slow-in, slow-out,
-holds. An interpolator that only doubles (2×, 4×, 8×) can produce only
-*even* spacing, which is precisely the formula the manuscript calls
-*"a nail in the coffin of character animation"*.
+> **Rewritten 2026-10-16.** This section first claimed that an
+> interpolator which only doubles *"can produce only even spacing,
+> which is precisely the formula the manuscript calls fatal"*, and that
+> arbitrary *t* was therefore the dominant selection criterion.
+> **That was wrong**, and Monte caught it:
+>
+> *"the traditional way to use a timesheet involves creating uniformly
+> spaced inbetweens at a coarse timeslice, and then subdividing at a
+> finer slice. The only timing I can't see doing that way is
+> favors."*
+>
+> Halving does not produce *even* spacing. It produces **any dyadic
+> position** — and dyadic positions are what charts are made of,
+> because repeated halving is how an inbetweener produces them.
 
-**So the proxy generator must accept an arbitrary position along the
-path, not a power-of-two subdivision.** This is a harder filter than
-speed or quality and it eliminates candidates quietly.
+### The traditional chart is exactly what halving serves
+
+| wanted | served | error | depth |
+|---|---|---|---|
+| 1/2 — a half | 1/2 | **0** | 1 |
+| 1/4, 3/4 — quarters | exact | **0** | 2 |
+| 1/8, 7/8 — a slow-in | exact | **0** | 3 |
+| **1/3 — a favor** | 3/8 | 0.042 | 3 |
+| **1/3 — a favor** | 85/256 | 0.0013 | 8 |
+| **2/5 — a favor** | 51/128 | 0.0016 | 7 |
+
+The error bound at depth *n* is 1/2ⁿ⁺¹. For scale: acceptance §2's
+stated failure is *"a .5 progression as a .3"* — an error of **0.2**.
+**Depth 3 beats that by a factor of three**, and depth 3 is where the
+exact chart positions already live.
+
+### Favors are the exception, and the cost is not what it looks like
+
+Monte is right that favors are the one case halving cannot hit exactly.
+But the cost of approximating them is **not time** — a depth-*n*
+position takes *n* interpolations, not 2ⁿ, because only the interval
+containing the target is ever subdivided.
+
+**The cost is compounding synthesis error.** Each level interpolates an
+*interpolation*: at depth 5 the frame is five generations removed from
+any drawing the artist made, inheriting every artefact of its
+ancestors. On line art, where flow methods already ghost and double
+(§4.2), that is the thing to watch.
+
+So the cost structure mirrors the craft. **A half is exact and costs
+one generation. A favor is a deliberate extra decision and costs
+depth** — which is roughly how it feels to an inbetweener.
+
+### Two consequences for the driver
+
+**The approximation is known before anything is generated.** A chart
+position maps to its dyadic server by arithmetic, so a driver can tell
+the animator *"this favor will be served at 0.375 rather than 0.333"*
+without running a model. That is `HarnessSpacingError` computed
+statically — the spacing contract of §1 checked ahead of time rather
+than after.
+
+**Much apparent non-uniformity never reaches the interpolator at all.**
+Timing is achieved two ways: by crowding drawings *spatially* along the
+path, and by *exposure* — holding a drawing for more frames. Shooting
+on 2s or 3s is exposure, not position. Those are exposure-sheet rows
+and cost nothing.
+
+### What this does to candidate selection
+
+It widens the field rather than narrowing it. A 0.5-only interpolator
+is usable with a chart-aware driver, so arbitrary *t* becomes a
+convenience that saves depth — and therefore saves accumulated
+artefacts — rather than a gate.
+
+RIFE v4.x accepts a timestep, so it needs none of this. The analysis
+matters because it means **the proxy generator can be chosen on
+legibility and speed**, which are the properties §1 says actually
+matter, instead of on an interface detail.
+
+### One question for Daniel
+
+Is a favor served at 3/8 distinguishable from one at 1/3, when the
+drawing is a disposable proxy being flipped to judge timing? An
+inbetweener asked to favour a key is eyeballing *"closer to A"*, not
+computing thirds. If the answer is no, depth 3 suffices for everything
+and favors cost nothing either.
 
 ## 3. Candidates, with licences actually checked this time
 
