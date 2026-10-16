@@ -914,8 +914,10 @@ coloured"* — it is simply not the first milestone.
    tensors are bare and stay on the CPU. Any integration must pin them
    after `enable_vram_management` or fail with a device mismatch. §7a,
    third pass.
-2. **Output quality is not yet established, and an earlier version of
-   this line claimed it was.** See the retraction below.
+2. **The sketch-injection path is not known to work under block swap,
+   which is the only configuration this hardware can run.** Restated
+   from "the last five frames are unreliable", which was too narrow.
+   See the retraction and the CFG 7.5 control below.
 
 #### Retraction: the control was run at the wrong CFG
 
@@ -968,6 +970,80 @@ unaffected by a sampler setting. The specification below therefore
 stands; only the quality measurements are retracted.
 
 A control at CFG 7.5 is running.
+
+#### The CFG 7.5 control: better, and still not right
+
+```
+sample 3 | 33 frames | persist 6e9 | steps 15 | cfg 7.5
+build 20.4 s | generate 2306.8 s | 69.9 s/frame | peak 16.73 GiB
+```
+
+**What CFG fixed.** The anatomy. Monte: *"the adult no longer grows an
+arm."* Raising guidance from the invented 3.0 to ToonComposer's actual
+default 7.5 removed the incoherence that the low setting had caused.
+
+**What it did not fix**, and this is the diagnostic one. Monte: *"The
+child does not kneel down, so there's something else missing."*
+
+The sketch at frame 30 specifies the composition plainly: the elder
+seated and leaning in, **the child crouched low** beside the basket,
+both figures close together in the lower frame. The reference converges
+on that by frame 24. **Ours never does** — the child stays standing and
+right of frame through to the collapse. The end degeneration also
+persists, and it sits exactly where the sketch is injected.
+
+So **the sketch conditioning is reaching the model weakly or not at
+all.** That is the one thing ToonComposer adds to Wan, and §7a's third
+pass already established that it is also the one thing diffsynth's
+block swap cannot see: `sequence_cond_identifier` and ~330 sibling
+tensors are bare parameters that had to be pinned by hand.
+
+**The leading hypothesis, stated as a hypothesis.** Our rig differs
+from upstream's in exactly one architectural respect — block swap plus
+a hand-written pin — and the observed failure is localised to the
+machinery that pin exists to patch. Pinning the tensors stopped the
+device-mismatch *crash*; it does not follow that the sparse
+sketch-injection path is *numerically correct* under offload, and
+nothing upstream exercises it, because `app.py` calls
+`model.to(device)` and the README tells you to bring 57 GB.
+
+**And this hardware cannot run the configuration upstream tests.**
+
+| | GiB |
+|---|---|
+| DiT, bf16 | 26.1 |
+| umt5-xxl text encoder, bf16 | 10.2 |
+| VAE, CLIP, activations | ~6 |
+| **resident total** | **~42** |
+| this card | **23.4** |
+
+`model.to(device)` does not fit and cannot be made to fit here. **Block
+swap is not an optimisation on this machine; it is the only option** —
+and it is the untested one.
+
+**So §7b.3's second defect is restated.** It is not "the last five
+frames are unreliable". It is: **the sketch-injection path is not known
+to work under the only configuration this hardware can run, and the
+evidence suggests it does not.**
+
+**The decisive experiment is not local.** Rent an 80 GB GPU for an
+hour, run sample 3 with `model.to(device)` and no block swap, and
+compare against the reference. If it matches, the fault is in the
+offload path and the §7a third-pass patch is insufficient. If it still
+diverges, the fault is in our conditioning code and is ours to find.
+The project already has `comfy-build` and `comfy-deploy` for rented
+hardware. Until that runs, **no claim about ToonComposer's output
+quality on this project's data is supportable** — including the ones
+§7a has already retracted once.
+
+**A note on the metric, since it misled twice.** Mean absolute error
+against the reference is *worse* at CFG 7.5 — 48.0 against 33.3 — while
+the output is visibly better. Higher guidance produces a sharper,
+more committed image that diverges further from the reference's
+particular seed. The number ranked the washed-out run first. **It was
+an operator's eye that caught the third arm, and an operator's eye that
+caught the missing kneel.** The metric has now been wrong in both
+directions and should not be used as an arbiter again.
 
 ### 7b.4 What to build, when we build it
 
