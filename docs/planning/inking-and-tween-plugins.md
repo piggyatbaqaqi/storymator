@@ -982,6 +982,38 @@ Budget it as integration, not installation. The spike needed a
 transitive-closure extractor to reuse six helper functions, because
 `app.py` parses CLI arguments and builds the model at module scope.
 
+### 7b.4a Too slow for a pencil test, on this hardware
+
+**Monte's conclusion from the spike, 2026-10-16, and the arithmetic
+agrees.** At the measured 69.9 s/frame:
+
+| | |
+|---|---|
+| one 33-frame generation | **38 minutes** |
+| a 5-second shot at 24 fps (120 frames) | ~3.6 generations, **~2 hours 20 minutes** |
+
+Against an artist who drew the keys in minutes and wants to know
+*now* whether the movement reads. A pencil test that arrives after
+lunch is not a pencil test; it is a render.
+
+**This survives the CFG retraction.** Guidance scale does not change
+the cost of a denoising step, so the timings stand while the quality
+judgements do not.
+
+**So ToonComposer is disqualified from the pencil test twice over, for
+independent reasons.** It needs a colour frame that does not exist at
+that stage (§7b.1), and it is two orders of magnitude too slow for the
+loop it would sit in. Either alone would be decisive. The second is
+the one that cannot be designed around: the first might be met by
+inventing a colour surrogate, but nothing makes 140 minutes into
+seconds on this machine.
+
+Note what this does **not** say. For the **colour stage** — where the
+artist has painted a key, the drawings are approved, and the output is
+footage rather than a diagnostic — 38 minutes a shot is entirely
+reasonable. The spec in §7b stands for that stage. It is the *loop
+latency* of a pencil test that it fails, not the job.
+
 ### 7b.5 The hole this leaves
 
 **Nothing yet generates a line drawing from two line drawings.** That
@@ -999,6 +1031,88 @@ The two that accept a chart are flow-based interpolators that §4.2
 predicts will fail joint onset by construction. That prediction is now
 more useful than it was: it is the measurement the harness exists to
 make, and the harness is built.
+
+---
+
+## 7c. What is a pencil test *for*? — open, with Daniel
+
+Monte, 2026-10-16: he has asked Daniel to identify the core purpose of
+the pencil test, and speculates that **it is to confirm timing and
+performance, not to settle technical qualities such as joint onset** —
+and therefore that flow interpolation may be adequate for it.
+
+**Daniel has not answered. Nothing below is settled**, and it is
+recorded now because it changes which experiment is worth running
+next, not because it is a conclusion.
+
+### Why the speculation is plausible
+
+The acceptance note already half-says it. *"A pencil test is
+diagnostic, not deliverable — you shoot the drawings, play them at
+speed, and judge whether the movement reads."* If what is being judged
+is whether the movement reads, then the inbetweens are scaffolding:
+they have to avoid distracting, not to be right.
+
+And traditionally the pencil test does not wait for inbetweens at all.
+Animators shoot keys and breakdowns on 2s precisely to check timing
+before the inbetweens exist.
+
+### The sharpening worth adding
+
+**The joint-onset objection scales with the width of the gap, and that
+has been treated as if it did not.**
+
+Acceptance §2's decisive argument is Williams's unfolding box: two
+keyframes, eleven frames between them, and software that opens three
+right angles simultaneously. That is a **wide-gap, two-key** case, and
+the objection is fatal there.
+
+A single inbetween between two *adjacent* drawings is a different
+proposition. Successive breaking of joints is a property the artist
+puts into the **spacing of the keys and breakdowns**. If those
+drawings already encode it, a machine filling one frame between
+adjacent ones cannot destroy it — there is no room in the gap for the
+joints to go wrong.
+
+So the severity of §4.2's prediction — that flow interpolators *"will
+fail joint onset on every chain, by construction"* — depends entirely
+on a question acceptance §7 asked and never had answered:
+
+> **How wide are the gaps an assistant normally fills — one inbetween,
+> or a run of five?**
+
+That has been sitting in the open-questions list as a scoping detail.
+It is not. **It decides whether the project's most-quoted objection
+applies to the first milestone at all.**
+
+### Where I would push back
+
+The joint-onset argument is not the only objection to flow
+interpolation on drawings, and the other one is untouched by this
+reframing. §4.2 also predicts that flow methods **ghost and double
+lines rather than move them**, because a flow estimator has nothing to
+latch onto in sparse black-on-white with large displacement. That is a
+*legibility* failure, not a *principle* failure, and a pencil test
+whose lines smear may fail at exactly the job Monte's speculation says
+it has.
+
+Whether a doubled line reads as a blur at 24 fps or as a mistake is an
+empirical question, and an animator can answer it by looking.
+
+### The experiment this makes cheap and obvious
+
+**The corpus already contains the answer.** Cleanups 1 and 3 are
+adjacent drawings; cleanup 2 is the inbetween the artist actually drew.
+Interpolate 1→3 and compare the middle against 2.
+
+That is the §4.2 prediction and Monte's speculation tested in the same
+run, against ground truth, on the real medium. FrameFusion is **37 MB
+and runs on a CPU**. It costs nothing next to the 38 minutes a single
+ToonComposer generation takes, and unlike this spike it needs no
+weights, no block swap and no guessed sampler settings.
+
+It is now the obvious next thing to do, and §8 has already been
+reordered to put FrameFusion first.
 
 ---
 
