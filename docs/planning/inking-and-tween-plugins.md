@@ -786,6 +786,61 @@ the ends collapsing.
 
 Sample 3 is running now as the control.
 
+#### Sixth pass — the colour frame is required, and §4.3 missed it
+
+Monte, 2026-10-16, pointing at `samples/ToonComposer-TLDR.jpg`: *"seems
+to suggest that we need a color frame as input to the process. Is this
+not universally true?"*
+
+**It is universally true, and this is the most consequential finding of
+the spike.** The figure is unambiguous — **Color Frame** plus **Sketch
+Frame(s) (Any Temporal Position)** in, fully painted video out. The
+README agrees in step 2: *"Provide at least one keyframe color image
+(usually placed at frame index 0)."* The config allows up to four
+(`max_num_cond_images: 4`). It is an input, not an option.
+
+**§4.3 got this wrong by treating colourisation as a bonus.** That
+section recommended ToonComposer partly because *"it covers the stage
+after this one too… One integration, two user stories."* The
+colourisation is not a second user story the model happens to throw in.
+**It is the mechanism.** ToonComposer is a *post-keyframing* model:
+colour reference plus sketches to painted video. Line in, line out is
+not a mode it has.
+
+**Which is a problem for the milestone we are actually on.** The first
+deliverable is a **pencil test** — graphite in, graphite out, no colour
+anywhere, and acceptance §1 is emphatic that it must be *the artist's
+own lines*. There is no colour frame on a drawing desk at that stage
+because nobody has painted one yet.
+
+**And it explains the washout, precisely.** This spike handed
+ToonComposer a near-white graphite drawing as its colour reference. The
+model's job is to paint, and it was given nothing to paint with — so it
+produced a pale field with a ghost in it and a pink cast. That is not a
+vague "domain gap"; it is the specific consequence of supplying a
+colour condition that contains no colour.
+
+**A second number, from the same file.** The checkpoint config carries
+`num_frames: 33` — the **length it was trained at**. The UI's
+`minimum=17` is a floor on the widget, not on the model's competence.
+Both this spike's runs, at 13 and 17, were below the trained length;
+the control at 33 is the first run at it.
+
+**What this does to §4.5's ranking.** It does not demote ToonComposer —
+it relocates it. For the **colour stage** the governing document
+eventually wants (*"rough sketch to fully extrapolated and coloured"*)
+it remains the best open candidate, and sparse sketch injection is
+still the only interface found with a slot for a timing chart. For the
+**pencil test**, it is the wrong tool, and §8's step 3 is therefore
+aimed at the wrong milestone.
+
+That reopens a question §4 thought it had settled: **what generates a
+line drawing from two line drawings?** ToonCrafter interpolates
+cartoon frames and does not require colour. FrameFusion and GIMM-VFI
+are frame interpolators and are indifferent to it. None of them accepts
+a chart. The candidate that accepted the specification turns out not to
+accept the medium.
+
 ---
 
 ## 8. What to build first
