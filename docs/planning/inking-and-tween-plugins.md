@@ -663,9 +663,64 @@ failure mode is a device-mismatch error far from its cause.
 **Housekeeping for whoever writes it:** the fork has only its own
 `origin` and no `upstream` remote, so it cannot track TencentARC yet.
 
-**Still open, and the whole point of the exercise:** peak VRAM at a
-given `N`, wall clock per key pair, and whether the generated middle
-frame resembles the one the artist drew.
+#### Fourth pass — it runs, it fits easily, and the output is unusable
+
+The first complete run, and it answers §7's question in a way §7 did
+not anticipate.
+
+```
+frames 13 | persist 0 | steps 15
+build 19.9 s | generate 1264.6 s | 97.3 s/frame | peak VRAM 5.9 GiB
+```
+
+**Fits, with room to spare.** §7 asked "does it fit in 24 GB" and
+treated that as the risk. Streaming the whole DiT, peak VRAM was
+**5.9 GiB of 23.4** — not marginal, not tight, a quarter of the card.
+The memory question is settled and it was never the hard one.
+
+**Slow, and slower than §7's own threshold.** §7 said *"'fits but takes
+six minutes' and 'fits and takes forty seconds' are different
+products."* It is **21 minutes** for thirteen frames. But that figure
+is from `persist 0`, which streams every parameter from host RAM for
+every step, and 17 GiB of the card was sitting idle. It is a floor on
+the hardware, not a measurement of the configuration anyone would ship.
+
+**And the output is unusable.** Frame 0 follows the first key and is
+recognisably the character, so the conditioning does reach the model.
+It then dissolves: by the middle frame the figure is blobs, by the last
+it is colour noise. Frame 0 also carries a regular dot lattice that
+looks like a tiling artefact rather than a sampling one.
+
+**A likely cause, and a correction to §7.** ToonComposer's own UI
+constrains the frame count:
+
+```python
+minimum=17, maximum=max_num_frames, ... label="🎥 Number of Frames"
+```
+
+**Seventeen is the floor**, and this run asked for thirteen. §7's
+central affordability argument was that *"asking for the 9–17 frames a
+real key pair actually spans cuts the activation budget"* — the bottom
+of that range is below what the model supports, so the argument has to
+be made again at 17 and above. Since memory turned out not to bind,
+that costs nothing; but the number in §7 was wrong.
+
+`tiled=True` is the second suspect, carried from `app.py` with tile
+sizes that come from the checkpoint config and may not suit this
+resolution. The lattice in frame 0 is the kind of artefact tiling
+produces.
+
+**What this does to the plan.** The spike has now done its job twice
+over: it retired the memory risk, and it replaced it with a different
+one. "Does it fit" is answered — yes, easily. "Does it produce a
+usable inbetween from pencil drawings on paper" is open, and is a
+harder question than VRAM because the failure is not a resource limit
+but a domain gap: ToonComposer is trained on anime production art, and
+it was handed graphite on textured paper.
+
+**Still open:** the 17-frame rerun, whether tiling explains the
+lattice, and whether the middle frame ever resembles the one the artist
+drew.
 
 ---
 
