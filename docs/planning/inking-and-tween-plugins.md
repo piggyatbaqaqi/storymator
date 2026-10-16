@@ -914,12 +914,60 @@ coloured"* — it is simply not the first milestone.
    tensors are bare and stay on the CPU. Any integration must pin them
    after `enable_vram_management` or fail with a device mismatch. §7a,
    third pass.
-2. **The last ~5 frames of 33 are unreliable.** Reproduced on
-   ToonComposer's own sample 3: 28 of 33 frames match the published
-   reference in quality, the rest collapse into colour noise. **This is
-   ours, not theirs** — their reference video is 33 clean frames.
-   Cause under investigation; `tiled=True` is the first suspect, since
-   `app.py` sets it but never uses block swap.
+2. **Output quality is not yet established, and an earlier version of
+   this line claimed it was.** See the retraction below.
+
+#### Retraction: the control was run at the wrong CFG
+
+**Withdrawn 2026-10-16.** This section first reported that the control
+reproduced ToonComposer's sample 3 to within tolerance for *28 of 33
+frames*, and concluded the installation was sound with an isolated tail
+defect. **Both halves were wrong.**
+
+Monte looked at the frames and said what the number had missed: in our
+output *"the adult grows a third arm"*, where in theirs *"the child
+kneels down before the adult to offer apples"*. The degradation is not
+confined to the tail. It is **progressive and semantic** — anatomy
+breaks by frame 8, the image washes out through the middle, and by
+frame 24 ours is pale mush while the reference is still crisp.
+
+**The cause is a parameter this spike guessed and never checked.**
+ToonComposer's CFG slider defaults to **7.5**:
+
+```python
+cfg_scale = gr.Slider(minimum=1.0, maximum=15.0, value=7.5, ...)
+```
+
+Every run in §7a used **3.0**, a default invented in the spike's own
+argument parser. Low CFG produces exactly what was observed: weak
+adherence to the conditioning, anatomical incoherence, and washout.
+`sequence_cond_residual_scale` was right at 1.0; CFG was not.
+
+**Two lessons, and the second is the expensive one.**
+
+*A metric I chose and then trusted.* The 28-of-33 figure came from a
+mean-absolute-error threshold I picked myself, with no reason behind
+the number 40. It passed frames that a person looking at them rejects
+immediately. **An eye caught what the statistic was built to miss**,
+which is the argument for looking at output rather than measuring it,
+and it is the project's own standing rule — *look before computing*.
+
+*A guessed parameter presented as a measurement.* Everything §7a says
+about output quality was produced at less than half the intended
+guidance scale, so **none of it is evidence about ToonComposer**. The
+timings and memory figures survive — CFG does not change the cost of a
+step — but every judgement about whether the output is usable is
+withdrawn, including the inference that our pencil-drawing failure was
+*demonstrated* to be the colour-frame problem.
+
+**What survives, and why.** §7b.1's conclusion — that a colour frame is
+required and the output is painted video — **does not rest on these
+runs at all.** It rests on the TLDR figure, README step 2, and
+`max_num_cond_images` in the checkpoint config. Documentary evidence,
+unaffected by a sampler setting. The specification below therefore
+stands; only the quality measurements are retracted.
+
+A control at CFG 7.5 is running.
 
 ### 7b.4 What to build, when we build it
 
