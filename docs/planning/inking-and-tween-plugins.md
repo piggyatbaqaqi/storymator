@@ -718,9 +718,73 @@ harder question than VRAM because the failure is not a resource limit
 but a domain gap: ToonComposer is trained on anime production art, and
 it was handed graphite on textured paper.
 
-**Still open:** the 17-frame rerun, whether tiling explains the
-lattice, and whether the middle frame ever resembles the one the artist
-drew.
+#### Fifth pass — seventeen frames, and the bottleneck is not memory
+
+```
+frames 17 | persist 6e9 | steps 15
+build 20.8 s | generate 1489.3 s | 87.6 s/frame | peak VRAM 15.78 GiB
+```
+
+**Residency bought almost nothing, and that is the finding.** Going
+from `persist 0` — every parameter streamed from host RAM on every step
+— to `persist 6e9`, about 12 GiB kept resident, moved the cost from
+**97.3 to 87.6 seconds per frame**. Ten percent.
+
+So **this is compute-bound, not bandwidth-bound**, and §7 had the
+mechanism wrong. §7 worried about *"block swap is bandwidth-bound, and
+it is the one place the laptop part's 896 GB/s costs you relative to
+the desktop's 1,792"*. The bandwidth is nearly free; the arithmetic is
+not. Three consequences:
+
+* **More VRAM would not help.** The card was three-quarters idle at
+  `persist 0` and filling it changed little.
+* **The desktop 5090 would help, for the other reason** — 21,760 CUDA
+  cores against 10,496, so roughly half the time. Not the bandwidth.
+* **`flash_attn` is absent**, and on a compute-bound workload that is
+  no longer a footnote. It is the first thing to try before accepting
+  ~25 minutes per key pair.
+
+**The output is still not a drawing.** Seventeen frames is better than
+thirteen — the figure persists through the middle and the pose does
+shift — but the last four frames collapse into colour noise and
+everything carries a pink cast. Against cleanup 2, the artist's own
+inbetween:
+
+```
+ink pixels  truth 1520  generated 0
+IoU 0.000
+```
+
+**Zero.** Not a poor drawing — no ink at all at any sane threshold. The
+generated middle frame is a washed-out field with a ghost in it.
+
+#### A control this spike should have run first
+
+Four runs in, every one of them varied *our* inputs, and not one
+established that this installation produces good output on inputs the
+model likes. That is the wrong order and it is worth naming: **a
+negative result on unfamiliar data means nothing until the rig is shown
+to work on familiar data.** The block-swap patch, the dtype handling,
+`tiled=True`, the conditioning layout — any of those could produce
+exactly what was seen, and the domain-gap explanation would be an
+assumption dressed as a conclusion.
+
+`samples/` ships three complete cases with reference outputs. Their
+configuration is already informative:
+
+| | sample 1 | sample 2 | sample 3 |
+|---|---|---|---|
+| frames | 61 | 61 | 33 |
+| colour image at | 0 | 0 | 0 |
+| sketches at | 20, 40, 60 | 30, 60 | 30 |
+
+**None of them puts a sketch at frame 0**, where the colour image goes,
+and sample 3's only sketch is at frame 30 of 33 — *not* the last frame.
+This spike put sketches at frame 0 **and** at the last frame, which is
+a layout none of the shipped examples uses. That alone could explain
+the ends collapsing.
+
+Sample 3 is running now as the control.
 
 ---
 
