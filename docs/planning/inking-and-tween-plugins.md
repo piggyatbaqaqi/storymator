@@ -573,6 +573,57 @@ that do not exist in the base Wan checkpoint, so they are zero-filled
 and then populated from ToonComposer's own. The `0 not in adapter ckpt`
 is the half that matters: nothing was left unfilled.
 
+#### Third pass — ToonComposer and block swap do not fit together
+
+The finding with the longest reach so far, and it is not about VRAM at
+all.
+
+With a finite cap the card no longer overflows, and the run gets into
+sampling and dies there:
+
+```
+model/dit.py:761, in forward
+    sequence_cond = [u.flatten(2).transpose(1, 2) + self.sequence_cond_identifier ...]
+RuntimeError: Expected all tensors to be on the same device,
+              but found at least two devices, cuda:0 and cpu!
+```
+
+**diffsynth's vram management replaces module *types*.** Its map covers
+`torch.nn.Linear`, `Conv3d`, `LayerNorm`, `WanLayerNorm`, `WanRMSNorm` —
+it walks the tree swapping those for `AutoWrapped*` versions that know
+how to onload and offload themselves. **A bare `nn.Parameter` hanging
+directly off a module is invisible to that mechanism** and simply stays
+where it was, on the CPU.
+
+ToonComposer adds exactly such a parameter. `model/dit.py:662`:
+
+```python
+self.sequence_cond_identifier = nn.Parameter(torch.randn(1, 1, dim) / dim**0.5)
+```
+
+So **the sketch-injection path — the one feature that made ToonComposer
+the lead candidate in §4.3 — is the part that breaks under block
+swap.** Upstream never meets this, because `app.py` calls
+`model.to(device)` and the README says to bring 57 GB.
+
+**The repair is cheap and the lesson is not.** Walking the DiT after
+`enable_vram_management` and pinning every parameter and buffer on an
+unwrapped module costs a few megabytes: `modulation` is `1×6×dim` per
+block and the identifier is `1×1×dim`. Trivial next to a 14B model.
+
+But it has to be *known*, and nothing in the documentation of either
+project says it. This is the first hard evidence for §4.3's claim that
+integration is "the real plugin work" rather than an install: a
+ComfyUI node for ToonComposer on consumer hardware must carry this
+patch, must keep carrying it across upstream changes, and would fail
+with a device-mismatch error a user could not act on if it did not.
+
+**It also sharpens what to contribute upstream.** A pull request making
+ToonComposer's own additions survive `enable_vram_management` is small,
+self-contained, obviously correct, and useful to everyone without
+57 GB — a far better first contribution than a ComfyUI node, and it
+would remove the patch this project would otherwise maintain forever.
+
 **Still open, and the whole point of the exercise:** peak VRAM at a
 given `N`, wall clock per key pair, and whether the generated middle
 frame resembles the one the artist drew.
