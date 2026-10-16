@@ -250,6 +250,16 @@ and §4.4.
 governing document's "rough sketch to fully extrapolated and coloured"
 story. One integration, two user stories.
 
+> **Wrong, and corrected 2026-10-16 by the spike — see §7a sixth pass
+> and the specification in §7b.** Colourisation is not a second user
+> story this model throws in; **it is the mechanism**. A colour
+> keyframe is a *required input* and painted video is the only output.
+> There is no line-in-line-out mode, so ToonComposer cannot produce a
+> pencil test, which is the first milestone. The rest of this section
+> stands — the sketch-injection interface is real and still unique —
+> but it describes the right tool for the **colour stage**, not this
+> one.
+
 Two honest costs:
 
 * **No ComfyUI support exists.** The upstream repo ships a Gradio app.
@@ -302,9 +312,16 @@ now that ToonComposer exists.
 
 ### 4.5 Ranking
 
+> **Re-read after the spike, 2026-10-16.** This table ranks candidates
+> for *inbetweening* and puts ToonComposer first. It requires a colour
+> keyframe and emits painted video (§7b), so for the **pencil test** it
+> does not qualify at all, and the row below should be read as ranking
+> it for the **colour stage**. No candidate here both accepts a chart
+> and works in line only; §7b.5 states that hole plainly.
+
 | rank | model | takes timing? | cartoon-native? | licence | role |
 |---|---|---|---|---|---|
-| 1 | **ToonComposer** | **yes — sketches at chosen frames** | yes (adapted Wan 2.1) | **MIT weights / Apache-2.0 base** | the engine |
+| 1 | **ToonComposer** | **yes — sketches at chosen frames** | yes (adapted Wan 2.1) | **MIT weights / Apache-2.0 base** | the engine **for the colour stage** |
 | 2 | **GIMM-VFI** | yes (arbitrary *t*) | no | unverified | deterministic baseline, upper rung |
 | 3 | **FrameFusion** | yes (arbitrary *t*) | no | unverified | deterministic baseline, floor; harness calibration |
 | 4 | **Wan 2.2 / 2.1 FLF2V** | **no** | no | Apache-2.0 | base weights; generative baseline |
@@ -970,12 +987,19 @@ make, and the harness is built.
    the animator's own reading. No models, no licences, known cost.
 2. **`HarnessJointOnset` plus `HarnessSpacingError`.** Before any
    generator. They are what makes the generative steps mean something.
-3. **ToonComposer integration** — the real plugin work, and the only
-   candidate that accepts the specification. Promoted above FrameFusion
-   because FrameFusion can happen at any time and this cannot.
-4. **FrameFusion as the calibration baseline.** Hours of work. It will
-   be timing-exact and will fail joint onset on every chain. If the
-   harness does not catch that, fix the harness.
+3. ~~**ToonComposer integration**~~ — **moved, 2026-10-16.** The spike
+   (§7a) established that it is a colour-stage tool, so integrating it
+   before a pencil test exists would be building the second stage
+   first. It is specified in §7b and waits for a painted key to exist.
+   **FrameFusion moves up in its place**, because the open question is
+   now *what makes a line drawing from two line drawings* and the
+   flow interpolators are the only candidates left that work in line.
+4. **FrameFusion as the calibration baseline** — now the first
+   generator rather than the third. Hours of work. It will be
+   timing-exact and will fail joint onset on every chain. If the
+   harness does not catch that, fix the harness. It is also, after
+   §7b.5, one of only two candidates that work in line *and* accept a
+   chart, so it is no longer only a baseline.
 5. **Wan FLF2V and ToonCrafter as generative baselines**, through
    `TweenResampleToChart`, so their pacing error is a number in the
    report.
