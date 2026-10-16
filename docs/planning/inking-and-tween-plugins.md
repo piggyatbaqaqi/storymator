@@ -323,7 +323,7 @@ now that ToonComposer exists.
 |---|---|---|---|---|---|
 | 1 | **ToonComposer** | **yes — sketches at chosen frames** | yes (adapted Wan 2.1) | **MIT weights / Apache-2.0 base** | the engine **for the colour stage** |
 | 2 | **GIMM-VFI** | yes (arbitrary *t*) | no | unverified | deterministic baseline, upper rung |
-| 3 | **FrameFusion** | yes (arbitrary *t*) | no | unverified | deterministic baseline, floor; harness calibration |
+| ~~3~~ | ~~**FrameFusion**~~ | yes (arbitrary *t*) | no | **CC BY-NC 4.0 weights** | **BLOCKED 2026-10-16.** RIFE takes this slot — MIT, arbitrary *t*, real-time |
 | 4 | **Wan 2.2 / 2.1 FLF2V** | **no** | no | Apache-2.0 | base weights; generative baseline |
 | 5 | **ToonCrafter** | **no** | yes | declares Apache-2.0 over a **non-commercial research** root (§4.4) | third baseline |
 
@@ -347,7 +347,8 @@ anything new, and three of these would have failed quietly.
 | SD1.5 LineArt ControlNets | Apache-2.0 | CreativeML OpenRAIL-M | **accepted 2026-10-13** — field-of-use restrictions are not a concern here |
 | `sketch_simplification` | free non-commercial | **CC non-commercial** | **blocker** — a different licence from OpenRAIL; the 2026-10-13 decision does not reach it |
 | ToonCrafter | Apache-2.0 | declares Apache-2.0; root is VideoCrafter1, **non-commercial research** | **open** — see §4.4; not an OpenRAIL question |
-| GIMM-VFI, FrameFusion | unverified | unverified | **verify before use** |
+| GIMM-VFI | unverified | unverified | **verify before use** |
+| FrameFusion | Apache-2.0 | **CC BY-NC 4.0** | **blocker, verified 2026-10-16** — the same model as the paid Steam product; see [pencil-test-architecture.md](pencil-test-architecture.md) §3 |
 
 Two patterns worth naming.
 

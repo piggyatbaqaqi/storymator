@@ -210,7 +210,9 @@ different class and were never OpenRAIL questions:
 | SD1.5 / SD2.1 ControlNets and preprocessors | CreativeML OpenRAIL-M | **accepted** — this decision |
 | `sketch_simplification` | **CC non-commercial** | **blocker**, unaffected |
 | ToonCrafter | declares Apache-2.0; root is VideoCrafter1, **non-commercial research** | **open**, unaffected |
-| GIMM-VFI, FrameFusion | unverified | **verify on adoption** |
+| GIMM-VFI | unverified | **verify on adoption** |
+| FrameFusion | **CC BY-NC 4.0** | **blocker**, verified 2026-10-16 |
+| RIFE (Practical-RIFE) | MIT code and weights | **clean**; one open question on training-data terms |
 
 ### Trace the chain, and record the chain
 

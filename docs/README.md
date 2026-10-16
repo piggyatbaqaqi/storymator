@@ -185,6 +185,12 @@ listing, a `note` field says so. **A citation is not a licence** — see
   its A/B fork mistakenly bundled fidelity target with representation.
   Daniel's answer is B's fidelity on A's substrate — pixels, not
   vectors. See §1 of the acceptance note.
+* [planning/pencil-test-architecture.md](planning/pencil-test-architecture.md)
+  — **current.** The pencil test's deliverable is an *approved timing
+  chart*, not drawings, so the generator is a swappable instrument and
+  the harness splits: spacing for the proxy, the principles for final
+  synthesis. Arbitrary *t* is the dominant selection criterion.
+  FrameFusion is blocked on non-commercial weights; RIFE leads.
 * [planning/inking-and-tween-plugins.md](planning/inking-and-tween-plugins.md)
   — **current.** Assessment of the candidate models for the inking and
   inbetweening plugin suite. LineArt ControlNet is the wrong tool for
