@@ -185,6 +185,11 @@ listing, a `note` field says so. **A citation is not a licence** — see
   its A/B fork mistakenly bundled fidelity target with representation.
   Daniel's answer is B's fidelity on A's substrate — pixels, not
   vectors. See §1 of the acceptance note.
+* [planning/rife-poc.md](planning/rife-poc.md) — **current.** Design
+  for the RIFE proof of concept. Five questions ordered by which would
+  kill the idea soonest, a gap sweep that tests §7c's claim that the
+  joint-onset objection scales with gap width, and measurement chosen
+  in light of MAE having misled twice.
 * [planning/pencil-test-architecture.md](planning/pencil-test-architecture.md)
   — **current.** The pencil test's deliverable is an *approved timing
   chart*, not drawings, so the generator is a swappable instrument and
