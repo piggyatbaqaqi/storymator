@@ -624,6 +624,45 @@ self-contained, obviously correct, and useful to everyone without
 57 GB — a far better first contribution than a ComfyUI node, and it
 would remove the patch this project would otherwise maintain forever.
 
+**Nothing is patched, and that is deliberate.** Both checkouts —
+`TencentARC/ToonComposer` and the fork at
+`piggyatbaqaqi/ToonComposer` — are clean at `53dc3df`. The workaround
+lives in the spike's own throwaway script, which walks the DiT *after*
+`enable_vram_management` and pins what diffsynth left behind. It
+confirms the diagnosis without committing to a fix.
+
+**The fix is deferred until a run succeeds, and it will be test-first**
+(Monte, 2026-10-16). Two reasons that is the right order. A fix written
+before a green run would be guessing at whether this is the only such
+parameter — the spike's pin reports **330 unwrapped tensors, 3.9 M
+parameters**, so `sequence_cond_identifier` is not alone and a
+one-line fix aimed at it would be wrong. And the repair belongs in the
+fork, as a branch that can become a pull request, not as an untracked
+edit to a vendored checkout.
+
+**The test is cheap, which is what makes TDD practical here.** It needs
+no 14B model: construct a module holding a `torch.nn.Linear` *and* a
+bare `nn.Parameter`, call `enable_vram_management` with
+`max_num_param=0`, and assert the bare parameter ends up on the compute
+device while the Linear's weight does not. That is the whole defect,
+reproduced in a few lines, and it fails today.
+
+**Where the fix belongs is itself a decision**, and worth making
+deliberately rather than by whichever file is open:
+
+| candidate | argument |
+|---|---|
+| ToonComposer overrides `enable_vram_management` and pins its own additions after calling diffsynth's | smallest; ToonComposer's additions are ToonComposer's problem; mergeable without waiting on a diffsynth release |
+| ToonComposer re-homes the parameter inside a module type diffsynth already wraps | tidier model code, but changes checkpoint keys, which breaks every published weight |
+| diffsynth learns to see bare parameters | arguably the real defect — the mechanism is incomplete, not ToonComposer's use of it — but a wider blast radius and a slower path to merge |
+
+The first is the one to write first. The third may be worth raising
+separately, since any model with a bare parameter hits this and the
+failure mode is a device-mismatch error far from its cause.
+
+**Housekeeping for whoever writes it:** the fork has only its own
+`origin` and no `upstream` remote, so it cannot track TencentARC yet.
+
 **Still open, and the whole point of the exercise:** peak VRAM at a
 given `N`, wall clock per key pair, and whether the generated middle
 frame resembles the one the artist drew.
