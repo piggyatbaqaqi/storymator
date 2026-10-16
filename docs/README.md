@@ -161,6 +161,19 @@ listing, a `note` field says so. **A citation is not a licence** — see
   a stage micrometer. Produces the three numbers the registration design
   currently assumes. An afternoon's work.
 
+## Ideas, not yet plans
+
+* [ideas/realtime-ui-construction.md](ideas/realtime-ui-construction.md)
+  — Daniel, 2026-10-16. A two-speed architecture: instant low-fidelity
+  proxy inbetweens for judging timing, slow high-fidelity synthesis
+  replacing them behind the animator. Grounded in the 1990s digital
+  animation stands.
+* [ideas/realtime-ui-construction-response.md](ideas/realtime-ui-construction-response.md)
+  — assessment. It maps: the control surface is the exposure sheet we
+  already have a schema for. The risk is not latency but the proxy and
+  the final disagreeing about spacing, which would make the animator's
+  approval meaningless.
+
 ## Working notes in this repository
 
 * [planning/inbetween-acceptance.md](planning/inbetween-acceptance.md) —

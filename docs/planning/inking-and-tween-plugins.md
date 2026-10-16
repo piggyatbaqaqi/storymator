@@ -1045,6 +1045,15 @@ and therefore that flow interpolation may be adequate for it.
 recorded now because it changes which experiment is worth running
 next, not because it is a conclusion.
 
+> **Related, 2026-10-16.** Daniel's
+> [realtime-ui-construction note](../ideas/realtime-ui-construction.md)
+> argues for the same split from craft rather than measurement, and
+> supplies the best evidence the project has on this question: the
+> 1990s digital animation stands judged timing from *"crude black/white
+> threshold-style captures"* where *"the image quality wasn't the
+> point"*. An existence proof from production practice.
+> [Assessment](../ideas/realtime-ui-construction-response.md).
+
 ### Why the speculation is plausible
 
 The acceptance note already half-says it. *"A pencil test is
