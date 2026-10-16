@@ -157,6 +157,8 @@ it had I applied it.
 | Wan2.1 FLF2V 14B | Apache-2.0 | Apache-2.0 | no | too large, too slow |
 | ToonComposer | MIT | MIT | yes (frame indices) | colour stage only; needs ~42 GiB |
 | ~~FrameFusion~~ | Apache-2.0 | **CC BY-NC 4.0** | yes | **blocked** |
+| ~~Sketch-Simplification~~ | **non-commercial** | **CC non-commercial** | n/a | **blocked** — not MIT; the restriction covers the code too |
+| Tahoma2D cleanup | GPL-3.0 | n/a (no model) | n/a | licence-compatible **prior art**; no headless path |
 
 One caveat on RIFE, recorded rather than buried: a third-party
 derivative (RIFE-for-Nuke) warns that the *training data* may carry
@@ -180,6 +182,110 @@ error reported rather than hidden.
 So it is **not** a proxy generator. It is the first candidate found
 that could plausibly do *final* synthesis on hardware Monte owns, which
 is a different and currently unfilled role.
+
+## 4a. Do we still need to clean up roughs?
+
+Monte, 2026-10-16: *"Do we still think we need this step? If we can get
+acceptable results from feeding roughs through RIFE, maybe not."*
+
+**Mostly no — but the word "cleanup" is doing two jobs, and only one of
+them is dropped.**
+
+### Two things called cleanup
+
+| | what it is | needed? |
+|---|---|---|
+| **legibility processing** | paper removal, white balance, de-shadow, contrast, threshold. Deterministic CV, no model, no licence | **yes** — but for *registration* and *display*, and it is largely built already in `acme/ink.py` and `acme/outline.py` |
+| **inking / line simplification** | deciding which construction lines survive. An artistic act | **no, not here** |
+
+Every tool in Monte's list — Sketch-Simplification, the lineart
+ControlNets — is the second kind. Tahoma2D's Cleanup is the first.
+
+### Why the second kind is not needed for a pencil test
+
+[§3.2](inking-and-tween-plugins.md) deferred inking on the grounds that
+it moves an artistic decision into the machine. The architecture in §1
+now supplies a stronger reason: **the pencil-test stage ships a timing
+chart, and its frames are discarded.** Simplifying a line nobody keeps
+is work spent on an artefact that is thrown away.
+
+Daniel's own note is the sharpest argument. The 1990s digital stands
+judged timing from *"crude black/white threshold-style captures"* where
+*"the image quality wasn't the point"*. **A threshold capture is the
+opposite of simplification** — cruder, not cleaner. If the craft
+validated judging timing from thresholded roughs, a simplification
+model is not on the critical path.
+
+### Where that argument does **not** reach
+
+One caveat, and it is the interesting one. **The 1990s threshold was
+fed to a human eye. RIFE is not a human eye.**
+
+Optical flow wants gradients. Binarising a pencil drawing destroys
+exactly the soft tonal information a flow estimator uses, and leaves
+long uniform edges — the aperture problem in its purest form. So
+"crude is good enough for *judging*" does not imply "crude is good
+input for *interpolating*", and it is plausible that RIFE does better
+on an unprocessed greyscale capture than on a clean threshold.
+
+**That is measurable and nearly free**, with the corpus:
+cleanup 1 → cleanup 3 through RIFE under three input conditions — raw
+capture, contrast-normalised, thresholded — each compared against
+cleanup 2. It answers Monte's question with a number instead of an
+argument, and it needs no GPU.
+
+### On the specific options
+
+**Sketch-Simplification is not MIT, and this is the second time its
+licence has caught us.** The repository says *"This sketch
+simplification code is freely available for free non-commercial use"*
+and *"Provided models are under a non-commercial creative commons
+license"*. **No MIT appears anywhere**, and the restriction covers the
+code as well as the weights. Same blocker as FrameFusion, recorded
+again in §3's table.
+
+**Tahoma2D is the interesting one, for a reason beyond its licence.**
+GPL-3.0, so compatible with this repository, and its Cleanup stage is
+documented as doing three things:
+
+> *autocentering, to align each drawing according to the pegbar holes* …
+> *line processing, to recognize the drawing outline* … *cropping and
+> resizing to fit the camera*
+
+That is **peg registration, line extraction, and field cropping** —
+precisely the three problems `comfyui_acme` has been built to solve,
+solved in a shipping GPL-3.0 application that descends from OpenToonz.
+
+Its drawback is practical: there is **no documented headless or
+command-line path**. Batch cleanup exists but is submitted from the
+GUI, and the per-level `.cln` settings file looks like the only
+scripting hook.
+
+So the realistic use is **not as a tool in the pipeline but as a
+reference implementation**. We are GPL-3.0 and so is it; reading how a
+mature product parameterises Black Eq, Histogram and Histo-L is
+cheaper than rediscovering those choices, and §9 of
+[acme-registration-plugin.md](acme-registration-plugin.md) is already
+arguing about exactly this ground.
+
+**The lineart ControlNets** remain what [§3.1](inking-and-tween-plugins.md)
+said they were: a generative round trip that redraws the artist's line.
+Monte's speed concern is real but secondary — they are the wrong shape
+for this stage regardless, and the architecture now gives them a proper
+home at colour/final synthesis.
+
+### Recommendation
+
+1. **Drop line simplification from the pencil-test path.** It belongs
+   where drawings ship.
+2. **Keep legibility processing**, which is mostly built and is needed
+   by registration anyway.
+3. **Do not adopt Sketch-Simplification** — non-commercial, code and
+   weights both.
+4. **Read Tahoma2D's cleanup** as prior art, licence-compatible, before
+   tuning our own thresholds.
+5. **Measure what RIFE actually wants** before deciding how much
+   processing to do at all.
 
 ## 5. The architecture
 
