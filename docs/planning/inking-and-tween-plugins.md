@@ -489,6 +489,53 @@ forty seconds" are different products.
 **rent for training, run locally for inference** — and the project
 already has `comfy-build` and `comfy-deploy` for exactly that.
 
+### 7a. What the spike has measured so far — 2026-10-16
+
+Partial, and written down as it arrives rather than held back for one
+tidy amendment. The run has not yet produced a frame, so peak VRAM and
+seconds per frame are still unknown. What follows is what stopped being
+a guess.
+
+**Three numbers above were wrong.**
+
+| §7 said | measured | why it matters |
+|---|---|---|
+| 98 GB host RAM | **91 GiB total, ~58 available** | the block-swap argument rests on this ratio |
+| ToonComposer needs ~35 GB of weights | **77 GB** for the subset it opens | disk is fine (2.7 T free); host RAM is the question |
+| *(not considered)* | the Wan DiT ships **fp32** | 7 shards at ~9 GB; the bf16 assumption was never stated, only assumed |
+
+The DiT being fp32 is the one that could bite. `WanVideoPipeline` is
+constructed `torch_dtype=torch.bfloat16`, so the cast *should* happen on
+load and leave ~32 GB resident rather than ~63 GB — but that is again an
+inference from reading, and the spike prints the actual dtypes and peak
+RSS so it stops being one.
+
+**Two findings in the project's favour.**
+
+**Block swap is already there.** `WanVideoPipeline.enable_vram_management(
+num_persistent_param_in_dit=N)` keeps N DiT parameters resident, streams
+the overflow from CPU, and holds the text encoder on CPU entirely. §7
+assumed this would have to be arranged; it is a single call. `N` is the
+knob to sweep, and `None` streams everything.
+
+**ToonComposer's own checkpoint is 170 MB**, against Wan's 77 GB. The
+adapter is a spatial low-rank adapter and sketch injection, nothing
+more. That matters twice over: a cartoon-domain adapter of our own is a
+far smaller training problem than the "14B LoRA" framing above implies,
+and the thing worth contributing upstream is correspondingly small.
+
+**Two practical notes.** `flash_attn` is absent, so attention takes the
+slower path — any timing measured here is a ceiling, not the best this
+hardware can do. And ToonComposer's pinned `torch==2.8.0` must not be
+installed into the `storymator` environment: it would downgrade torch,
+numpy and Pillow, and the working build here is **2.14.1+cu130**, whose
+arch list includes `sm_120`. The spike runs in a throwaway
+`tooncomposer-spike` environment for that reason.
+
+**Still open, and the whole point of the exercise:** peak VRAM at a
+given `N`, wall clock per key pair, and whether the generated middle
+frame resembles the one the artist drew.
+
 ---
 
 ## 8. What to build first
