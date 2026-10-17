@@ -179,3 +179,119 @@ architecture §5, which does **not** run through ComfyUI.
 
 If it fails, the finding says which of the five questions killed it,
 and the next candidate is chosen against the same five.
+
+
+---
+
+# Findings
+
+## Gate: the timestep API exists — and the README does not say so
+
+**Question 1 is answered affirmatively, by reading the code.** The 4.25
+model ships its own `RIFE_HDv3.py`, and:
+
+```python
+def inference(self, img0, img1, timestep=0.5, scale=1.0):
+```
+
+`inference_img.py` exposes it as `--ratio`, documented *"inference
+ratio between two images with 0 - 1 range"*, and calls
+`model.inference(img0, img1, args.ratio)` directly.
+
+So **arbitrary *t* is available** and §2's dyadic driver is confirmed
+unnecessary. The README's model list mentions only `--multi` and
+`--exp`, which is what made this a gate; the design was right to say
+*read the model file, not the README*.
+
+## CPU-only by construction
+
+`torch 2.14.1+cpu`, `torch.cuda.is_available() == False`. Not the GPU
+hidden behind an environment variable — a build with no CUDA in it, so
+§6a holds whatever anyone passes later. The PoC asserts it on startup.
+
+Two environment notes worth keeping:
+
+* `conda run -n <env>` silently resolved to a **different environment**
+  more than once. Every command here uses the interpreter path
+  directly. Same lesson as the ToonComposer spike.
+* A user-level `pip.conf` carries
+  `extra-index-url = …/whl/cu129`, which quietly pulls a **CUDA build**
+  even when `--index-url …/whl/cpu` is given. `PIP_CONFIG_FILE=/dev/null`
+  is what forces the CPU wheel.
+
+## Speed: question 5 answered
+
+| | |
+|---|---|
+| 1024 × 775, 8 threads | **0.40 s/frame** |
+| model | 22.9 MB, from the official Drive link |
+| load | about a second |
+
+Against the provisional 200 ms bar, this is **twice too slow at full
+width** — but it is CPU, at a resolution chosen for inspection rather
+than for flipping, and the thread count was a third of the machine. It
+is the right order of magnitude, which is what the question asked.
+Compare ToonComposer at **69.9 s/frame on a GPU**: RIFE is **175×
+faster on a CPU**.
+
+## No ghosting. The §4.2 prediction was wrong
+
+§4.2 predicted that flow methods *"ghost and double lines rather than
+move them"* on sparse black-on-white, and treated that as the likely
+killer.
+
+**It did not happen.** Ink ratio against the artist's own drawing is
+**0.75** — the lines are *fainter*, not doubled. Doubling would have
+pushed the ratio above 1; this is the opposite failure, and a milder
+one.
+
+Looking at the frames: the generated drawings are **coherent, single-
+line figures** — hat, cane, coat tail, both legs — legible enough to
+read the pose at a glance. They are lighter than the artist's, and the
+fastest-moving parts smear, but they are *drawings*, not smears.
+
+**Question 2 is answered affirmatively**, on the cleanups at gap 1.
+
+## The finding that reaches furthest: the ink centroid is the wrong feature
+
+The PoC measured where the generated drawing sits along the chord
+between its neighbours. It also measured where **the artist's own
+drawing** sits — and that is what matters:
+
+| | mean | sd | range |
+|---|---|---|---|
+| RIFE's middle | 0.412 | 0.339 | −0.29 … 0.96 |
+| **the artist's middle** | **0.427** | **0.202** | **0.11 … 0.81** |
+
+**The artist's own inbetween does not sit at 0.5 either.** On this
+material the ink centroid is not a measure of position along the path:
+in a run cycle the pose changes shape — a leg extends, a coat swings —
+so the centroid moves for reasons that have nothing to do with travel.
+
+Three consequences.
+
+**§11.2's decision 7 is refuted by measurement.** That decision was
+*"the tracked feature starts as the ink centroid… deterministic and
+testable today"*. It is deterministic and it is testable, and the test
+says it does not measure what it was chosen to measure.
+
+**The first spacing number this PoC produced was meaningless.** Mean
+error against *t*=0.5 came out at 0.277 — worse than acceptance §2's
+named failure of 0.2 — and it was comparing RIFE against a reference
+the artist does not meet. The honest number is **RIFE against the
+artist: 0.189 mean absolute difference in fraction.** Still large, but
+it is a number about RIFE rather than about the centroid.
+
+**`HarnessSpacingError` needs a feature before it can do its job**, and
+it is the instrument the whole fast-proxy architecture depends on
+(architecture §1's timing contract). Candidates: global translation by
+phase correlation, which measures travel and ignores shape change; a
+tagged landmark such as the hat; or the bounding-box centre. This wants
+settling before the instrument is built.
+
+## Still open
+
+The matrix — two media × three preprocessing conditions × three gaps —
+was running when this was written. What it will say: whether roughs
+behave like cleanups, whether §4a's preprocessing question has a
+measurable answer, and how quality falls off as the gap widens.
