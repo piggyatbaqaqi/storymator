@@ -495,3 +495,103 @@ with large displacement, not uniformly. §7c argued the joint-onset
 objection scales with gap width; this says *interpolation itself* has a
 displacement budget, and the useful question is not "how wide a gap"
 but "how far does the drawing move".
+
+
+---
+
+# The media question: does cleaning up the roughs buy anything?
+
+**2026-10-17**, Monte's question. Full matrix rerun with the drawing
+order fixed, matched *t*, and two metrics chosen to see what ink ratio
+could not.
+
+## Making the comparison fair
+
+After sorting, **index *i* is the same drawing in both media** — rough
+1.5 is clean 2, rough 6.5 is clean 8. So clean-versus-rough can be a
+genuine like-for-like test.
+
+One trap had to be avoided. **The cleanup renumbering destroyed the
+spacing information.** The roughs say 2 sits a *third* of the way from
+1.5 to 3; the cleanups, renumbered 1…12, say 3 sits *halfway* between 2
+and 4. Those are the same three drawings and the two numberings
+disagree. The matrix therefore uses index-based *t* for both media, so
+the comparison is about the drawings and not about the numbering.
+
+*(That the renumbering discarded the artist's spacing is itself worth
+noticing. §13's exposure sheet is where that information belongs, and
+this is a concrete case of it being lost when it had nowhere to live.)*
+
+## The answer: no, and it may cost you
+
+| prep | gap | chamfer, clean | chamfer, rough |
+|---|---|---|---|
+| raw | 1 | 12.3 | **7.7** |
+| raw | 2 | 19.5 | **14.9** |
+| raw | 3 | 23.2 | **22.1** |
+| norm | 1 | 12.2 | **8.4** |
+| thresh | 1 | 6.0 | **5.8** |
+
+**The roughs interpolate at least as well as the cleanups, and often
+better.** By eye, on matched columns: the first two are equally good in
+both media; the third and fourth are **clearly better from the
+roughs**, where the cleanup version tangles the arm and cane; the fifth
+fails in both.
+
+**I suspected a confound and tested it.** Scattered ink could lower
+chamfer for free, since every point would be near something. Measured:
+the rough's mean distance from an arbitrary pixel to the nearest ink is
+**139.9 px against the cleanup's 108.4** — *sparser*, not denser. The
+hypothesis was refuted, and the chamfer difference survives it. For
+once the numbers and the pictures agree, which is the standard this
+document set after three failures to meet it.
+
+**A plausible reason, offered as one.** Flow estimation wants texture.
+A cleanup is sparse, confident single lines — the aperture problem at
+its worst. A rough carries construction lines, broken strokes and tone,
+which is more for an estimator to hold on to. §4.2 reasoned that line
+art is hard for flow *because* it is sparse; the corollary nobody drew
+is that **the sparser of two line drawings should be harder**, and the
+cleanup is the sparser one.
+
+## What it does not fix
+
+**Both media fail on the same drawings.** The columns that tangle,
+tangle in both. Cleaning changes how well the easy cases render; it
+does not change which cases are hard. That remains displacement, as the
+retraction above found.
+
+## The one clean monotone result
+
+The gap sweep, pooled across media and preprocessing:
+
+| gap | chamfer | fraction error |
+|---|---|---|
+| 1 | 8.7 px | 0.31 |
+| 2 | 15.1 px | 0.50 |
+| 3 | 19.9 px | **1.60** |
+
+Degradation is steady and the fraction error explodes at gap 3.
+
+## Fragmentation: the structural signal
+
+RIFE **roughly doubles the number of connected ink fragments** on
+cleanups — 5.6 in the artist's drawing against 9.9 generated. On
+thresholded roughs it is far worse: 7 becomes 33.
+
+This is the metric ink ratio could not supply, and it points the right
+way. It is **not yet validated against the eye** on a frame-by-frame
+basis, so it is a candidate failure detector rather than a working one
+— which is exactly the status ink ratio should have had.
+
+## Consequence for the architecture
+
+[§4a](pencil-test-architecture.md) recommended dropping line
+simplification from the pencil-test path on architectural grounds: the
+frames are discarded, so simplifying them is work on a thrown-away
+artefact.
+
+**That recommendation now has evidence behind it, and a stronger
+form.** Cleaning up a rough before interpolating it does not help the
+interpolation and appears to hurt it. The pencil test should run on the
+roughs as captured.
