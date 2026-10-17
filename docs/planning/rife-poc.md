@@ -289,9 +289,110 @@ phase correlation, which measures travel and ignores shape change; a
 tagged landmark such as the hat; or the bounding-box centre. This wants
 settling before the instrument is built.
 
-## Still open
+## The matrix
 
-The matrix — two media × three preprocessing conditions × three gaps —
-was running when this was written. What it will say: whether roughs
-behave like cleanups, whether §4a's preprocessing question has a
-measurable answer, and how quality falls off as the gap widens.
+Two media × three preprocessing conditions × three gaps, ten triples at
+gap 1 falling to six at gap 3.
+
+### Thresholding wins, and §4a's speculation was wrong
+
+§4a guessed that *"optical flow wants gradients and a threshold
+destroys them"*, and that RIFE *"may well prefer an unprocessed
+greyscale capture to a clean threshold"*.
+
+**The opposite is true**, on equal masks and by eye:
+
+| preprocessing | chamfer | by eye |
+|---|---|---|
+| raw | 12.3 px | faint but legible |
+| contrast-normalised | 12.2 px | paper grain amplified into visible noise |
+| **thresholded** | **6.0 px** | **crisp black on white, no texture, fully legible** |
+
+Thresholding **halves** the error and produces the cleanest frame. The
+gradient argument assumed paper texture was neutral; it is not, it is a
+distractor the flow estimator latches onto. Remove it and only the
+lines remain.
+
+**This vindicates Daniel's 1990s memory more strongly than it was
+offered.** The claim was that crude threshold captures were *enough*
+for judging timing. On this evidence crude threshold captures are
+*better input*, not merely tolerable.
+
+### The gap sweep: quality degrades, measurably
+
+Within `raw` on cleanups, so the comparison is like with like:
+
+| gap | chamfer | fraction error vs the artist |
+|---|---|---|
+| 1 | 9.7 px | 0.19 |
+| 2 | 17.6 px | 0.74 |
+| 3 | 21.9 px | 1.35 |
+
+**§7c's gap-width thesis holds for interpolation quality too.** The
+argument there was about joint onset; this is the same axis measured on
+a different property. One inbetween between adjacent drawings is a
+different proposition from filling a wide span, and now there is a
+number for it.
+
+### Roughs work at least as well as cleanups
+
+At raw, gap 1: chamfer **7.7 px** on roughs against **9.7 px** on
+cleanups. The blue-pencil roughs — the actual input a pencil test would
+have — are not the harder case. That removes a worry §4a raised.
+
+## Two measurement bugs of my own, and a pattern
+
+**The ink mask was not invariant across preprocessing.** It used
+`g < percentile(g, 92) - 0.12`: a fixed *offset*. Contrast-normalising
+stretches the histogram, so that offset selected **7.4 % of the frame
+instead of 1.8 %** — four times as much ink. Chamfer then collapses for
+free, because with that much ink everything is near something.
+`norm` appeared to beat `raw` **eightfold** (1.7 px against 13.8) on
+that basis alone. Replaced with a fixed *fraction*; verified that all
+three conditions then select 1.80–1.87 %, which is what makes the table
+above fair.
+
+**Twenty-four threads is ten times slower than sixteen.**
+
+| threads | s/frame |
+|---|---|
+| 4 | 0.44 |
+| 8 | 0.39 |
+| **16** | **0.35** |
+| 24 | **3.50** |
+
+The whole matrix ran at 24 and its timings are therefore worthless.
+The quality numbers are unaffected — thread count does not change
+output. This machine's 24 cores are not alike (Intel Ultra 9 275HX,
+performance and efficiency cores), and saturating them collapses
+throughput. **§6a said to pin the thread count; it did not say to find
+the right one first.**
+
+**The pattern, now three for three.** Mean absolute error ranked a
+washed-out ToonComposer run above a better one; it then ranked CFG 3.0
+above CFG 7.5; and now a fixed-offset ink mask ranked `norm` eightfold
+above `raw`. Every time, **a threshold I chose was not invariant to the
+thing I was comparing**, and every time the frames said otherwise at a
+glance. The design named contact sheets as the arbiter for this reason.
+It is worth promoting from a habit to a rule: **look first, and treat
+any metric as a hypothesis until a picture agrees with it.**
+
+## Verdict against the five questions
+
+| # | question | answer |
+|---|---|---|
+| 1 | arbitrary timestep? | **yes** — `inference(img0, img1, timestep, scale)` |
+| 2 | legible enough? | **yes**, and thresholded input is best |
+| 3 | honours position? | **cannot yet be measured** — the tracked feature is broken, not RIFE |
+| 4 | gap degradation? | **measured**: 9.7 → 17.6 → 21.9 px over gaps 1–3 |
+| 5 | fast enough? | **0.35 s/frame** at 1024 px, 16 threads, on CPU. 175× faster than ToonComposer on a GPU |
+
+Against the provisional bars: legibility **passes**, ghosting
+**passes** (0.75–1.03, no doubling anywhere), speed **misses 200 ms at
+1024 px** but was not tuned for it, and spacing **cannot be assessed**
+until the feature question is settled.
+
+**RIFE passes everything that was in doubt about RIFE.** What is left
+open is ours: `HarnessSpacingError` needs a feature that measures
+travel rather than shape change, and that blocks architecture §1's
+timing contract rather than this candidate.
