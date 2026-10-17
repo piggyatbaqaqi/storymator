@@ -396,3 +396,102 @@ until the feature question is settled.
 open is ours: `HarnessSpacingError` needs a feature that measures
 travel rather than shape change, and that blocks architecture §1's
 timing contract rather than this candidate.
+
+
+---
+
+# Retraction: the verdict was wrong, and so was the method
+
+**2026-10-17.** Monte opened the generated frames and read all ten:
+
+> *"gen_04.png has two heads and maybe 3 feet? gen_05.png has two
+> bodies and three arms… gen_06.png and gen_07.png are the only images
+> without major distortions."*
+
+He is right. **The verdict above is withdrawn.**
+
+## What I actually did
+
+I looked at **three frames out of 180** — triples 1, 4 and 7 of one
+condition — and generalised to *"legible enough to read the pose…
+question 2 answered affirmatively"*. Two paragraphs after writing
+*"look first, and treat any metric as a hypothesis until a picture
+agrees with it."*
+
+## The metric could not see the thing it was used to refute
+
+I declared §4.2's ghosting prediction wrong because **ink ratio was
+0.75**, below 1, where doubling should push it above.
+
+**Ink ratio cannot detect duplicated structure.** A limb doubled at
+reduced intensity leaves total darkness unchanged or lower. The metric
+measures how much ink there is, not whether the anatomy is coherent —
+so a frame with two heads and three arms can score *better* than a
+faithful one.
+
+**§4.2 appears to have been right.** *"Lines ghost and double rather
+than move"* is precisely what two heads and three arms are. The
+prediction was not refuted; it was measured with an instrument blind to
+it.
+
+## And the rough half of the matrix was invalid
+
+The corpus manifest records that the roughs are stored in **capture
+order** — `3, 1, 1.5, 2, 4, …` — not drawing order. §12.2 of the
+planning note says so explicitly. **The PoC indexed by file position
+anyway**, so its first rough triple interpolated drawing **3** and
+drawing **1.5** to predict drawing **1**, which is not an inbetween of
+anything. Every rough number in the matrix above is void.
+
+This is the third time a corpus fact was written down and then ignored
+by code written afterwards — the sheet sizes in §12.1 did the same
+thing an hour earlier.
+
+## Fixed, and re-measured
+
+Sorting by drawing number, and asking for the *t* the artist's drawing
+actually sits at — the roughs carry 1.5 and 6.5, so consecutive
+drawings are not evenly spaced and the midpoint is often **0.333** or
+**0.667**, which exercises the arbitrary timestep properly:
+
+| | before (invalid) | after |
+|---|---|---|
+| chamfer | 7.5 px | **5.68 px** |
+| spacing error | 0.273 | **0.12** |
+
+Real improvements. **The structural failures persist.** Of ten frames,
+roughly five are usable and four are grossly broken — doubled heads,
+tangled limbs — with one marginal. **Thresholding fixes line crispness
+and not anatomy:** the same triples fail under `raw` and `thresh`, so
+it is the *motion* in those triples that defeats RIFE, not the input
+preprocessing.
+
+## Revised verdict
+
+| # | question | revised answer |
+|---|---|---|
+| 1 | arbitrary timestep? | **yes**, unchanged, and now actually exercised at *t* = 0.333 and 0.667 |
+| 2 | legible enough? | **qualified failure.** Works where displacement is small; fails grossly where it is not. About half the frames |
+| 3 | honours position? | spacing error **0.12** against the artist — but the centroid feature is still suspect |
+| 4 | gap degradation? | measured, and the within-triple variation is larger than the gap effect |
+| 5 | fast enough? | **0.34 s/frame**, unchanged |
+
+**RIFE is not yet a usable proxy generator.** It is fast, correctly
+licensed, and takes a chart — but it produces an unusable drawing
+roughly half the time on this material, and those failures are the kind
+an animator would reject instantly.
+
+## What this changes
+
+**A failure detector may matter more than a better interpolator.** If
+the broken frames can be flagged automatically, a proxy that works half
+the time is still useful — the instrument shows what it has and marks
+the rest. Duplicated structure should be detectable: a doubled figure
+has more connected components, or ink where the two source drawings
+disagree. That is cheap to test and has not been tried.
+
+**And the gap thesis gets sharper.** The failures cluster on triples
+with large displacement, not uniformly. §7c argued the joint-onset
+objection scales with gap width; this says *interpolation itself* has a
+displacement budget, and the useful question is not "how wide a gap"
+but "how far does the drawing move".
