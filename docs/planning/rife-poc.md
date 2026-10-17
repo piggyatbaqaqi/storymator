@@ -97,6 +97,50 @@ a third-party derivative warns the *training data* may carry
 non-commercial terms. **Ask the author before anything ships**; it does
 not block a proof of concept.
 
+## 6a. No GPU required — and CPU is the default, not the fallback
+
+Monte asked for confirmation. **Confirmed**, and it is now a design
+constraint rather than an expectation.
+
+**The evidence.**
+
+| | |
+|---|---|
+| device selection | upstream's is the standard `torch.device("cuda" if torch.cuda.is_available() else "cpu")`, with cuDNN touched only when CUDA is present. **CPU works unmodified** |
+| precision | no fp16 path in upstream `inference_img.py`. A community fork has an fp16 flag, but it sits inside a CUDA check and does nothing on CPU |
+| model size | **~23 MB, fp32**. Against ToonComposer's 77 GB |
+| fp16 | not wanted anyway — RIFE's coarse-to-fine flow is reported fp16-sensitive, so **fp32 on CPU is the accurate path**, not a compromise |
+| this machine | 24-core Intel Core Ultra 9 275HX |
+
+**The workload is small.** Ten triples × three preprocessing
+conditions × three gaps × two media = **180 interpolations**. At 1–5
+seconds each that is **3 to 15 minutes**, once, on the CPU.
+
+**So the constraint:** the POC **runs on CPU by default and must be
+written that way**. The GPU is used only for an explicit timing
+comparison, never silently.
+
+Two reasons that matters beyond convenience.
+
+**An honest answer to question 5.** The machine has a GPU, so letting
+torch pick a device would quietly measure the GPU and tell us nothing
+about whether a drawing desk needs one. Architecture §5 puts the
+instrument outside ComfyUI precisely so it can be light; if the proxy
+path runs on a CPU, the desk's hardware story gets much simpler.
+
+**Nothing else in the POC wants a GPU either.** Chamfer, ink ratio,
+contact sheets and `penciltest.arcs` are numpy, Pillow and pure Python.
+
+**One thing to check in step 1**, while reading the model file for the
+timestep API: that the chosen 4.25 weights carry no CUDA-only
+operation. Nothing in RIFE's architecture suggests one — it is
+convolutions and `grid_sample` — but it is a free check while that file
+is already open.
+
+**Pin the thread count when timing.** Twenty-four cores will otherwise
+make the numbers depend on what else the machine is doing, and this
+session has already lost a run to a desktop competing for memory.
+
 ## 7. Order of work
 
 1. **Verify the timestep API by reading the code**, not the README.
@@ -107,8 +151,9 @@ not block a proof of concept.
 3. The g=1 cleanup sweep, three preprocessing conditions.
 4. The gap sweep.
 5. Roughs, which is the real input — the cleanups are a kinder test.
-6. Timing, on CPU and GPU separately. The CPU number matters: if it is
-   fast enough, the instrument needs no GPU at all.
+6. Timing, **CPU first** with a pinned thread count, GPU only as an
+   explicit comparison. See §6a — the CPU number is the one that
+   decides whether a drawing desk needs a graphics card.
 
 ## 8. Success criteria — provisional, Daniel's to set
 
