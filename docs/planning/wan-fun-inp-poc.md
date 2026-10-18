@@ -68,6 +68,11 @@ load-bearing. Do not spend prompt budget on it.
 
 ## 4. Easy test: rough 1 → rough 2, target 1.5
 
+> **Withdrawn — see the retraction at the end of this document.** The
+> N=5 result below is judged on whether the drawing holds together, not
+> on whether anything moves. The foot does not travel. Kept as written
+> so the error is legible.
+
 The artist's drawings in this corpus are numbered 1, 1.5, 2, 3 … 10; the
 manifest records that they were *captured* in the order 3, 1, 1.5, 2, …
 This is the fact that two earlier passes ignored, so it was read out of
@@ -139,6 +144,10 @@ latent.
 frames 0 and N−1. Never ship the model's version of a key.
 
 ## 6. The prompt question, answered by measurement
+
+> **Withdrawn — see the retraction at the end of this document.** The
+> comparison that carries this section was run entirely inside the set
+> of sequences Daniel rejects. Kept as written so the error is legible.
 
 Four prompts were defined, each adding exactly one kind of information
 so the responsible kind could be isolated:
@@ -220,6 +229,9 @@ want it to animate.
 
 ## 8. No failure detector yet — two more candidates refuted
 
+> The two refutations stand. What they were aimed at does not: see the
+> retraction at the end of this document.
+
 The pencil test needs to flag its own bad frames, since one in five is
 unusable even in the good regime. Two cheap candidates were tested
 against frames already judged by eye:
@@ -261,3 +273,146 @@ limb count.
 Out of tree, because WWC owns the originals and these derive from them:
 `~/lab/storymator/spikes/wan-fun-inp-2026-10-18/` — montages, every
 generated frame, the throwaway runner and the three run logs.
+
+---
+
+# Retraction, 2026-10-18 — I judged coherence; the criterion is travel
+
+Daniel went through all twelve sequences in the archive. **One is
+plausible: `out_easy/n009_A_bare`** — the one-drawing gap, nine frames,
+bare prompt. His reason:
+
+> *"It shows actual motion of the front foot that is intermediate
+> between the two reference images. None of the other examples make me
+> think that I'm looking at the motion of a real character."*
+
+That is a different criterion from the one this document used, and it is
+the right one.
+
+## What I was measuring instead
+
+Every "clean" and "coherent" verdict above is a judgment about whether a
+**drawing** holds together: one head, two legs, hat attached, cane in a
+hand, no doubled figure. §4 called the N=5 middle frame a success on
+exactly those grounds, and listed its parts.
+
+But a drawing can be perfectly coherent and not be an inbetween. **A
+clean drawing that is not between the keys is just a third drawing.**
+Intermediacy is a property of a *part's position across the sequence*,
+and it cannot be seen in a single frame at all — which is why a
+frame-by-frame coherence check could never have found it.
+
+## The foot, which settles it
+
+Cropping the same band across each sequence and enlarging:
+
+| | front foot |
+|---|---|
+| **N=5, easy** | jumps from the start position to the end position between frames 1 and 2, then **holds**: frames 2, 3 and 4 have it in essentially one place. There is no intermediate position anywhere in the sequence |
+| **N=9, easy** | descends progressively from frame 0 to frame 8. Actual travel |
+
+**§4's verdict is withdrawn.** "The easy test works at N=5" was wrong.
+What N=5 produces is a clean cut followed by a hold, and I read the
+cleanliness of the held frames as success.
+
+## Why N=5 cannot work, at any setting
+
+This is structural, not a tuning failure, and it is checkable from the
+pipeline arithmetic.
+
+The Wan VAE compresses time 4:1. The pipeline allocates
+`(num_frames - 1) // 4 + 1` latent frames, and the start/end mask is
+built by repeating the first frame four times and then grouping by four.
+Counting the latent groups that are **fully interior** — neither key
+pinned inside them:
+
+| num_frames | latent frames | mask groups | fully-interior latents |
+|---|---|---|---|
+| **5** | 2 | `[1,1,1,1] [0,0,0,1]` | **none** |
+| **9** | 3 | `[1,1,1,1] [0,0,0,0] [0,0,0,1]` | 1 |
+| 13 | 4 | `… [0,0,0,0] [0,0,0,0] …` | 2 |
+| 21 | 6 | `… ×4 …` | 4 |
+
+At N=5 **every interior frame shares its latent with the end key**, and
+that latent's reference stack is `[0, 0, 0, end_image]`. The interior is
+therefore decoder upsampling of the end pose. No prompt, step count or
+cfg can put an intermediate pose there, because there is nowhere to put
+it.
+
+**N=9 is the smallest frame count that can represent travel at all** —
+exactly one fully-interior latent — and it is the one configuration
+Daniel accepts. That is not a coincidence, and it gives the suite a hard
+floor: *never drive this model below nine frames.*
+
+N=13, with two interior latents, is the untested point between the
+configuration that works and the N=21 one that drifts. It is the next
+run.
+
+## This invalidates §6's prompt advice
+
+§6 concluded "name the character and its props, and name the action",
+on the strength of A against D on the hard pair at N=21.
+
+**Every sequence in that comparison is one Daniel rejects.** Ranking two
+rejected sequences says nothing about prompts; it says D fails more
+legibly than A. I presented a preference inside a failed set as a
+finding, which is the same error as §4 — a local judgment standing in
+for the acceptance criterion.
+
+Worse for the advice: the single accepted sequence used the **bare**
+prompt. At the same frame count the described prompt (C) still moves the
+foot, but ghosts in the last two frames.
+
+**Withdrawn.** On current evidence there is no measured case for
+describing the character, and the one working configuration did not need
+one. The honest answer to *"what else should we say besides 'Man
+running.'?"* is, for now: **nothing — get the frame count right
+instead.** §3 stands, because it is an observation across all twelve
+runs rather than a comparison: the style holds unprompted.
+
+## This also reframes §8
+
+The detectors in §8 were aimed at *"is this drawing broken"*. All five
+N=5 frames would have passed such a detector — they are not broken, they
+are just not inbetweens.
+
+The criterion Daniel actually applied names the tracked feature the
+architecture has been hunting since the ink centroid was refuted: not a
+global statistic but **an identifiable extremity**, and a check that its
+position is monotone and intermediate across the sequence. The front
+foot is a concrete candidate for `HarnessSpacingError`, and unlike the
+centroid it measures travel rather than shape change.
+
+That is a hypothesis arrived at by watching an animator read drawings,
+and it is untested. It goes on the list; it does not go in the suite
+yet.
+
+## Revised verdict
+
+**One sequence in twelve.** Fun-InP is not established as an
+inbetweener. It has one configuration — smallest real gap, nine frames,
+no prompt beyond the subject — that produced one plausible set, and
+nothing is yet known about whether that survives a second pair of keys.
+
+| earlier claim | status |
+|---|---|
+| runs here, Apache-2.0, no new code (§2) | **stands** |
+| style holds unprompted (§3) | **stands** |
+| easy test works at N=5 (§4) | **withdrawn** — no foot travel |
+| frame count dominates (§5) | **stands, and strengthened** — now with a mechanism and a hard floor |
+| keys re-rendered, end adherence weaker (§5a) | **stands** |
+| name the character and the action (§6) | **withdrawn** — derived entirely inside the rejected set |
+| hard test fails everywhere (§7) | **stands** |
+| ink fraction and IoU refuted (§8) | **stands**, and the target was wrong as well as the measures |
+
+## The pattern, which is the thing worth keeping
+
+Three retractions on this project now share one shape: **a local
+measure, applied without the operator's acceptance criterion in hand.**
+A self-invented MAE threshold. Three frames out of 180. And now
+frame-by-frame coherence standing in for travel.
+
+The generalisation: *ask what the drawing is for before deciding what
+counts as a good one.* A pencil test exists to show motion. Nothing
+measured on a single frame can see motion, so no single-frame measure —
+mine or a model's — can decide whether a pencil test is any good.

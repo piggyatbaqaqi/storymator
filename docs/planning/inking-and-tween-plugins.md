@@ -880,10 +880,17 @@ document:
    **requires** a colour frame; Fun-InP's conditioning is the two
    drawings, so there is nowhere to drift to.
 
-3. **It is legible where RIFE was not.** On the same corpus that gave
-   RIFE two heads and three arms, Fun-InP at five frames returns a
-   single coherent figure — hat, face, cane, two legs. §4.2's ghosting
-   prediction holds for flow methods and does not transfer to this one.
+3. **It is legible where RIFE was not — but legible is not the test.**
+   On the same corpus that gave RIFE two heads and three arms, Fun-InP
+   returns a single coherent figure. Daniel then read all twelve
+   sequences and accepted **one**: the one-drawing gap at nine frames,
+   bare prompt, *"actual motion of the front foot that is intermediate
+   between the two reference images."* The five-frame result this entry
+   originally cited is withdrawn — its foot jumps and holds, and at
+   fewer than nine frames the VAE's 4:1 temporal stride leaves no
+   fully-interior latent for an intermediate pose to live in. §4.2's
+   ghosting prediction holds for flow methods and does not transfer to
+   this one; that remains true and remains beside the point.
 
 4. **It still cannot cross a half cycle.** Rough 1 → rough 6 fails in
    every configuration tried. The artist's 4 and 5 are deep crouches
@@ -894,6 +901,11 @@ document:
 The ranking in §4.5 was written before any of this was run and is now
 out of date for the inbetweening stage; the live table is architecture
 §3.
+
+The prompt guidance this pass originally carried — name the character
+and the action — is **withdrawn**: it was derived entirely from
+comparisons inside the set of sequences Daniel rejects, and the one
+accepted sequence used the bare prompt.
 
 ---
 
