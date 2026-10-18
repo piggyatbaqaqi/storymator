@@ -151,9 +151,9 @@ it had I applied it.
 
 | candidate | code | weights | arbitrary *t*? | verdict |
 |---|---|---|---|---|
-| **RIFE** (Practical-RIFE) | MIT | MIT | **yes**, v4.x takes a timestep | **lead candidate** |
+| **RIFE** (Practical-RIFE) | MIT | MIT | **yes**, v4.x takes a timestep | **lead candidate for speed and arbitrary *t*; no longer the lead for legibility** — duplicated limbs on large displacement, where Fun-InP stays coherent |
 | FILM (Google) | Apache-2.0 | **unstated** — Google Drive, no terms | yes | verify first; also TensorFlow 2 against our torch stack, and *"not an officially supported Google product"* |
-| **Wan2.x-Fun-InP 1.3B** | Apache-2.0 | Apache-2.0 | no — emits N frames evenly | **fits this card**; see §4 |
+| **Wan2.x-Fun-InP 1.3B** | Apache-2.0 | Apache-2.0 | no — emits N frames evenly | **runs, measured 2026-10-18**; legible at small gaps, fails across a half cycle. See §4 and [wan-fun-inp-poc.md](wan-fun-inp-poc.md) |
 | Wan2.1 FLF2V 14B | Apache-2.0 | Apache-2.0 | no | too large, too slow |
 | ToonComposer | MIT | MIT | yes (frame indices) | colour stage only; needs ~42 GiB |
 | ~~FrameFusion~~ | Apache-2.0 | **CC BY-NC 4.0** | yes | **blocked** |

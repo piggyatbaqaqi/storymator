@@ -859,6 +859,42 @@ are frame interpolators and are indifferent to it. None of them accepts
 a chart. The candidate that accepted the specification turns out not to
 accept the medium.
 
+### 7a.7 Pass seven, 2026-10-18 — Wan2.1-Fun-InP 1.3B
+
+Full findings in
+[wan-fun-inp-poc.md](wan-fun-inp-poc.md). Four results bear on this
+document:
+
+1. **It runs here, with no new code.** Apache-2.0 weights, 19.0 GB, and
+   diffsynth's existing `WanVideoPipeline` drives it through
+   `input_image=` + `end_image=`. `in_dim: 36` plus `img_emb.proj.*` in
+   the state dict means the conditioning is Wan2.1-I2V's, and
+   diffsynth's mask is already 1 at the first *and* last frame. No block
+   swap, no bare-parameter patch, nothing like §7b.3.
+
+2. **It stays in pencil, unprompted.** §7a.6 closed with *"the candidate
+   that accepted the specification turns out not to accept the
+   medium."* Fun-InP accepts the medium. Fed `"Man running."` and
+   nothing else, every frame came back blue col-erase pencil on white
+   paper, grain and ground lines intact. ToonComposer drifts because it
+   **requires** a colour frame; Fun-InP's conditioning is the two
+   drawings, so there is nowhere to drift to.
+
+3. **It is legible where RIFE was not.** On the same corpus that gave
+   RIFE two heads and three arms, Fun-InP at five frames returns a
+   single coherent figure — hat, face, cane, two legs. §4.2's ghosting
+   prediction holds for flow methods and does not transfer to this one.
+
+4. **It still cannot cross a half cycle.** Rough 1 → rough 6 fails in
+   every configuration tried. The artist's 4 and 5 are deep crouches
+   that are not recoverable from the endpoints, because the information
+   is not in the endpoints. This is §7c's question arriving as a
+   measurement rather than an argument.
+
+The ranking in §4.5 was written before any of this was run and is now
+out of date for the inbetweening stage; the live table is architecture
+§3.
+
 ---
 
 ## 7b. Specification: how this project uses ToonComposer

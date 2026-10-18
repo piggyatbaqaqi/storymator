@@ -117,7 +117,33 @@
   eprint       = {2503.20314},
   archivePrefix= {arXiv},
   primaryClass = {cs.CV},
-  note         = {Apache-2.0.  The foundation model ToonComposer adapts.},
+  note         = {Apache-2.0.  The foundation model ToonComposer adapts,
+                  and the base of the Fun-InP inbetweening spike of
+                  2026-10-18.},
+}
+
+@misc{videoxfun2025,
+  title        = {{VideoX-Fun}: Wan-Fun and CogVideoX-Fun Video
+                  Generation and Control},
+  author       = {{Alibaba PAI}},
+  year         = {2025},
+  howpublished = {\url{https://github.com/aigc-apps/VideoX-Fun}},
+  note         = {Apache-2.0 for code and for the
+                  {Wan2.1-Fun-V1.1-1.3B-InP} weights, lineage traced to
+                  \cite{wan2025} 2026-10-18.  Start-end frame
+                  conditioning; evaluated as the pencil-test
+                  inbetweener in docs/planning/wan-fun-inp-poc.md.},
+}
+
+@misc{diffsynth2024,
+  title        = {{DiffSynth-Studio}},
+  author       = {{ModelScope}},
+  year         = {2024},
+  howpublished = {\url{https://github.com/modelscope/DiffSynth-Studio}},
+  note         = {Apache-2.0.  Supplies the {WanVideoPipeline} used to
+                  run both the ToonComposer and the Fun-InP spikes; its
+                  start/end mask layout matches Fun-InP's without
+                  modification.},
 }
 
 @article{xing2023dynamicrafter,
