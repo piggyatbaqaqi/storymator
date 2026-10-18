@@ -140,12 +140,21 @@ frames 0 and N−1. Never ship the model's version of a key.
 
 ## 6. The prompt question, answered by measurement
 
-Four prompts, same seed, same keys, same frame count, same steps:
+Four prompts were defined, each adding exactly one kind of information
+so the responsible kind could be isolated:
 
 - **A** `"Man running."`
 - **B** style only (blue col-erase pencil, white paper, pencil test, no colour)
 - **C** B + subject (top hat, tailcoat, bow tie, cane, profile, running right)
 - **D** C + action (legs through a full run cycle, arms and cane in opposition)
+
+**B was never run.** To keep the matrix inside the day's budget the easy
+pair was run at A and C and the hard pair at A and D, so the isolated
+effect of style language is inferred from §3 — the style holds under A,
+which leaves B nothing to add — and not measured. If §3 is ever
+doubted, B against A is the run that settles it.
+
+Same seed, same keys, same frame count, same steps throughout:
 
 **Before running these I had formed the answer that text conditioning
 would control content and style but not timing, so style would matter
