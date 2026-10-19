@@ -909,6 +909,16 @@ accepted sequence used the bare prompt.
 
 ---
 
+### 7a.8 Pass eight, 2026-10-19 — the ToonComposer 80 GB control
+
+Upstream's own configuration, whole model on a rented A100 80GB, fails
+sample 3 exactly as our block-swap rig does: **block swap is
+exonerated**, our runner matches upstream line for line, and the
+published `N_out.mp4` turn out not to have been written by the released
+demo (15 fps against `app.py`'s 20; frame counts the gallery cannot
+produce). 3.5 s/frame resident on the A100. Full record in §7b.3,
+*The 80 GB control*.
+
 ## 7b. Specification: how this project uses ToonComposer
 
 Written 2026-10-16, after the spike. Supersedes the loose treatment in
@@ -963,10 +973,12 @@ coloured"* — it is simply not the first milestone.
    tensors are bare and stay on the CPU. Any integration must pin them
    after `enable_vram_management` or fail with a device mismatch. §7a,
    third pass.
-2. **The sketch-injection path is not known to work under block swap,
-   which is the only configuration this hardware can run.** Restated
-   from "the last five frames are unreliable", which was too narrow.
-   See the retraction and the CFG 7.5 control below.
+2. **The sketch-injection path does not reproduce upstream's sample,
+   under any configuration tried** — including upstream's own, on an
+   80 GB A100. Block swap is *not* the cause; that hypothesis is
+   refuted by the 80 GB control below (2026-10-19). Restated twice:
+   first from "the last five frames are unreliable", then from "not
+   known to work under block swap".
 
 #### Retraction: the control was run at the wrong CFG
 
@@ -1081,7 +1093,9 @@ compare against the reference. If it matches, the fault is in the
 offload path and the §7a third-pass patch is insufficient. If it still
 diverges, the fault is in our conditioning code and is ours to find.
 The project already has `comfy-build` and `comfy-deploy` for rented
-hardware. Until that runs, **no claim about ToonComposer's output
+hardware. *(Corrected 2026-10-19: those serve ComfyUI workflows, and
+ToonComposer has no ComfyUI node yet; the control ran as a plain Modal
+function instead. See the 80 GB control below.)* Until that runs, **no claim about ToonComposer's output
 quality on this project's data is supportable** — including the ones
 §7a has already retracted once.
 
@@ -1093,6 +1107,123 @@ particular seed. The number ranked the washed-out run first. **It was
 an operator's eye that caught the third arm, and an operator's eye that
 caught the missing kneel.** The metric has now been wrong in both
 directions and should not be used as an arbiter again.
+
+#### The 80 GB control, 2026-10-19: block swap is exonerated
+
+**The hypothesis above is refuted.** The decisive experiment ran on a
+rented A100 80GB (Modal), and upstream's own configuration fails
+exactly as ours does.
+
+Two arms, one container image, one GPU class, both sample 3 at
+33 frames, cfg 7.5, residual 1.0, 15 steps, tiled, seed 42, the
+gallery's own prompt and frame indices:
+
+| arm | what it is | build | generate | s/frame | peak VRAM |
+|---|---|---|---|---|---|
+| **resident** | upstream's stock loader, `model.to(cuda, bf16)` as `app.py:236`, no vram management, no pin — nothing of ours on the model path | 341 s | 117 s | **3.53** | 48.5 GiB |
+| **swap** | `lowmem` + block swap at `persist 6e9` + the 330-tensor pin — the local control's rig | 1184 s | 202 s | **6.12** | 16.7 GiB |
+| local (CFG 7.5 control above) | RTX 5090 Laptop, same rig as *swap* | 20 s | 2307 s | 69.9 | 16.7 GiB |
+
+Stack: ToonComposer at `53dc3df` installed from its own
+`requirements.txt` (torch 2.8.0, diffsynth 1.1.7), Python 3.10 — not
+this machine's torch 2.14/cu130 — so the environment is a second
+variable the control removes.
+
+**What the frames show.** Resident and swap are nearly identical frame
+for frame, and both match the local control: the darkened elder, the
+child standing right of frame through f24, a washout at f28, and
+green noise with a regular lattice at f30–32 — exactly where the
+sketch is injected. The reference stays crisp and has the child
+leaning in by f16 and low beside the basket by f24. Monte's criterion
+— *does the child kneel?* — fails in all three of our rows. Montage:
+`montages/sample3_ref_local_resident_swap.png` in the archive below.
+
+**So, of §7b.3's three outcomes, it is the second:** the full-GPU run
+diverges, so the fault is not in the offload path. The pin is
+exonerated, and the integration defect (1) above remains a real but
+separate cost.
+
+**Our conditioning code is not the fault either, as far as can be
+checked.** The comparison was made against upstream, line for line:
+
+| checked | result |
+|---|---|
+| the helpers `run.py` lifted from `app.py` | AST-identical, all eight |
+| constructor kwargs | same derivation; the three `run.py` passes beyond `app.py`'s list (`lora_rank`, `lora_alpha`, `height`/`width`) equal the constructor defaults |
+| settings | cfg 7.5 and residual 1.0 are the sliders' defaults; seed, steps and `tiled=True` match `app.py`'s call |
+| prompt, frame count, sketch index | the gallery's `load_sample_data` config for sample 3, verbatim |
+| sketch mask | an empty editor layer gives an all-ones mask, which is what `run.py` passes |
+| adapter load | 404 of 404 tensors loaded, 0 unexpected, in every run |
+| `flash_attn` absent here | **my hypothesis, refuted.** Every call site passes `k_lens=None` and `context_lens` is always `None` at batch 1, so the SDPA fallback computes the same attention |
+
+**The Hugging Face Space was diffed too** (`f3b0f25`, 2025-08-17,
+three days older than GitHub's `53dc3df`). It is an earlier snapshot of
+the same code with research options still in it: temporal DeRA modes,
+an attention-visualisation hook, `use_local_lora`, and a PEFT LoRA path
+`app.py` defaults to. **None of it changes the computation for this
+checkpoint.** The snapshot config sets `train_architecture: ''`, the
+adapter holds no LoRA keys, and the other options are off. Sample
+inputs and `3_out.mp4` are byte-identical between the two. The Space
+itself is down (`RUNTIME_ERROR`, *"Scheduling failure"*), so it
+cannot be used to watch the authors' deployment produce the sample.
+
+**What does differ is where the reference came from.** `app.py`
+writes its output with `cv2.VideoWriter(..., 20.0, ...)`. All three
+published `N_out.mp4` are **15 fps**, and two have frame counts the
+gallery configs cannot produce:
+
+| sample | gallery config | `N_out.mp4` |
+|---|---|---|
+| 1 | 61 frames | 69 frames, 15 fps |
+| 2 | 61 frames | 33 frames, 15 fps |
+| 3 | 33 frames | 33 frames, 15 fps |
+
+**The published samples were not written by the released demo.**
+They come from a pipeline we do not have, with settings we do not
+know — and the repository also ships a Chinese `3_prompt.txt` where the
+gallery uses an English one, which may be a trace of it.
+
+**Standing, after this control:**
+
+| claim | status |
+|---|---|
+| block swap breaks the sketch-injection path (§7b.3, CFG 7.5 control) | **refuted** |
+| our conditioning code is at fault | **not supported** — matches upstream in every checked respect |
+| the released code + weights + gallery settings reproduce `3_out.mp4` | **refuted**, on upstream's own configuration |
+| ToonComposer's output quality on this project's data is judgeable | **still no** — we cannot yet make it reproduce its own sample |
+| a colour frame is required; output is painted (§7b.1) | stands; documentary, unaffected |
+| the integration needs the bare-parameter pin (defect 1) | stands |
+
+**Two practical numbers.** Upstream's stock loader peaked at
+**148 GiB** host RAM (the fp32 shards plus a fresh fp32 model), so it
+cannot run on this desktop at all; `lowmem`'s cast-on-read and
+assign-on-load build the same bf16 model in ~38–42 GiB. And on an
+A100 the whole-model path is **3.5 s/frame**: a 33-frame clip in
+two minutes, against 38 minutes here.
+
+**Open.** How `N_out.mp4` were produced: the question goes upstream as
+an issue (drafted, not yet filed). Until it is answered, ToonComposer
+stays where §7b.2 put it — colour stage only — with no quality
+judgement possible.
+
+**Cost.** About 35 GPU-minutes on Modal at ~$4.50/h for the A100,
+200 GiB and 8 cores, plus a CPU-only weight download: about $3 by
+arithmetic; Modal's dashboard has the real figure.
+
+**How this run nearly went wrong, recorded so it does not repeat.**
+A second session recovered a stale copy of the scratchpad runner and
+relaunched it while this one was mid-run; two ~35 GiB loads on a
+91 GiB desktop shared with a browser caused the 2026-10-14 and
+2026-10-16 OOM kills. Before resuming any spike, check the repo's
+history and `pgrep -af run.py`, and run long jobs in a memory-capped
+`systemd-run --user --scope`.
+
+**Artefacts:** `~/lab/storymator/spikes/tooncomposer-modal-2026-10-19/`
+— both arms' frames and logs, the local CFG 7.5 frames, the reference
+frames, the montage, the Modal runner (`modal_control.py`, `run.py`,
+`lowmem.py`), and the Space-vs-GitHub diffs. Not published: the
+reference frames are TencentARC's, and nothing here derives from the
+client corpus, but the archive stays out of tree with the others.
 
 ### 7b.4 What to build, when we build it
 

@@ -155,7 +155,7 @@ it had I applied it.
 | FILM (Google) | Apache-2.0 | **unstated** — Google Drive, no terms | yes | verify first; also TensorFlow 2 against our torch stack, and *"not an officially supported Google product"* |
 | **Wan2.x-Fun-InP 1.3B** | Apache-2.0 | Apache-2.0 | no — emits N frames evenly, and **never fewer than 9** | **unreliable**, 2026-10-18. One accepted sequence at 9 frames, but only 1 of 3 seeds at that same frame count; another gives two heads. More frames do not help — 13 and 17 are worse. Below 9 the VAE's 4:1 stride leaves no fully-interior latent, so no intermediate pose can exist. See [wan-fun-inp-poc.md](wan-fun-inp-poc.md) |
 | Wan2.1 FLF2V 14B | Apache-2.0 | Apache-2.0 | no | too large, too slow |
-| ToonComposer | MIT | MIT | yes (frame indices) | colour stage only; needs ~42 GiB |
+| ToonComposer | MIT | MIT | yes (frame indices) | colour stage only; needs ~42 GiB VRAM resident (3.5 s/frame on an A100) or block swap here (70 s/frame). **Does not reproduce its own sample 3** on upstream's configuration, 2026-10-19 — block swap exonerated, origin of the published samples unknown. See [§7b.3](inking-and-tween-plugins.md) |
 | ~~FrameFusion~~ | Apache-2.0 | **CC BY-NC 4.0** | yes | **blocked** |
 | ~~Sketch-Simplification~~ | **non-commercial** | **CC non-commercial** | n/a | **blocked** — not MIT; the restriction covers the code too |
 | Tahoma2D cleanup | **BSD 3-Clause** | n/a (no model) | n/a | **prior art**, borrowable into GPL-3.0; no headless path; AI PRs refused upstream |
@@ -386,6 +386,12 @@ H100 rents for roughly $2–3/hour; the decisive experiment — sample 3
 with `model.to(device)` and no block swap — is one hour. It does not
 need saving up for; it needs scheduling.
 
+*Run 2026-10-19, on Modal: about $3, 35 GPU-minutes. It refuted the
+block-swap hypothesis — upstream's own configuration fails the same
+way — and found that the published samples were not produced by the
+released demo. See [inking-and-tween-plugins.md
+§7b.3](inking-and-tween-plugins.md).*
+
 **The proxy path costs nothing.** RIFE is small enough to run on the
 CPU and the corpus is already on disk. The next experiment — cleanups 1
 and 3 in, compare the middle against cleanup 2 — has no hardware cost
@@ -399,8 +405,10 @@ at all.
    and whether it ghosts the way §4.2 predicts. No GPU, no budget.
 2. **The exposure-sheet schema**, which the keystone promotes to the
    deliverable. Still blocked on the one open question in §13.1.
-3. **The 80 GB ToonComposer control**, when scheduled — it decides
-   whether ToonComposer is usable at all, on anyone's hardware, for
-   this project.
+3. ~~**The 80 GB ToonComposer control**~~ — **done 2026-10-19.** It did
+   not decide usability: the released code does not reproduce its own
+   sample 3 even on 80 GB, so the open item is now an **upstream issue**
+   asking how `3_out.mp4` was produced. ToonComposer stays colour-stage
+   only, with no quality judgement possible until that is answered.
 4. **Ask the RIFE author about training-data terms**, before it is
    anywhere near shipping.
