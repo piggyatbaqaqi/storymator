@@ -416,3 +416,87 @@ The generalisation: *ask what the drawing is for before deciding what
 counts as a good one.* A pencil test exists to show motion. Nothing
 measured on a single frame can see motion, so no single-frame measure —
 mine or a model's — can decide whether a pencil test is any good.
+
+---
+
+# N=13, and the seed check that matters more — 2026-10-18
+
+The retraction above predicted N=13 as the next run: two fully-interior
+latents, between the N=9 that works and the N=21 that drifts. Daniel
+asked for it. N=17 was added to fill the curve at three interior
+latents, and all of it ran at the accepted run's exact settings — bare
+prompt, 20 steps, cfg 6.0, 720×576.
+
+## The interior-latent dose–response does not hold
+
+| num_frames | interior latents | result, seed 0 |
+|---|---|---|
+| 5 | 0 | foot jumps and holds — structurally impossible |
+| **9** | **1** | **the one sequence Daniel accepts** |
+| 13 | 2 | front foot travels, but a spurious stick grows on the left through frames 1–6, and the figure shrinks and drifts through 7–11 before snapping back |
+| 17 | 3 | figure collapses into a squat through 1–5, then the back leg is **doubled** from 9 to 15 |
+| 21 | 4 | middle collapses entirely |
+
+So the interior-latent count explains the **floor** — below one interior
+latent no intermediate pose can exist — and nothing above it. Quality
+does not rise with latent capacity. **N=9 is a sweet spot, not the
+bottom of a rising curve**, and the hypothesis that drove this run is
+refuted.
+
+One honest note on method: reading the N=13 foot band, I recorded "the
+back leg dissolves into smoke". Opening the whole frames showed it was a
+**spurious second stick** growing on the left plus the figure drifting.
+The band crop is the right tool for *whether a part travels* and a bad
+one for *what the figure is doing*; §5 of the skill now says to use both
+views, and this is why.
+
+## The seed check, which is the real finding
+
+Three seeds at N=9 and N=13, everything else identical:
+
+| | seed 0 | seed 1 | seed 2 |
+|---|---|---|---|
+| **N=9** | **accepted by Daniel** | coherent, but the figure shrinks through 1–4 | **doubled figure** at 5–6: two heads |
+| **N=13** | spurious stick, scale wander | clean 0–4, then **catastrophic collapse** 7–10 | clean 0–8, degrades 9–11 |
+
+**No configuration is reliable.** The accepted sequence is one of three
+at its own frame count, and the other two at that same frame count fail
+— one of them with the exact two-heads defect that killed RIFE.
+
+This reframes the whole spike. §4's withdrawn claim was *the wrong
+frame count*; this is worse and more basic: **at the right frame count,
+with the right prompt, the model still fails most of the time.** A
+pencil test that needs a human to pick the good seed out of three is not
+an instrument, and §1 of the architecture asks for an instrument.
+
+Whether the accepted sequence was skill or luck is now a live question,
+and it was not asked before because a single good result was taken at
+face value — the same error as §4 in a different coat.
+
+## Where the failures sit
+
+Across the six sweep runs the severe defects cluster in the **last
+third, approaching the end key**: N=9 s2 at 5–6 of 8, N=13 s1 at 7–10
+of 12, N=13 s2 at 9–11 of 12, N=17 at 9–15 of 16. Milder ones (shrink,
+spurious stick) cluster early.
+
+That is consistent with §5a, measured before any of this: the start
+frame gets CLIP features *and* the masked latent, the end frame gets
+only the latent, so adherence decays toward the end and the model loses
+the thread just before it has to arrive. It is the same asymmetry seen
+twice now from different directions, and it suggests the useful
+experiment is **generating backwards as well as forwards and keeping
+whichever half is nearer its key** — untested, and cheap.
+
+## Status
+
+- **N=13 is not an improvement.** It produces travel; it does not fix
+  the figure.
+- **N=9 stays the only frame count with an accepted result**, now known
+  to be unreliable at that frame count.
+- The longest clean run observed anywhere in this spike is N=13 seed 2,
+  frames 0–8, which is nine consecutive usable frames. Whether those
+  nine satisfy the travel criterion is **Daniel's call, not mine** — my
+  reading of exactly this question has been wrong once already.
+
+Montages and every frame: `~/lab/storymator/spikes/wan-fun-inp-2026-10-18/n13-sweep/`.
