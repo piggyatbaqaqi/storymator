@@ -1,0 +1,264 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "v1-5-pruned-emaonly-fp16.safetensors"
+    },
+    "_meta": {
+      "title": "Checkpoint (SD1.5)"
+    }
+  },
+  "2": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "a cartoon character, full body, clean cel shading, flat colours, red jacket, blue trousers, brown hair, crisp black outlines",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "_meta": {
+      "title": "Character prompt"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "background: a sunny city street, brick buildings, blue sky, soft afternoon light, painted animation background",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "_meta": {
+      "title": "Background prompt"
+    }
+  },
+  "4": {
+    "class_type": "ConditioningConcat",
+    "inputs": {
+      "conditioning_to": [
+        "2",
+        0
+      ],
+      "conditioning_from": [
+        "3",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Character + background"
+    }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "lowres, blurry, extra limbs, deformed hands, sketch, monochrome, greyscale, text, watermark, signature",
+      "clip": [
+        "1",
+        1
+      ]
+    },
+    "_meta": {
+      "title": "Negative prompt"
+    }
+  },
+  "6": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "character_clean.png"
+    },
+    "_meta": {
+      "title": "Load drawing"
+    }
+  },
+  "7": {
+    "class_type": "ImageScaleToTotalPixels",
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 0.4,
+      "resolution_steps": 8,
+      "image": [
+        "6",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Scale to SD1.5 size"
+    }
+  },
+  "8": {
+    "class_type": "GetImageSize",
+    "inputs": {
+      "image": [
+        "7",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Drawing size"
+    }
+  },
+  "9": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": [
+        "8",
+        0
+      ],
+      "height": [
+        "8",
+        1
+      ],
+      "batch_size": 1
+    },
+    "_meta": {
+      "title": "Latent (drawing size)"
+    }
+  },
+  "10": {
+    "class_type": "ImageInvert",
+    "inputs": {
+      "image": [
+        "7",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Invert (lines -> white on black)"
+    }
+  },
+  "11": {
+    "class_type": "ControlNetLoader",
+    "inputs": {
+      "control_net_name": "control_v11p_sd15_lineart_fp16.safetensors"
+    },
+    "_meta": {
+      "title": "ControlNet lineart"
+    }
+  },
+  "12": {
+    "class_type": "ControlNetApplyAdvanced",
+    "inputs": {
+      "strength": 1.0,
+      "start_percent": 0.0,
+      "end_percent": 0.8,
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "control_net": [
+        "11",
+        0
+      ],
+      "image": [
+        "10",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Apply lineart"
+    }
+  },
+  "13": {
+    "class_type": "Canny",
+    "inputs": {
+      "low_threshold": 0.4,
+      "high_threshold": 0.8,
+      "image": [
+        "7",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Canny edges"
+    }
+  },
+  "16": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 20261019,
+      "steps": 25,
+      "cfg": 7.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "12",
+        0
+      ],
+      "negative": [
+        "12",
+        1
+      ],
+      "latent_image": [
+        "9",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Sampler"
+    }
+  },
+  "17": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "16",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "_meta": {
+      "title": "Decode"
+    }
+  },
+  "18": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "lineart_colour/char",
+      "images": [
+        "17",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Save"
+    }
+  },
+  "19": {
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "10",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "What lineart sees"
+    }
+  },
+  "20": {
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "What canny sees"
+    }
+  }
+}
