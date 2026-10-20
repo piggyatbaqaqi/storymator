@@ -2,12 +2,15 @@
 
 usage: python gen_lineart_colour.py UI_OUT.json API_OUT.json
 """
+from __future__ import annotations
+
 import json
 import sys
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
-CKPT = "v1-5-pruned-emaonly-fp16.safetensors"
-CN_LINEART = "control_v11p_sd15_lineart_fp16.safetensors"
-CN_CANNY = "control_v11p_sd15_canny_fp16.safetensors"
+CKPT: str = "v1-5-pruned-emaonly-fp16.safetensors"
+CN_LINEART: str = "control_v11p_sd15_lineart_fp16.safetensors"
+CN_CANNY: str = "control_v11p_sd15_canny_fp16.safetensors"
 
 CHARACTER = ("a cartoon character, full body, clean cel shading, flat colours, "
              "red jacket, blue trousers, brown hair, crisp black outlines")
@@ -35,10 +38,18 @@ accepted in storymator LICENSES.md (2026-10-13).
 
 # id: (type, title, pos, size, widgets, inputs{name: (type, src)}, outputs[(name,type)], mode)
 # src is (node_id, out_slot) or None; widget-inputs are flagged with "widget".
-N = {}
+# An input spec is (name, type, src) or (name, type, src, "widget"), so the
+# tuples are deliberately ragged; see the comment above.
+InputSpec = Tuple[Any, ...]
+OutputSpec = Tuple[str, str]
+Source = Optional[Tuple[int, int]]
+
+N: Dict[int, Dict[str, Any]] = {}
 
 
-def node(nid, typ, title, pos, size, widgets, inputs=(), outputs=(), mode=0):
+def node(nid: int, typ: str, title: str, pos: List[int], size: List[int],
+         widgets: List[Any], inputs: Sequence[InputSpec] = (),
+         outputs: Sequence[OutputSpec] = (), mode: int = 0) -> None:
     N[nid] = dict(type=typ, title=title, pos=pos, size=size, widgets=widgets,
                   inputs=list(inputs), outputs=list(outputs), mode=mode)
 
@@ -101,18 +112,20 @@ node(20, "PreviewImage", "What canny sees", [1380, 860], [300, 300], [],
      inputs=[("images", "IMAGE", (13, 0))])
 node(21, "MarkdownNote", "Read me", [0, 900], [620, 420], [NOTE])
 
-OPTIONAL = {"vae"}
+OPTIONAL: Set[str] = {"vae"}
 
 
-def build_ui():
-    links, link_id = [], 0
-    out_links = {(nid, s): [] for nid, n in N.items() for s in range(len(n["outputs"]))}
-    ui_nodes = []
+def build_ui() -> Dict[str, Any]:
+    links: List[List[Any]] = []
+    link_id: int = 0
+    out_links: Dict[Tuple[int, int], List[int]] = {
+        (nid, s): [] for nid, n in N.items() for s in range(len(n["outputs"]))}
+    ui_nodes: List[Dict[str, Any]] = []
     for order, (nid, n) in enumerate(sorted(N.items())):
-        ins = []
+        ins: List[Dict[str, Any]] = []
         for spec in n["inputs"]:
             name, typ, src = spec[0], spec[1], spec[2]
-            entry = {"name": name, "type": typ, "link": None}
+            entry: Dict[str, Any] = {"name": name, "type": typ, "link": None}
             if name in OPTIONAL:
                 entry["shape"] = 7
             if len(spec) > 3:
@@ -148,7 +161,7 @@ def build_ui():
 
 # widget names in widgets_values order (UI-only "control_after_generate" and the
 # LoadImage "upload" entry are skipped when building API inputs)
-WIDGETS = {
+WIDGETS: Dict[str, List[Optional[str]]] = {
     "CheckpointLoaderSimple": ["ckpt_name"],
     "CLIPTextEncode": ["text"],
     "LoadImage": ["image", None],
@@ -162,9 +175,9 @@ WIDGETS = {
 }
 
 
-def build_api():
+def build_api() -> Dict[str, Dict[str, Any]]:
     """API prompt as the frontend would submit it: notes dropped, bypass spliced."""
-    def resolve(src):
+    def resolve(src: Tuple[int, int]) -> List[Any]:
         sn, ss = src
         if N[sn]["mode"] == 4:  # bypass: pass the first same-typed input through
             typ = N[sn]["outputs"][ss][1]
@@ -172,11 +185,11 @@ def build_api():
             return resolve(same[ss][2] if len(same) > ss else same[0][2])
         return [str(sn), ss]
 
-    api = {}
+    api: Dict[str, Dict[str, Any]] = {}
     for nid, n in N.items():
         if n["type"] == "MarkdownNote" or n["mode"] == 4:
             continue
-        inputs = {}
+        inputs: Dict[str, Any] = {}
         for name, val in zip(WIDGETS.get(n["type"], []), n["widgets"]):
             if name:
                 inputs[name] = val
@@ -186,8 +199,9 @@ def build_api():
         api[str(nid)] = {"class_type": n["type"], "inputs": inputs,
                          "_meta": {"title": n["title"]}}
     # prune nodes not reachable from an output node
-    outputs = {"SaveImage", "PreviewImage"}
-    keep, stack = set(), [k for k, v in api.items() if v["class_type"] in outputs]
+    outputs: Set[str] = {"SaveImage", "PreviewImage"}
+    keep: Set[str] = set()
+    stack: List[str] = [k for k, v in api.items() if v["class_type"] in outputs]
     while stack:
         k = stack.pop()
         if k in keep:
@@ -197,11 +211,16 @@ def build_api():
     return {k: v for k, v in api.items() if k in keep}
 
 
-if __name__ == "__main__":
-    ui_path, api_path = sys.argv[1], sys.argv[2]
+def main(argv: Sequence[str]) -> int:
+    ui_path, api_path = argv[1], argv[2]
     with open(ui_path, "w") as f:
         json.dump(build_ui(), f, indent=2)
         f.write("\n")
     with open(api_path, "w") as f:
         json.dump(build_api(), f, indent=2)
         f.write("\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))
