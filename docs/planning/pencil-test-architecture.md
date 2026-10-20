@@ -408,7 +408,8 @@ at all.
 3. ~~**The 80 GB ToonComposer control**~~ — **done 2026-10-19.** It did
    not decide usability: the released code does not reproduce its own
    sample 3 even on 80 GB, so the open item is now an **upstream issue**
-   asking how `3_out.mp4` was produced. ToonComposer stays colour-stage
+   asking how `3_out.mp4` was produced — filed 2026-10-19 as
+   [TencentARC/ToonComposer#19](https://github.com/TencentARC/ToonComposer/issues/19). ToonComposer stays colour-stage
    only, with no quality judgement possible until that is answered.
 4. **Ask the RIFE author about training-data terms**, before it is
    anywhere near shipping.

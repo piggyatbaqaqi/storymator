@@ -917,7 +917,8 @@ exonerated**, our runner matches upstream line for line, and the
 published `N_out.mp4` turn out not to have been written by the released
 demo (15 fps against `app.py`'s 20; frame counts the gallery cannot
 produce). 3.5 s/frame resident on the A100. Full record in §7b.3,
-*The 80 GB control*.
+*The 80 GB control*; asked upstream as
+[TencentARC/ToonComposer#19](https://github.com/TencentARC/ToonComposer/issues/19).
 
 ## 7b. Specification: how this project uses ToonComposer
 
@@ -1201,8 +1202,11 @@ assign-on-load build the same bf16 model in ~38–42 GiB. And on an
 A100 the whole-model path is **3.5 s/frame**: a 33-frame clip in
 two minutes, against 38 minutes here.
 
-**Open.** How `N_out.mp4` were produced: the question goes upstream as
-an issue (drafted, not yet filed). Until it is answered, ToonComposer
+**Open.** How `N_out.mp4` were produced: filed upstream 2026-10-19 as
+[TencentARC/ToonComposer#19](https://github.com/TencentARC/ToonComposer/issues/19);
+the text as filed and its montage are in
+[docs/bugs/tooncomposer/](../bugs/tooncomposer/upstream-issue-tooncomposer.md).
+Until it is answered, ToonComposer
 stays where §7b.2 put it — colour stage only — with no quality
 judgement possible.
 
