@@ -84,9 +84,22 @@ merge with untraced ancestry underneath it.
 
 The session that built it ran in a VS Code window opened on the
 **pinball** directory, so Claude Code filed it under the pinball project
-and its scratchpad landed in `/tmp` under a pinball path. Nothing was
-committed to either repo. The only copy of a working artefact sat in a
-temporary directory belonging to a session that was about to be retired.
+and its scratchpad landed in `/tmp` under a pinball path.
+
+**Correction, 2026-10-20.** This section first said "nothing was
+committed to either repo". That is wrong, and the commit that rescued
+these files repeats the error. The UI workflow *was* committed, as
+`965935d` at 16:14 on 2026-10-19, to
+`user/default/workflows/Lineart Colour.json` — the ComfyUI user
+directory, which is a symlink into this repo, so saving from the UI
+lands in git. I missed it because I checked with
+`git log --since=... | head -5` and it was the sixth line.
+
+What was genuinely uncommitted, and genuinely only in `/tmp`, was the
+**generator** — plus the API twin and the example drawing. Those are the
+source of truth; the committed JSON was an output of a script nobody
+else had. So the rescue was still worth doing, but "the only copy of a
+working artefact" overstated it.
 
 The same directory confusion caused the OOM recorded in the
 `tooncomposer-spike-oom` memory. Second time; worth a rule.
@@ -94,6 +107,21 @@ The same directory confusion caused the OOM recorded in the
 **Rule:** a spike that produces an artefact someone will want again —
 a workflow, a config, a generator — gets committed before the session
 ends. The scratchpad is for intermediates, not for results.
+
+## 5a. There are now two copies, and they will drift
+
+| path | what it is |
+|---|---|
+| `user/default/workflows/Lineart Colour.json` | what ComfyUI lists in its workflow menu; `ComfyUI/user` symlinks here |
+| `comfyui/workflows/lineart_colour_workflow.json` | generated, and guarded by `gen_lineart_colour_test.py` |
+
+Byte-identical as of 2026-10-20, and nothing keeps them that way. Only
+the second is checked against the generator, so an edit saved from the
+ComfyUI UI changes the first and no test notices.
+
+Unresolved. The options are to let the test guard both, to make one a
+symlink to the other, or to accept the duplication and say which one
+wins. Worth settling before someone edits on canvas and saves.
 
 ## 6. Open
 
