@@ -920,6 +920,18 @@ produce). 3.5 s/frame resident on the A100. Full record in §7b.3,
 *The 80 GB control*; asked upstream as
 [TencentARC/ToonComposer#19](https://github.com/TencentARC/ToonComposer/issues/19).
 
+### 7a.9 Pass nine, 2026-10-30 — RunningMan with the colour guide
+
+First run on our own drawings: ManRunCycle 1/3/5/7 plus the
+`char_00031_.png` colour key, 17 and 33 frames, block swap on the
+24 GB card. **Every 4-frame VAE latent that holds a sketch collapses to
+lattice noise. Every latent without one renders a coherent coloured
+figure.** Sample 3's 80 GB resident run shows the same latent-local
+signature, so #19's defect is in the sketch-injection path. No verdict
+on inbetweening yet: the drawn poses land only in the destroyed
+latents. Full record in
+[docs/experiments/2026-10-30-tooncomposer-runningman-first-color-run.md](../experiments/2026-10-30-tooncomposer-runningman-first-color-run.md).
+
 ## 7b. Specification: how this project uses ToonComposer
 
 Written 2026-10-16, after the spike. Supersedes the loose treatment in
