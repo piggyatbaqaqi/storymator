@@ -62,7 +62,8 @@ class AcmeColourDropout(io.ComfyNode):
                 white_level: float, mark_level: float) -> io.NodeOutput:
         grays, masks = [], []
         for frame in batch_to_numpy(image):
-            out = dropout_colour(frame, white_percentile, white_level)
+            out = dropout_colour(frame, white_percentile, white_level,
+                                 mark_level)
             grays.append(out.gray)
             masks.append(out.dropped)
         return io.NodeOutput(stack_to_tensor(grays),

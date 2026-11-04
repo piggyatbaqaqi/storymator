@@ -173,18 +173,12 @@ def test_rejects_out_of_range_settings(kwargs: dict[str, float]) -> None:
         dropout_colour(scene(), **kwargs)
 
 
-_MARK_LEVEL_PENDING = pytest.mark.xfail(
-    strict=True, reason="mark_level is accepted but not yet used")
-
-
-@_MARK_LEVEL_PENDING
 @pytest.mark.parametrize("mark_level", [0.0, 1.01])
 def test_rejects_out_of_range_mark_level(mark_level: float) -> None:
     with pytest.raises(ValueError):
         dropout_colour(scene(), mark_level=mark_level)
 
 
-@_MARK_LEVEL_PENDING
 def test_mark_level_decides_what_counts_as_dropped() -> None:
     """Non-photo blue's luminance is 0.837 of paper.  Below a 0.8 mark
     line it is no longer a mark, so it is whitened but not reported;
@@ -209,12 +203,16 @@ DIGIT = (slice(185, 265), slice(2594, 2634))   # the blue "1", upper right
 FACE = (slice(400, 900), slice(900, 1500))     # graphite head and hat
 
 
-@_MARK_LEVEL_PENDING
 def test_real_scan_drops_the_blue_digit_and_keeps_the_graphite() -> None:
     """Thresholds from the 2026-11-04 prototype.  At the 0.85 default
     the digit measures 356 of 392 marks rendered exactly white (91 %),
-    and the face keeps 99.1 % of its graphite as line -- both close to
-    their bounds, so a regression shows here first."""
+    close to its bound, so a regression shows here first.
+
+    Graphite is dark AND neutral.  Darkness alone also catches the
+    blue/cyan fringe along line edges -- 3 of the face's 16 238 pixels
+    darker than 0.6, e.g. RGB (139, 144, 212), are fringe and are
+    rightly whitened.  The neutral set is 15 271 pixels, none dropped
+    and 99.95 % kept as line."""
     assert RUN_CYCLE_SCAN.exists(), (
         f"reference scan {RUN_CYCLE_SCAN} is missing; set "
         "STORYMATOR_TRAINING_DATA to the training corpus")
@@ -230,6 +228,7 @@ def test_real_scan_drops_the_blue_digit_and_keeps_the_graphite() -> None:
     assert out.gray[DIGIT].min() > 0.5
     assert out.dropped[DIGIT][digit_marks].mean() >= 0.9
 
-    graphite = lum[FACE] < 0.6
+    spread = balanced.max(axis=2) - balanced.min(axis=2)
+    graphite = (lum[FACE] < 0.6) & (spread[FACE] < 0.2)
     assert (out.gray[FACE][graphite] < 0.88).mean() >= 0.99
     assert not out.dropped[FACE][graphite].any()

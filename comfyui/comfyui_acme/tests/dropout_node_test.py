@@ -60,8 +60,6 @@ def test_each_frame_is_balanced_against_its_own_paper() -> None:
     torch.testing.assert_close(image[0], image[1], atol=1e-5, rtol=0)
 
 
-@pytest.mark.xfail(strict=True,
-                   reason="mark_level is accepted but not yet used")
 def test_dropped_mask_follows_mark_level() -> None:
     """Non-photo blue (luminance 0.837 of paper) is whitened either
     way, but reported only when the mark line sits above it."""

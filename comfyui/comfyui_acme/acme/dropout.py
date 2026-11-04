@@ -84,6 +84,8 @@ def dropout_colour(rgb: np.ndarray, white_percentile: float = 90.0,
         raise ValueError(f"expected (H, W, C>=3), got shape {arr.shape}")
     if not 0.0 < white_level <= 1.0:
         raise ValueError(f"white_level {white_level} not in (0, 1]")
+    if not 0.0 < mark_level <= 1.0:
+        raise ValueError(f"mark_level {mark_level} not in (0, 1]")
     if not 0.0 <= white_percentile < 100.0:
         raise ValueError(
             f"white_percentile {white_percentile} not in [0, 100)")
@@ -95,5 +97,5 @@ def dropout_colour(rgb: np.ndarray, white_percentile: float = 90.0,
     balanced = np.clip(colour / white, 0.0, 1.0)
     gray = np.clip(balanced.max(axis=2) / white_level, 0.0, 1.0)
     lum = balanced @ _REC709
-    dropped = (lum < white_level) & (gray >= 1.0)
+    dropped = (lum < mark_level) & (gray >= 1.0)
     return DropoutResult(gray=gray, dropped=dropped, white=white)
