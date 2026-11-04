@@ -1,4 +1,5 @@
 from .capture import AcmeCapture
+from .dropout import AcmeColourDropout
 from .lens import AcmeCalibrateLens
 from .registration import (AcmeCalibration, AcmeCalibrationLoad,
                            AcmeCalibrationSave, AcmeDetectSheet,
@@ -15,6 +16,7 @@ PHASE_1 = [
     AcmeRegister,
     AcmeRegistrationReport,
     AcmeFilterByResidual,
+    AcmeColourDropout,
 ]
 
 __all__ = [c.__name__ for c in PHASE_1] + ["PHASE_1"]
