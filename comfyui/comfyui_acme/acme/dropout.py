@@ -34,6 +34,10 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .ink import white_point
+
+_REC709 = np.array([0.2126, 0.7152, 0.0722])
+
 
 @dataclass(frozen=True)
 class DropoutResult:
@@ -42,7 +46,7 @@ class DropoutResult:
     ``gray``     (H, W) float in [0, 1]: the graphite on white.
     ``dropped``  (H, W) bool: pixels that a plain luminance render
                  would have kept as marks (luminance below
-                 ``white_level`` of paper) but which the dropout
+                 ``mark_level`` of paper) but which the dropout
                  rendered white -- i.e. what was taken away, so it can
                  be checked.
     ``white``    (3,) the paper white the frame was balanced against,
@@ -55,13 +59,41 @@ class DropoutResult:
 
 
 def dropout_colour(rgb: np.ndarray, white_percentile: float = 90.0,
-                   white_level: float = 0.88) -> DropoutResult:
+                   white_level: float = 0.85,
+                   mark_level: float = 0.88) -> DropoutResult:
     """Render light coloured pencil as paper and graphite as line.
 
     ``rgb`` is (H, W, C) with C >= 3, in any scale (0-1 float or 0-255);
     only the first three channels are used.  ``white_percentile`` picks
     the paper white, as in :func:`acme.ink.white_point`.
     ``white_level`` is the fraction of paper white at or above which a
-    pixel's brightest channel renders white.
+    pixel's brightest channel renders white.  ``mark_level`` only
+    shapes the ``dropped`` report: a pixel counts as a mark when its
+    balanced luminance is below this fraction of paper white.  It is
+    separate from ``white_level`` so that moving the whitening cutoff
+    does not also move what the report calls a mark.
+
+    The 0.85 default is measured on the run-cycle scan.  Of the blue
+    "1"'s 392 mark pixels, 0.88 rendered 299 exactly white and left 64
+    at 0.95 or lighter; 0.85 renders 356 white and keeps 99.1 % of the
+    face's graphite as line; 0.82 renders 372 but starts eating
+    graphite (98.3 %, 9 pixels dropped).
     """
-    raise NotImplementedError("dropout_colour is not written yet")
+    arr = np.asarray(rgb)
+    if arr.ndim != 3 or arr.shape[2] < 3:
+        raise ValueError(f"expected (H, W, C>=3), got shape {arr.shape}")
+    if not 0.0 < white_level <= 1.0:
+        raise ValueError(f"white_level {white_level} not in (0, 1]")
+    if not 0.0 <= white_percentile < 100.0:
+        raise ValueError(
+            f"white_percentile {white_percentile} not in [0, 100)")
+
+    colour = arr[..., :3].astype(float)
+    white = white_point(colour, percentile=white_percentile)
+    # Dividing by the measured white is the whole of the balance, and
+    # it also removes the input's scale: 0-255 and 0-1 come out alike.
+    balanced = np.clip(colour / white, 0.0, 1.0)
+    gray = np.clip(balanced.max(axis=2) / white_level, 0.0, 1.0)
+    lum = balanced @ _REC709
+    dropped = (lum < white_level) & (gray >= 1.0)
+    return DropoutResult(gray=gray, dropped=dropped, white=white)

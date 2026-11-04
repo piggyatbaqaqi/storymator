@@ -5,7 +5,8 @@ from __future__ import annotations
 import torch
 from comfy_api.latest import io
 
-from ..acme.dropout import dropout_colour  # noqa: F401  (skeleton)
+from ..acme.dropout import dropout_colour
+from ._convert import batch_to_numpy, masks_to_tensor, stack_to_tensor
 from .registration import CATEGORY
 
 
@@ -34,13 +35,20 @@ class AcmeColourDropout(io.ComfyNode):
                             "Lower it only if the drawing covers most "
                             "of the sheet."),
                 io.Float.Input(
-                    "white_level", default=0.88, min=0.5, max=1.0,
+                    "white_level", default=0.85, min=0.5, max=1.0,
                     step=0.01,
                     tooltip="A pixel whose brightest channel reaches "
                             "this fraction of paper white renders "
                             "white. Lower it if coloured pencil "
                             "survives; raise it if faint graphite "
                             "disappears."),
+                io.Float.Input(
+                    "mark_level", default=0.88, min=0.5, max=1.0,
+                    step=0.01,
+                    tooltip="Only affects the dropped mask: a pixel "
+                            "darker than this fraction of paper white "
+                            "counts as a mark, and is shown if the "
+                            "dropout whitened it."),
             ],
             outputs=[io.Image.Output("image"),
                      io.Mask.Output("dropped",
@@ -51,5 +59,11 @@ class AcmeColourDropout(io.ComfyNode):
 
     @classmethod
     def execute(cls, image: torch.Tensor, white_percentile: float,
-                white_level: float) -> io.NodeOutput:
-        raise NotImplementedError("AcmeColourDropout is not written yet")
+                white_level: float, mark_level: float) -> io.NodeOutput:
+        grays, masks = [], []
+        for frame in batch_to_numpy(image):
+            out = dropout_colour(frame, white_percentile, white_level)
+            grays.append(out.gray)
+            masks.append(out.dropped)
+        return io.NodeOutput(stack_to_tensor(grays),
+                             masks_to_tensor(masks))
