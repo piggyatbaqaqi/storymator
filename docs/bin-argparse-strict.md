@@ -67,9 +67,35 @@ Each parameter resolves in this order:
 cannot collide in a shared shell: `COLOUR_DROPOUT_WHITE_LEVEL`,
 `BIG_GREEN_BUTTON_<NAME>`, `STORYMATOR_BACKUP_KEEP`, `COMFYUI_TEMP`.
 
-`fixes/prune-duplicate-captures` is exempt from the environment layer. It
-is a one-off, and its only flag is a safety switch, which should be typed
-where it can be seen rather than inherited from a shell.
+Tools get the environment layer from `bin/env_flags.py`, one call at the
+end of `build_parser()`:
+
+```python
+apply_env(ap, "MEASURE_INK", exempt={"peg"})
+```
+
+Every optional flag then reads `<PREFIX>_<DEST>`, so a flag added later
+is covered without anyone remembering to. A bad value exits 2 and names
+the variable; an empty one counts as unset. Booleans read
+`1/true/yes/on` and `0/false/no/off`. Positional arguments have no
+variable.
+
+### Exemptions
+
+`apply_env` raises on a repeatable flag unless it is exempted by name, so
+leaving a flag out is always a decision somebody made:
+
+| Flag | Why |
+|---|---|
+| `measure-ink --peg`, `collect-captures --kind` | Repeatable: argparse appends to its default, so the command line could not replace the environment's value |
+| `collect-captures --dry-run`, `--allow-duplicates`, `colour-dropout --overwrite` | Safety switches, which should be typed where they can be seen |
+| `collect-captures --note`, `--frame-note` | Data labels: a stale variable would silently mislabel new captures |
+| `measure-punch-tolerance --self-test` | Picks what the tool does: a stale variable would skip the real work |
+| `collect-captures --temp`, `--out` | Already read `COMFYUI_TEMP` and `CAPTURE_CORPUS` |
+| `colour-dropout --dropped` | An output path for one run |
+
+`fixes/prune-duplicate-captures` has no environment layer at all. It is a
+one-off, and its only flag is a safety switch.
 
 ## The passthrough escape hatch
 
@@ -88,13 +114,15 @@ on it.
 
 ## Enforcement
 
-`bin/argparse_strict_test.py` has two guards over every Python tool in
+`bin/argparse_strict_test.py` has three guards over every Python tool in
 `bin/` and `fixes/`. Tools are extensionless and hyphenated, so they are
 found by shebang; bash tools and `*_test.py` are left out.
 
 - **static** — AST-walks each tool: any `parse_known_args` *call*
   (comments ignored) without the pragma fails, and so does a tool that
   never calls argparse at all.
+- **environment** — each tool must call `apply_env`, except
+  `fixes/prune-duplicate-captures`.
 - **behavioral** — launches each tool with a bogus flag and asserts exit
   2. It first confirms statically that the tool parses with argparse,
   because a lenient tool handed a bogus flag runs for real. Timeouts and
@@ -106,10 +134,8 @@ argument loop, as `bin/backup-storymator` does.
 
 ## Outstanding
 
-- These have no environment layer, or only part of one, and are to be
-  migrated: `bin/make-peg-targets`, `bin/measure-ink`,
-  `bin/measure-punch-tolerance`, `bin/score-focus`, and
-  `bin/collect-captures` (2 of its 9 flags).
+- `bin/big-green-button` still has its own `env_default`, which honours
+  an empty variable where `apply_env` treats it as unset.
 
 ## Out of scope
 
