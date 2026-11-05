@@ -17,6 +17,8 @@ import pytest
 from env_flags import apply_env
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
+
+
 def parser_with_flags() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("frame", nargs="?")
