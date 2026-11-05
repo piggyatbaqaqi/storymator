@@ -48,7 +48,9 @@ class DropoutResult:
                  would have kept as marks (luminance below
                  ``mark_level`` of paper) but which the dropout
                  rendered white -- i.e. what was taken away, so it can
-                 be checked.
+                 be checked.  Read it as "what was whitened", not
+                 "where the colour was": on the run-cycle scan 59 % of
+                 it lies within 2 px of dark graphite, along line edges.
     ``white``    (3,) the paper white the frame was balanced against,
                  in the input's own units.
     """
