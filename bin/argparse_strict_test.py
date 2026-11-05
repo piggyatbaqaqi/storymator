@@ -11,6 +11,7 @@ import ast
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -46,6 +47,14 @@ def unpragmaed_calls(source: str) -> list[int]:
     return bad
 
 
+def calls_apply_env(source: str) -> bool:
+    """True when the source calls env_flags.apply_env."""
+    return any(isinstance(node, ast.Call)
+               and isinstance(node.func, ast.Name)
+               and node.func.id == "apply_env"
+               for node in ast.walk(ast.parse(source)))
+
+
 def uses_argparse(source: str) -> bool:
     """True when the source calls parse_args or a marked passthrough."""
     return any(isinstance(node, ast.Call)
@@ -55,6 +64,26 @@ def uses_argparse(source: str) -> bool:
 
 
 TOOLS = [pytest.param(path, id=path.name) for path in discover()]
+# Exempt from the environment layer: see docs/bin-argparse-strict.md.
+NO_ENV_LAYER = {"prune-duplicate-captures"}
+# Still to migrate to apply_env.
+ENV_PENDING = {"make-peg-targets", "measure-ink", "measure-punch-tolerance",
+               "score-focus", "collect-captures", "colour-dropout",
+               "big-green-button"}
+
+
+def env_cases() -> list[Any]:
+    """Tools owing an environment layer, strict xfail where pending."""
+    cases = []
+    for path in discover():
+        if path.name in NO_ENV_LAYER:
+            continue
+        marks = []
+        if path.name in ENV_PENDING:
+            marks = [pytest.mark.xfail(strict=True,
+                                       reason="not migrated to apply_env")]
+        cases.append(pytest.param(path, id=path.name, marks=marks))
+    return cases
 
 
 def test_discovery_finds_both_directories_and_skips_bash() -> None:
@@ -80,6 +109,16 @@ def test_guard_allows_marked_calls_and_ignores_comments(source: str) -> None:
 def test_argparse_detection_sees_through_hand_rolled_checks() -> None:
     assert uses_argparse("args = ap.parse_args(argv)\n")
     assert not uses_argparse('dry = "--dry-run" in argv\n')
+
+
+def test_apply_env_detection() -> None:
+    assert calls_apply_env('apply_env(ap, "TOOL")\n')
+    assert not calls_apply_env("# apply_env is only mentioned here\n")
+
+
+@pytest.mark.parametrize("path", env_cases())
+def test_tool_has_an_environment_layer(path: Path) -> None:
+    assert calls_apply_env(path.read_text())
 
 
 @pytest.mark.parametrize("path", TOOLS)
