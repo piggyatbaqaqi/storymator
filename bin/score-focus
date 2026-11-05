@@ -13,20 +13,31 @@ Scores the CENTRE of the frame only, because that is where the subject
 is and because a wide shot's periphery can be sharp while the subject
 is not.  Reports the 10-90 edge rise too: that is the number to drive
 to 1-2 px, and it is what a Laplacian score cannot tell you directly.
+
+Options can also be set as SCORE_FOCUS_<OPTION>: see
+docs/bin-argparse-strict.md.
 """
 import argparse
 import re
 import sys
+from typing import Sequence
 
 import numpy as np
 
+from env_flags import apply_env
 
-def main():
+
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("frames", nargs="+")
     ap.add_argument("--box", type=int, default=400,
                     help="centre crop side in px (default 400)")
-    a = ap.parse_args()
+    apply_env(ap, "SCORE_FOCUS")
+    return ap
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    a = build_parser().parse_args(argv)
     try:
         import cv2
     except ModuleNotFoundError:

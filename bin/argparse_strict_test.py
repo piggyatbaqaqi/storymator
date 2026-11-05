@@ -67,8 +67,9 @@ TOOLS = [pytest.param(path, id=path.name) for path in discover()]
 # Exempt from the environment layer: see docs/bin-argparse-strict.md.
 NO_ENV_LAYER = {"prune-duplicate-captures"}
 # Still to migrate to apply_env.
-ENV_PENDING = {"make-peg-targets", "measure-ink", "measure-punch-tolerance",
-               "score-focus", "collect-captures", "colour-dropout",
+ENV_PENDING = {"make-peg-targets", "measure-ink",
+               "measure-punch-tolerance",
+               "collect-captures", "colour-dropout",
                "big-green-button"}
 
 
