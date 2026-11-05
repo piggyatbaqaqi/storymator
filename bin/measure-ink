@@ -23,6 +23,9 @@ it straight into one with --into.
 The numbers are a property of *camera plus ink*, not of the ink alone.
 Paper-referencing removes the illuminant but not the sensor, so a
 different camera wants its own frame through here.
+
+Options can also be set as MEASURE_INK_<OPTION>: see
+docs/bin-argparse-strict.md.
 """
 
 from __future__ import annotations
@@ -36,6 +39,8 @@ from typing import List, Tuple
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+
+from env_flags import apply_env
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -59,7 +64,7 @@ def peg(text: str) -> Tuple[int, int]:
             f"--peg wants x,y in pixels, not {text!r}")
 
 
-def main(argv: List[str] = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("frame", help="a capture with the pegs marked")
     ap.add_argument("--peg", type=peg, action="append",
@@ -79,7 +84,12 @@ def main(argv: List[str] = None) -> int:
                          "carries the paper's bow")
     ap.add_argument("--into", default=None,
                     help="a calibration JSON to write the block into")
-    args = ap.parse_args(argv)
+    apply_env(ap, "MEASURE_INK", exempt={"peg"})
+    return ap
+
+
+def main(argv: List[str] = None) -> int:
+    args = build_parser().parse_args(argv)
 
     rgb = np.asarray(Image.open(args.frame).convert("RGB"), dtype=float)
     pegs, radius = args.peg, args.radius
