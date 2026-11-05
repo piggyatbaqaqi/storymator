@@ -38,7 +38,7 @@ import datetime
 import json
 import os
 import sys
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -390,7 +390,7 @@ def serial_filename(out: str, serial: str) -> str:
     return out if serial in os.path.basename(stem) else f"{stem}-{serial}{ext}"
 
 
-def _font(size_px: int):
+def _font(size_px: int) -> Any:
     from PIL import ImageFont
     for path in ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
                  "/usr/share/fonts/TTF/DejaVuSans.ttf",
@@ -570,7 +570,7 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
-def main(argv=None) -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(argv)
 
     try:

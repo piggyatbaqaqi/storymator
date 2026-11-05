@@ -330,7 +330,8 @@ def report(sheets: List[Sheet], dpi: float) -> str:
         "-" * 70,
     ]
 
-    def row(label, values, unit, note, scale=1.0):
+    def row(label: str, values: List[float], unit: str, note: str,
+            scale: float = 1.0) -> None:
         m, s, r = spread([v * scale for v in values])
         lines.append(f"{label:<16}{m:>12.4f}{s:>12.4f}{r:>12.4f}   "
                      f"{unit}  {note}")

@@ -39,7 +39,7 @@ import os
 import re
 import shutil
 import sys
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
 from PIL import Image
@@ -99,7 +99,7 @@ def already_collected(out_root: str) -> Dict[str, str]:
     way.  Hashing what is already held makes a second collect pick up
     only what is genuinely new, which is what anyone actually means.
     """
-    held = {}
+    held: Dict[str, str] = {}
     for manifest in glob.glob(os.path.join(out_root, "*", "manifest.json")):
         try:
             with open(manifest) as fh:
@@ -185,8 +185,9 @@ def collect(temp: str, out_root: str, session: str, note: str,
     start = next_index(target, session)
     for index, (path, kind) in enumerate(found, start=start):
         stem = f"{session}_{index:03d}"
-        record = {"file": stem + os.path.splitext(path)[1],
-                  "kind": kind, "source": os.path.basename(path)}
+        record: Dict[str, Any] = {
+            "file": stem + os.path.splitext(path)[1],
+            "kind": kind, "source": os.path.basename(path)}
         record.update(describe(path))
         if frame_note:
             record["notes"] = {"note": frame_note}
@@ -251,7 +252,7 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
-def main(argv=None) -> int:
+def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     since = (None if args.since_minutes is None
              else datetime.datetime.now().timestamp() - args.since_minutes*60)
