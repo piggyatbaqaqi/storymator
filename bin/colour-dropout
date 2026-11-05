@@ -23,19 +23,129 @@ migrated when those land.
 
 from __future__ import annotations
 
+import argparse
+import inspect
 import os
 import sys
-from typing import Sequence
+from typing import Optional, Sequence
+
+import numpy as np
+from PIL import Image, ImageOps
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "comfyui", "comfyui_acme"))
 
-from acme.dropout import dropout_colour          # noqa: E402,F401  (skeleton)
+from acme.dropout import dropout_colour          # noqa: E402
+
+ENV_PREFIX = "COLOUR_DROPOUT_"
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("input", help="the image to read")
+    ap.add_argument("output", help="where to write graphite on white")
+    ap.add_argument("--white-percentile", type=float, default=None,
+                    help="brightness percentile taken as the paper "
+                         f"(default {_library_default('white_percentile')})")
+    ap.add_argument("--white-level", type=float, default=None,
+                    help="fraction of paper white at or above which a "
+                         "pixel's brightest channel renders white "
+                         f"(default {_library_default('white_level')})")
+    ap.add_argument("--mark-level", type=float, default=None,
+                    help="only affects --dropped: luminance below this "
+                         "fraction of paper white counts as a mark "
+                         f"(default {_library_default('mark_level')})")
+    ap.add_argument("--dropped", default=None, metavar="PATH",
+                    help="also write a mask of the marks that were whitened")
+    ap.add_argument("--overwrite", action="store_true",
+                    help="replace files that already exist")
+    return ap
+
+
+def _library_default(name: str) -> float:
+    """One set of defaults: the library's, which the node mirrors."""
+    default = inspect.signature(dropout_colour).parameters[name].default
+    return float(default)
+
+
+def _setting(name: str, given: Optional[float]) -> float:
+    """CLI, then the environment, then the library's default."""
+    if given is not None:
+        return given
+    variable = ENV_PREFIX + name.upper()
+    text = os.environ.get(variable)
+    if text is None:
+        return _library_default(name)
+    try:
+        return float(text)
+    except ValueError:
+        raise ValueError(f"{variable}={text!r} is not a number") from None
+
+
+def _read(path: str) -> np.ndarray:
+    """(H, W, 3) floats in 0-1, upright, as LoadImage hands the node."""
+    with Image.open(path) as image:
+        # Pillow's conversion clips these to white: a blank page, and
+        # nothing to say anything went wrong.
+        if image.mode.startswith(("I", "F")):
+            raise ValueError(f"{image.mode} images are not supported; "
+                             "convert to 8 bits per channel first")
+        upright = ImageOps.exif_transpose(image).convert("RGB")
+    return np.asarray(upright, dtype=float) / 255.0
+
+
+def _refusal(output: str, mask: Optional[str],
+             overwrite: bool) -> Optional[str]:
+    """Why these paths must not be written, checked before any are."""
+    paths = [output] if mask is None else [output, mask]
+    if mask is not None and os.path.realpath(mask) == os.path.realpath(output):
+        return f"{output}: the output and --dropped are the same file"
+    if not overwrite:
+        for path in paths:
+            # lexists, so that a dangling link counts: writing through
+            # it would create the file it names.
+            if os.path.lexists(path):
+                return f"{path}: already exists; use --overwrite to replace it"
+    return None
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    raise NotImplementedError("colour-dropout is not written yet")
+    args = build_parser().parse_args(argv)
+    try:
+        settings = {name: _setting(name, getattr(args, name))
+                    for name in ("white_percentile", "white_level",
+                                 "mark_level")}
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    refusal = _refusal(args.output, args.dropped, args.overwrite)
+    if refusal is not None:
+        print(refusal, file=sys.stderr)
+        return 2
+
+    try:
+        rgb = _read(args.input)
+    except (OSError, ValueError) as exc:
+        print(f"{args.input}: {exc}", file=sys.stderr)
+        return 1
+    try:
+        result = dropout_colour(rgb, **settings)
+    except ValueError as exc:
+        print(f"{args.input}: {exc}", file=sys.stderr)
+        return 2
+
+    gray = np.round(result.gray * 255.0).astype(np.uint8)
+    written = [(args.output, gray)]
+    if args.dropped is not None:
+        written.append((args.dropped, result.dropped.astype(np.uint8) * 255))
+    for path, pixels in written:
+        try:
+            Image.fromarray(pixels).save(path)
+        except (OSError, ValueError) as exc:
+            print(f"{path}: {exc}", file=sys.stderr)
+            return 1
+    return 0
 
 
 if __name__ == "__main__":

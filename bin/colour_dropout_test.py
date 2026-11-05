@@ -20,10 +20,6 @@ from PIL import Image
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
-pytestmark = pytest.mark.xfail(
-    strict=True, raises=NotImplementedError,
-    reason="colour-dropout is a skeleton until the tests are approved")
-
 
 def _load() -> types.ModuleType:
     path = os.path.join(_HERE, "colour-dropout")
