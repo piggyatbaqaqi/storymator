@@ -14,8 +14,12 @@ is and because a wide shot's periphery can be sharp while the subject
 is not.  Reports the 10-90 edge rise too: that is the number to drive
 to 1-2 px, and it is what a Laplacian score cannot tell you directly.
 """
-import argparse, re, sys
+import argparse
+import re
+import sys
+
 import numpy as np
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -32,7 +36,8 @@ def main():
     for f in a.frames:
         g = cv2.imread(f, cv2.IMREAD_GRAYSCALE)
         if g is None:
-            print(f"  {f}: unreadable", file=sys.stderr); continue
+            print(f"  {f}: unreadable", file=sys.stderr)
+            continue
         h, w = g.shape
         b = a.box // 2
         c = g[h//2-b:h//2+b, w//2-b:w//2+b].astype(float)
@@ -52,6 +57,7 @@ def main():
     if best is rows[0] or best is rows[-1]:
         print("WARNING: the best frame is at the end of the sweep, so the true")
         print("optimum may lie outside it.  Extend the range and re-shoot.")
+
 
 if __name__ == "__main__":
     main()
