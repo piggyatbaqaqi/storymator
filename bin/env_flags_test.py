@@ -18,7 +18,7 @@ from env_flags import apply_env
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # Each tool leaves this set in its own commit.
-MIGRATING = {"make-peg-targets", "collect-captures", "colour-dropout"}
+MIGRATING = {"collect-captures", "colour-dropout"}
 
 
 def tool_marks(name: str) -> list[Any]:

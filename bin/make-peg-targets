@@ -26,6 +26,9 @@ defensible ways to read them, which is 0.40 % on a quantity worth
 **Measure it after printing.** The 7 x 9 board came out 1.27 %
 oversize with a 0.15 % anisotropy between its axes, and a different
 print will have a different error.
+
+Options can also be set as MAKE_PEG_TARGETS_<OPTION>: see
+docs/bin-argparse-strict.md.
 """
 
 from __future__ import annotations
@@ -38,6 +41,8 @@ import sys
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+
+from env_flags import apply_env
 
 
 def marker_ids(count: int, per_board: int,
@@ -532,7 +537,7 @@ def render(squares: int, square_mm: float, marker_mm: float, count: int,
     return np.asarray(sheet, dtype=np.uint8)
 
 
-def main(argv=None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", default="peg-targets.png")
     ap.add_argument("--squares", type=int, default=3,
@@ -561,7 +566,12 @@ def main(argv=None) -> int:
                          "fits.  0 spreads them to the page margins "
                          "instead, which reads longer and measures "
                          "nothing")
-    args = ap.parse_args(argv)
+    apply_env(ap, "MAKE_PEG_TARGETS")
+    return ap
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
 
     try:
         width, height = (float(v) for v in args.sheet_mm.lower().split("x"))
