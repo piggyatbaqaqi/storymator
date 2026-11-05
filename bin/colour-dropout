@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+"""Whiten light coloured pencil in an image and keep the graphite.
+
+The command-line face of ComfyUI's ``ACME Colour Dropout`` node.  Both
+call :func:`acme.dropout.dropout_colour`, so no ComfyUI server is needed
+and the arithmetic is the node's own:
+
+    bin/colour-dropout scan.png clean.png
+    bin/colour-dropout scan.png clean.png --white-level 0.82 \
+        --dropped removed.png
+
+An existing output or mask file is refused unless --overwrite is given.
+That applies to any path, and the input gets no special treatment: with
+--overwrite it can be replaced like anything else.
+
+Parameters follow CLI --<flag>, then COLOUR_DROPOUT_<FLAG>, then the
+default on ``dropout_colour``.  CLAUDE.md asks for
+``parents=[common_parser()]`` and ``get_env_config``; neither exists in
+this repo yet, so this follows the substance of the rule -- a strict
+``parse_args()`` -- as ``bin/big-green-button`` does, and should be
+migrated when those land.
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from typing import Sequence
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "comfyui", "comfyui_acme"))
+
+from acme.dropout import dropout_colour          # noqa: E402,F401  (skeleton)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    raise NotImplementedError("colour-dropout is not written yet")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
