@@ -11,7 +11,6 @@ import ast
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -45,6 +44,29 @@ def unpragmaed_calls(source: str) -> list[int]:
             if not any(PRAGMA in line for line in nearby):
                 bad.append(node.lineno)
     return bad
+
+
+def calls_apply_env(source: str) -> bool:
+    """True when the source calls env_flags.apply_env."""
+    return any(isinstance(node, ast.Call)
+               and isinstance(node.func, ast.Name)
+               and node.func.id == "apply_env"
+               for node in ast.walk(ast.parse(source)))
+
+
+def uses_argparse(source: str) -> bool:
+    """True when the source calls parse_args or a marked passthrough."""
+    return any(isinstance(node, ast.Call)
+               and isinstance(node.func, ast.Attribute)
+               and node.func.attr in ("parse_args", "parse_known_args")
+               for node in ast.walk(ast.parse(source)))
+
+
+TOOLS = [pytest.param(path, id=path.name) for path in discover()]
+# Exempt from the environment layer: see docs/bin-argparse-strict.md.
+NO_ENV_LAYER = {"prune-duplicate-captures"}
+ENV_TOOLS = [pytest.param(path, id=path.name) for path in discover()
+             if path.name not in NO_ENV_LAYER]
 
 
 def calls_apply_env(source: str) -> bool:
@@ -114,7 +136,7 @@ def test_apply_env_detection() -> None:
     assert not calls_apply_env("# apply_env is only mentioned here\n")
 
 
-@pytest.mark.parametrize("path", env_cases())
+@pytest.mark.parametrize("path", ENV_TOOLS)
 def test_tool_has_an_environment_layer(path: Path) -> None:
     assert calls_apply_env(path.read_text())
 

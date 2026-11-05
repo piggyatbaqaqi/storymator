@@ -132,11 +132,6 @@ found by shebang; bash tools and `*_test.py` are left out.
 Bash tools reject unknown options by hand, with a catch-all in their
 argument loop, as `bin/backup-storymator` does.
 
-## Outstanding
-
-- `bin/big-green-button` still has its own `env_default`, which honours
-  an empty variable where `apply_env` treats it as unset.
-
 ## Out of scope
 
 - Migrating to click / typer / fire. `parse_args()` does the job.

@@ -52,34 +52,6 @@ OURS = "[ids]\nk:8089:0019\n[main]\nenter = command(/opt/bgb-x)\n"
 BARE = "[ids]\n8089:0019\n[main]\nenter = command(/opt/bgb-x)\n"
 
 
-class TestEnvDefault:
-    """CLI --flag, then BIG_GREEN_BUTTON_FLAG, then the default."""
-
-    def test_returns_the_default_when_the_environment_is_quiet(
-            self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("BIG_GREEN_BUTTON_KEYD_DIR", raising=False)
-        assert bgb.env_default("keyd-dir", "/etc/keyd") == "/etc/keyd"
-
-    def test_the_environment_beats_the_default(
-            self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("BIG_GREEN_BUTTON_KEYD_DIR", "/tmp/keyd")
-        assert bgb.env_default("keyd-dir", "/etc/keyd") == "/tmp/keyd"
-
-    def test_hyphens_become_underscores(
-            self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("BIG_GREEN_BUTTON_KEYD_DIR", "/tmp/keyd")
-        assert bgb.env_default("keyd-dir", "/x") == "/tmp/keyd"
-
-    def test_an_empty_variable_is_honoured_not_ignored(
-            self, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Setting it to nothing is a choice; argparse will complain."""
-        monkeypatch.setenv("BIG_GREEN_BUTTON_KEYD_DIR", "")
-        assert bgb.env_default("keyd-dir", "/etc/keyd") == ""
-
-    def test_the_prefix_is_the_documented_one(self) -> None:
-        assert bgb.ENV_PREFIX == "BIG_GREEN_BUTTON_"
-
-
 class TestShippedConfigConstant:
 
     def test_points_at_the_artifact_in_the_repo(self) -> None:

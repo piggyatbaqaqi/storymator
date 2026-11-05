@@ -26,22 +26,12 @@ from typing import Mapping, Sequence
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from big_green_button import button, input_devices, keyd_config  # noqa: E402
+from env_flags import apply_env                                   # noqa: E402
 
-ENV_PREFIX = "BIG_GREEN_BUTTON_"
 DEFAULT_KEYD_DIR = button.KEYD_CONFIG_DIR
 SHIPPED_CONFIG = (Path(__file__).resolve().parent.parent
                   / "big_green_button" / "etc"
                   / button.KEYD_CONFIG_NAME)
-
-
-def env_default(name: str, default: str) -> str:
-    """CLI beats BIG_GREEN_BUTTON_<NAME> beats ``default``.
-
-    The CLI half of that order is argparse's: this supplies the
-    default argparse uses when the flag is absent.
-    """
-    return os.environ.get(ENV_PREFIX + name.upper().replace("-", "_"),
-                          default)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,9 +45,9 @@ def build_parser() -> argparse.ArgumentParser:
     check = subs.add_parser(
         "check", help="is the button wired up, and is the hook safe?")
     check.add_argument(
-        "--keyd-dir", default=env_default("keyd-dir", DEFAULT_KEYD_DIR),
+        "--keyd-dir", default=DEFAULT_KEYD_DIR,
         help=f"where keyd reads its configs (default {DEFAULT_KEYD_DIR}, "
-             f"or {ENV_PREFIX}KEYD_DIR)")
+             "or BIG_GREEN_BUTTON_KEYD_DIR)")
     check.set_defaults(func=cmd_check)
 
     render = subs.add_parser(
@@ -68,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
         "devices", help="which interfaces the button presents")
     devices.set_defaults(func=cmd_devices)
 
+    apply_env(parser, "BIG_GREEN_BUTTON")
     return parser
 
 

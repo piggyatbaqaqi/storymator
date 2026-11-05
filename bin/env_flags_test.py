@@ -285,7 +285,6 @@ def test_collect_captures_keeps_its_existing_variables(
     assert getattr(args, dest) == "/from/env"
 
 
-@pytest.mark.xfail(strict=True, reason="still has its own env_default")
 def test_big_green_button_treats_an_empty_variable_as_unset(
         monkeypatch: pytest.MonkeyPatch) -> None:
     button = tool("big-green-button")
