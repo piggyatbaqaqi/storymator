@@ -23,6 +23,9 @@ Each session gets a directory and a `manifest.json` recording, per
 frame, what can be derived — size, exposure percentiles, mean and
 standard deviation — plus the operator's note, which is the part no
 program can recover later and the whole reason to write it down now.
+
+Options can also be set as COLLECT_CAPTURES_<OPTION>: see
+docs/bin-argparse-strict.md.
 """
 
 from __future__ import annotations
@@ -40,6 +43,8 @@ from typing import Dict, List, Optional
 
 import numpy as np
 from PIL import Image
+
+from env_flags import apply_env
 
 DEFAULT_TEMP = "/data/piggy/src/github.com/Comfy-Org/ComfyUI/temp"
 DEFAULT_OUT = os.path.join(os.path.dirname(os.path.dirname(
@@ -214,7 +219,7 @@ def collect(temp: str, out_root: str, session: str, note: str,
     return 0
 
 
-def main(argv=None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--temp", default=os.environ.get("COMFYUI_TEMP",
                                                      DEFAULT_TEMP),
@@ -240,7 +245,14 @@ def main(argv=None) -> int:
     ap.add_argument("--allow-duplicates", action="store_true",
                     help="copy frames already held in another session")
     ap.add_argument("--dry-run", action="store_true")
-    args = ap.parse_args(argv)
+    apply_env(ap, "COLLECT_CAPTURES",
+              exempt={"temp", "out", "kind", "dry_run", "allow_duplicates",
+                      "note", "frame_note"})
+    return ap
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
     since = (None if args.since_minutes is None
              else datetime.datetime.now().timestamp() - args.since_minutes*60)
     return collect(args.temp, args.out, args.session, args.note,
