@@ -69,43 +69,6 @@ ENV_TOOLS = [pytest.param(path, id=path.name) for path in discover()
              if path.name not in NO_ENV_LAYER]
 
 
-def calls_apply_env(source: str) -> bool:
-    """True when the source calls env_flags.apply_env."""
-    return any(isinstance(node, ast.Call)
-               and isinstance(node.func, ast.Name)
-               and node.func.id == "apply_env"
-               for node in ast.walk(ast.parse(source)))
-
-
-def uses_argparse(source: str) -> bool:
-    """True when the source calls parse_args or a marked passthrough."""
-    return any(isinstance(node, ast.Call)
-               and isinstance(node.func, ast.Attribute)
-               and node.func.attr in ("parse_args", "parse_known_args")
-               for node in ast.walk(ast.parse(source)))
-
-
-TOOLS = [pytest.param(path, id=path.name) for path in discover()]
-# Exempt from the environment layer: see docs/bin-argparse-strict.md.
-NO_ENV_LAYER = {"prune-duplicate-captures"}
-# Still to migrate to apply_env.
-ENV_PENDING = {"big-green-button"}
-
-
-def env_cases() -> list[Any]:
-    """Tools owing an environment layer, strict xfail where pending."""
-    cases = []
-    for path in discover():
-        if path.name in NO_ENV_LAYER:
-            continue
-        marks = []
-        if path.name in ENV_PENDING:
-            marks = [pytest.mark.xfail(strict=True,
-                                       reason="not migrated to apply_env")]
-        cases.append(pytest.param(path, id=path.name, marks=marks))
-    return cases
-
-
 def test_discovery_finds_both_directories_and_skips_bash() -> None:
     names = {path.name for path in discover()}
     assert {"colour-dropout", "prune-duplicate-captures"} <= names
