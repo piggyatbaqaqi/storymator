@@ -67,6 +67,10 @@ Each parameter resolves in this order:
 cannot collide in a shared shell: `COLOUR_DROPOUT_WHITE_LEVEL`,
 `BIG_GREEN_BUTTON_<NAME>`, `STORYMATOR_BACKUP_KEEP`, `COMFYUI_TEMP`.
 
+`fixes/prune-duplicate-captures` is exempt from the environment layer. It
+is a one-off, and its only flag is a safety switch, which should be typed
+where it can be seen rather than inherited from a shell.
+
 ## The passthrough escape hatch
 
 A script that genuinely forwards extras (e.g. a subprocess orchestrator)
@@ -102,8 +106,6 @@ argument loop, as `bin/backup-storymator` does.
 
 ## Outstanding
 
-- `bin/argparse_strict_test.py` is not in the tree yet.
-- `fixes/prune-duplicate-captures` tests `"--dry-run" in argv` by hand.
 - These have no environment layer, or only part of one, and are to be
   migrated: `bin/make-peg-targets`, `bin/measure-ink`,
   `bin/measure-punch-tolerance`, `bin/score-focus`, and

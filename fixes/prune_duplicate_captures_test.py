@@ -92,7 +92,6 @@ def test_dry_run_changes_nothing(pair: tuple[Path, Path],
     assert "nothing changed" in capsys.readouterr().out
 
 
-@pytest.mark.xfail(strict=True, reason="hand-rolled argv check")
 @pytest.mark.parametrize("flag", ["--dry-rn", "--dryrun", "-n"])
 def test_mistyped_flag_is_rejected_and_nothing_is_removed(
         pair: tuple[Path, Path], flag: str) -> None:

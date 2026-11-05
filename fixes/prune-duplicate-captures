@@ -19,19 +19,26 @@ One-off. The tool no longer does this.
 
 from __future__ import annotations
 
+import argparse
 import glob
 import json
 import os
-import sys
+from typing import Any, Sequence
 
 ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     "data", "captures")
 
 
-def main(argv=None) -> int:
-    argv = sys.argv[1:] if argv is None else argv
-    dry = "--dry-run" in argv
-    sessions = []
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--dry-run", action="store_true",
+                    help="report what would be removed and change nothing")
+    return ap
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    dry = build_parser().parse_args(argv).dry_run
+    sessions: list[tuple[str, str, dict[str, Any]]] = []
     for manifest in sorted(glob.glob(os.path.join(ROOT, "*", "manifest.json"))):
         with open(manifest) as fh:
             data = json.load(fh)
@@ -39,10 +46,11 @@ def main(argv=None) -> int:
         sessions.append((first, manifest, data))
     sessions.sort()                      # earliest collect owns the frame
 
-    owner = {}
+    owner: dict[str, str] = {}
     for _, manifest, data in sessions:
         name = os.path.basename(os.path.dirname(manifest))
-        keep, drop = [], []
+        keep: list[dict[str, Any]] = []
+        drop: list[dict[str, Any]] = []
         for frame in data["frames"]:
             digest = frame["sha256_16"]
             (drop if digest in owner else keep).append(frame)

@@ -11,14 +11,11 @@ import ast
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 PRAGMA = "pragma: argparse-passthrough"
-# Tools with a known violation, each with its own commit coming.
-PENDING = {"prune-duplicate-captures"}
 
 
 def discover() -> list[Path]:
@@ -57,16 +54,7 @@ def uses_argparse(source: str) -> bool:
                for node in ast.walk(ast.parse(source)))
 
 
-def params(pending: bool) -> list[Any]:
-    """Each tool as a test case, strict xfail where a fix is pending."""
-    cases = []
-    for path in discover():
-        marks = []
-        if pending and path.name in PENDING:
-            marks = [pytest.mark.xfail(strict=True,
-                                       reason="hand-rolled argv check")]
-        cases.append(pytest.param(path, id=path.name, marks=marks))
-    return cases
+TOOLS = [pytest.param(path, id=path.name) for path in discover()]
 
 
 def test_discovery_finds_both_directories_and_skips_bash() -> None:
@@ -94,17 +82,17 @@ def test_argparse_detection_sees_through_hand_rolled_checks() -> None:
     assert not uses_argparse('dry = "--dry-run" in argv\n')
 
 
-@pytest.mark.parametrize("path", params(pending=False))
+@pytest.mark.parametrize("path", TOOLS)
 def test_no_unpragmaed_parse_known_args(path: Path) -> None:
     assert unpragmaed_calls(path.read_text()) == []
 
 
-@pytest.mark.parametrize("path", params(pending=True))
+@pytest.mark.parametrize("path", TOOLS)
 def test_tool_parses_with_argparse(path: Path) -> None:
     assert uses_argparse(path.read_text())
 
 
-@pytest.mark.parametrize("path", params(pending=True))
+@pytest.mark.parametrize("path", TOOLS)
 def test_cli_rejects_unknown_flag(path: Path, tmp_path: Path) -> None:
     assert uses_argparse(path.read_text()), (
         f"not launching {path.name}: without argparse it would run for real")
