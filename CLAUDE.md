@@ -10,7 +10,7 @@
 * Functional tests live in tests/ and need not be pytest compatible.
 * Update docs/api-reference.md every time we change REST APIs.
 * Priority order of CLI parameters is CLI --<parameter>, environment variable <PREFIX>_<PARAMETER>, config file (if we have one), and finally hardcoded default. <PREFIX> names the tool or subsystem (e.g. COLOUR_DROPOUT_WHITE_LEVEL), so a generic parameter name cannot collide in a shared shell.
-* `bin/` CLIs parse strictly: build the parser with `parents=[common_parser()]` and call `parse_args()`, then `get_env_config(cli_args=args)` — never `parse_known_args()` (it silently swallows typo'd flags). Justify any deliberate subprocess passthrough with a `# pragma: argparse-passthrough` comment. Single-use flags stay out of `common_parser()`. See `docs/bin-argparse-strict.md`.
+* `bin/` and `fixes/` CLIs parse strictly with argparse's `parse_args()` — never `parse_known_args()` (it silently swallows typo'd flags) and never hand-rolled `argv` checks. Justify any deliberate subprocess passthrough with a `# pragma: argparse-passthrough` comment. There is no shared parser until a second real shared flag exists, and single-use flags stay out of it. See `docs/bin-argparse-strict.md`.
 * Programs that are needed for one time fixes go in fixes/ rather than bin/.
 * Please don't check credentials (especially passwords) into git.
 * Keep wheel versions and their corresponding deb versions in sync.

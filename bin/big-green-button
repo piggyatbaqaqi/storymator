@@ -10,10 +10,8 @@ stdout, because everything it would touch needs root.  See
 docs/big-green-button.md for the install commands.
 
 Parameters follow CLI --<flag>, then BIG_GREEN_BUTTON_<FLAG>, then the
-hardcoded default.  CLAUDE.md asks for ``parents=[common_parser()]``
-and ``get_env_config``; neither exists in this repo yet, so this
-follows the substance of the rule -- a strict ``parse_args()``, never
-``parse_known_args()`` -- and should be migrated when those land.
+hardcoded default, and parsing is strict: see
+docs/bin-argparse-strict.md.
 """
 
 from __future__ import annotations
