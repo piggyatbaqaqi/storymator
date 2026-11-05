@@ -192,7 +192,9 @@ def test_bad_environment_value_names_the_variable(
         source: Path, target: Path, monkeypatch: pytest.MonkeyPatch,
         capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setenv("COLOUR_DROPOUT_WHITE_LEVEL", "not a number")
-    assert cd.main([str(source), str(target)]) == 2
+    with pytest.raises(SystemExit) as caught:
+        cd.main([str(source), str(target)])
+    assert caught.value.code == 2
     assert "COLOUR_DROPOUT_WHITE_LEVEL" in capsys.readouterr().err
     assert not target.exists()
 

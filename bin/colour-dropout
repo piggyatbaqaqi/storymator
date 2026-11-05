@@ -29,13 +29,15 @@ from typing import Optional, Sequence
 import numpy as np
 from PIL import Image, ImageOps
 
+from env_flags import apply_env
+
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "comfyui", "comfyui_acme"))
 
 from acme.dropout import dropout_colour          # noqa: E402
 
-ENV_PREFIX = "COLOUR_DROPOUT_"
+SETTINGS = ("white_percentile", "white_level", "mark_level")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -57,6 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
                     help="also write a mask of the marks that were whitened")
     ap.add_argument("--overwrite", action="store_true",
                     help="replace files that already exist")
+    apply_env(ap, "COLOUR_DROPOUT", exempt={"dropped", "overwrite"})
     return ap
 
 
@@ -64,20 +67,6 @@ def _library_default(name: str) -> float:
     """One set of defaults: the library's, which the node mirrors."""
     default = inspect.signature(dropout_colour).parameters[name].default
     return float(default)
-
-
-def _setting(name: str, given: Optional[float]) -> float:
-    """CLI, then the environment, then the library's default."""
-    if given is not None:
-        return given
-    variable = ENV_PREFIX + name.upper()
-    text = os.environ.get(variable)
-    if text is None:
-        return _library_default(name)
-    try:
-        return float(text)
-    except ValueError:
-        raise ValueError(f"{variable}={text!r} is not a number") from None
 
 
 def _read(path: str) -> np.ndarray:
@@ -109,13 +98,10 @@ def _refusal(output: str, mask: Optional[str],
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    try:
-        settings = {name: _setting(name, getattr(args, name))
-                    for name in ("white_percentile", "white_level",
-                                 "mark_level")}
-    except ValueError as exc:
-        print(exc, file=sys.stderr)
-        return 2
+    # None means neither the command line nor the environment said, which
+    # leaves the library's own default in force.
+    settings = {name: getattr(args, name) for name in SETTINGS
+                if getattr(args, name) is not None}
     refusal = _refusal(args.output, args.dropped, args.overwrite)
     if refusal is not None:
         print(refusal, file=sys.stderr)

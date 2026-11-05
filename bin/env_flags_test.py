@@ -17,18 +17,6 @@ import pytest
 from env_flags import apply_env
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-# Each tool leaves this set in its own commit.
-MIGRATING = {"colour-dropout"}
-
-
-def tool_marks(name: str) -> list[Any]:
-    """Strict xfail for a tool until it has been migrated."""
-    if name not in MIGRATING:
-        return []
-    return [pytest.mark.xfail(strict=True,
-                              reason="tool not migrated to apply_env yet")]
-
-
 def parser_with_flags() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("frame", nargs="?")
@@ -243,8 +231,7 @@ FLAGS: list[tuple[Tool, str, str, Any]] = [
 def _flag_case(entry: tuple[Tool, str, str, Any]) -> Any:
     (name, positional, prefix), dest, text, value = entry
     return pytest.param(name, positional, f"{prefix}_{dest.upper()}", dest,
-                        text, value, id=f"{name}-{dest}",
-                        marks=tool_marks(name))
+                        text, value, id=f"{name}-{dest}")
 
 
 @pytest.mark.parametrize("name, positional, variable, dest, text, value",
@@ -276,8 +263,7 @@ EXEMPT: list[tuple[str, list[str], str, str, str, Any]] = [
 
 @pytest.mark.parametrize(
     "name, positional, variable, dest, text, absent",
-    [pytest.param(*entry, id=f"{entry[0]}-{entry[3]}",
-                  marks=tool_marks(entry[0])) for entry in EXEMPT])
+    [pytest.param(*entry, id=f"{entry[0]}-{entry[3]}") for entry in EXEMPT])
 def test_tool_exemptions_ignore_the_environment(
         monkeypatch: pytest.MonkeyPatch, name: str, positional: list[str],
         variable: str, dest: str, text: str, absent: Any) -> None:
@@ -286,12 +272,8 @@ def test_tool_exemptions_ignore_the_environment(
     assert getattr(args, dest) == absent
 
 
-@pytest.mark.parametrize(
-    "variable, dest",
-    [pytest.param("COMFYUI_TEMP", "temp",
-                  marks=tool_marks("collect-captures")),
-     pytest.param("CAPTURE_CORPUS", "out",
-                  marks=tool_marks("collect-captures"))])
+@pytest.mark.parametrize("variable, dest", [("COMFYUI_TEMP", "temp"),
+                                            ("CAPTURE_CORPUS", "out")])
 def test_collect_captures_keeps_its_existing_variables(
         monkeypatch: pytest.MonkeyPatch, variable: str, dest: str) -> None:
     monkeypatch.setenv(variable, "/from/env")
