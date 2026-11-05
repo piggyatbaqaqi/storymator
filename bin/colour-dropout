@@ -9,7 +9,8 @@ and the arithmetic is the node's own:
     bin/colour-dropout scan.png clean.png --white-level 0.82 \
         --dropped removed.png
 
-An existing output or mask file is refused unless --overwrite is given.
+An existing output or mask file is refused unless --overwrite is given
+(or COLOUR_DROPOUT_OVERWRITE is true).
 That applies to any path, and the input gets no special treatment: with
 --overwrite it can be replaced like anything else.
 
@@ -59,7 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
                     help="also write a mask of the marks that were whitened")
     ap.add_argument("--overwrite", action="store_true",
                     help="replace files that already exist")
-    apply_env(ap, "COLOUR_DROPOUT", exempt={"dropped", "overwrite"})
+    apply_env(ap, "COLOUR_DROPOUT", exempt={"dropped"})
     return ap
 
 

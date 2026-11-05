@@ -297,7 +297,6 @@ def test_overwrite_replaces_the_output_and_the_mask(
     assert np.all(read(mask_path)[BLUE_BLOCK] == 255)
 
 
-@pytest.mark.xfail(strict=True, reason="--overwrite is still exempt")
 def test_environment_can_allow_overwriting(
         source: Path, target: Path,
         monkeypatch: pytest.MonkeyPatch) -> None:

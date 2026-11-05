@@ -293,7 +293,6 @@ def test_big_green_button_treats_an_empty_variable_as_unset(
     assert args.keyd_dir == button.DEFAULT_KEYD_DIR
 
 
-@pytest.mark.xfail(strict=True, reason="--overwrite is still exempt")
 def test_colour_dropout_overwrite_reads_its_environment_variable(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("COLOUR_DROPOUT_OVERWRITE", "1")

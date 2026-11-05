@@ -88,7 +88,7 @@ leaving a flag out is always a decision somebody made:
 | Flag | Why |
 |---|---|
 | `measure-ink --peg`, `collect-captures --kind` | Repeatable: argparse appends to its default, so the command line could not replace the environment's value |
-| `collect-captures --dry-run`, `--allow-duplicates`, `colour-dropout --overwrite` | Safety switches, which should be typed where they can be seen |
+| `collect-captures --dry-run`, `--allow-duplicates` | Safety switches, which should be typed where they can be seen |
 | `collect-captures --note`, `--frame-note` | Data labels: a stale variable would silently mislabel new captures |
 | `measure-punch-tolerance --self-test` | Picks what the tool does: a stale variable would skip the real work |
 | `collect-captures --temp`, `--out` | Already read `COMFYUI_TEMP` and `CAPTURE_CORPUS` |
