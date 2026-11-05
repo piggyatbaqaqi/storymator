@@ -2,6 +2,8 @@
 * When failing tests are checked into git, they get pytest xfail tags so the head always has all tests passing--this allows bisect bug searches.
 * A correllary of the last two constraints is that we need to implement bare skeletons of implementations so that there's enough to import--we can not xfail an import failure.
 * Check every change into git with useful comments.
+* Gate commits on real exit codes. Run checks without a pipeline, e.g. `pytest > log 2>&1 || { tail -30 log; <stop>; }`, because `| tail` reports `tail`'s status and hides the failure. Branch explicitly with `if` or `||`; don't rely on `set -e` to stop a chain.
+* Bash scripts start with `set -euo pipefail`. POSIX `sh` scripts can't use `pipefail`, so they use `set -eu`.
 * Every new module foo.py needs a pytest-compatible foo_test.py that exercises every function and method. Run each new test module and confirm that all tests in it pass.
 * Python code formatting follows PEP-8.
 * All code carries PEP 484 / PEP 526 annotations, tests and fixtures included. Enforced rather than trusted: comfyui/mypy.ini sets disallow_untyped_defs, so an unannotated function is an error, not a silently skipped body. Where existing code is unannotated, the count may fall and must never rise.
