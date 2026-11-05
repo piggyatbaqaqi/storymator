@@ -257,6 +257,8 @@ EXEMPT: list[tuple[str, list[str], str, str, str, Any]] = [
     ("collect-captures", [], "COLLECT_CAPTURES_NOTE", "note", "stale", ""),
     ("collect-captures", [], "COLLECT_CAPTURES_FRAME_NOTE", "frame_note",
      "stale", ""),
+    ("colour-dropout", ["in.png", "out.png"], "COLOUR_DROPOUT_DROPPED",
+     "dropped", "x.png", None),
     ("measure-ink", ["f.png"], "MEASURE_INK_PEG", "peg", "1,2", None),
     ("measure-punch-tolerance", [], "MEASURE_PUNCH_TOLERANCE_SELF_TEST",
      "self_test", "1", False),
@@ -281,3 +283,20 @@ def test_collect_captures_keeps_its_existing_variables(
     monkeypatch.setenv(variable, "/from/env")
     args = tool("collect-captures").build_parser().parse_args([])
     assert getattr(args, dest) == "/from/env"
+
+
+@pytest.mark.xfail(strict=True, reason="still has its own env_default")
+def test_big_green_button_treats_an_empty_variable_as_unset(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    button = tool("big-green-button")
+    monkeypatch.setenv("BIG_GREEN_BUTTON_KEYD_DIR", "")
+    args = button.build_parser().parse_args(["check"])
+    assert args.keyd_dir == button.DEFAULT_KEYD_DIR
+
+
+@pytest.mark.xfail(strict=True, reason="--overwrite is still exempt")
+def test_colour_dropout_overwrite_reads_its_environment_variable(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COLOUR_DROPOUT_OVERWRITE", "1")
+    args = tool("colour-dropout").build_parser().parse_args(["i.png", "o.png"])
+    assert args.overwrite is True

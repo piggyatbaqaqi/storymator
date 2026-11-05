@@ -33,8 +33,9 @@ def _load() -> types.ModuleType:
 
 cd = _load()
 
-ENV_VARS = ("COLOUR_DROPOUT_WHITE_PERCENTILE", "COLOUR_DROPOUT_WHITE_LEVEL",
-            "COLOUR_DROPOUT_MARK_LEVEL")
+NUMERIC_VARS = ("COLOUR_DROPOUT_WHITE_PERCENTILE",
+                "COLOUR_DROPOUT_WHITE_LEVEL", "COLOUR_DROPOUT_MARK_LEVEL")
+ENV_VARS = NUMERIC_VARS + ("COLOUR_DROPOUT_OVERWRITE",)
 PAPER = (243, 242, 246)
 BLUE = (174, 209, 227)            # the "1" on the run-cycle scan
 GRAPHITE = (110, 109, 111)
@@ -174,7 +175,7 @@ def test_each_setting_has_its_environment_variable(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Out of range from the environment is refused by name, which
     shows each variable was read."""
-    for name in ENV_VARS:
+    for name in NUMERIC_VARS:
         monkeypatch.setenv(name, "200")
         assert cd.main([str(source), str(target)]) == 2
         monkeypatch.delenv(name)
@@ -294,6 +295,25 @@ def test_overwrite_replaces_the_output_and_the_mask(
                     "--overwrite"]) == 0
     np.testing.assert_array_equal(read(target), expected(scene()))
     assert np.all(read(mask_path)[BLUE_BLOCK] == 255)
+
+
+@pytest.mark.xfail(strict=True, reason="--overwrite is still exempt")
+def test_environment_can_allow_overwriting(
+        source: Path, target: Path,
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COLOUR_DROPOUT_OVERWRITE", "1")
+    target.write_bytes(b"old")
+    assert cd.main([str(source), str(target)]) == 0
+    np.testing.assert_array_equal(read(target), expected(scene()))
+
+
+def test_a_false_environment_value_still_refuses(
+        source: Path, target: Path,
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COLOUR_DROPOUT_OVERWRITE", "0")
+    target.write_bytes(b"precious")
+    assert cd.main([str(source), str(target)]) == 2
+    assert target.read_bytes() == b"precious"
 
 
 def test_overwrite_treats_the_input_like_any_other_file(
