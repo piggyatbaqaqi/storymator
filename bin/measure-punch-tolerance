@@ -71,6 +71,9 @@ SCANNING PROTOCOL
   it between scans.  That spread is the method's own noise floor.  If it
   is not comfortably smaller than the sheet-to-sheet spread, the
   sheet-to-sheet number is measuring the scanner, not the paper.
+
+Options can also be set as MEASURE_PUNCH_TOLERANCE_<OPTION>: see
+docs/bin-argparse-strict.md.
 """
 
 import argparse
@@ -82,6 +85,8 @@ from typing import Dict, List, NamedTuple, Sequence, Tuple
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+
+from env_flags import apply_env
 
 MM_PER_INCH = 25.4
 NOMINAL_SPAN_MM = 8.0 * MM_PER_INCH        # rect peg to rect peg
@@ -490,7 +495,7 @@ def self_test(dpi: float = 600.0) -> int:
     return 0 if ok else 1
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         description=__doc__.splitlines()[0],
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -508,7 +513,13 @@ def main() -> int:
                          "they are recovered; needs no scanner")
     ap.add_argument("--csv", type=Path, default=None,
                     help="also write per-sheet rows here")
-    args = ap.parse_args()
+    apply_env(ap, "MEASURE_PUNCH_TOLERANCE", exempt={"self_test"})
+    return ap
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    ap = build_parser()
+    args = ap.parse_args(argv)
 
     if args.self_test:
         return self_test(args.dpi)

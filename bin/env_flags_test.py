@@ -18,8 +18,7 @@ from env_flags import apply_env
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # Each tool leaves this set in its own commit.
-MIGRATING = {"make-peg-targets", "measure-ink",
-             "measure-punch-tolerance", "collect-captures",
+MIGRATING = {"make-peg-targets", "measure-ink", "collect-captures",
              "colour-dropout"}
 
 
