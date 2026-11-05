@@ -17,9 +17,6 @@ import pytest
 from env_flags import apply_env
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_PENDING_HELPER = pytest.mark.xfail(
-    strict=True, raises=NotImplementedError,
-    reason="apply_env is a skeleton until the tests are approved")
 # Each tool leaves this set in its own commit.
 MIGRATING = {"make-peg-targets", "measure-ink", "measure-punch-tolerance",
              "score-focus", "collect-captures", "colour-dropout"}
@@ -51,14 +48,12 @@ def applied() -> argparse.ArgumentParser:
     return ap
 
 
-@_PENDING_HELPER
 def test_no_environment_leaves_the_hardcoded_defaults() -> None:
     args = applied().parse_args([])
     assert (args.name, args.box_size, args.dpi, args.csv, args.invert,
             args.mode) == ("fallback", 400, 600.0, None, False, "fast")
 
 
-@_PENDING_HELPER
 @pytest.mark.parametrize("variable, text, dest, value", [
     ("TOOL_NAME", "from env", "name", "from env"),
     ("TOOL_BOX_SIZE", "12", "box_size", 12),
@@ -73,7 +68,6 @@ def test_environment_supplies_a_converted_value(
     assert getattr(applied().parse_args([]), dest) == value
 
 
-@_PENDING_HELPER
 @pytest.mark.parametrize("text, value", [
     ("1", True), ("true", True), ("YES", True), ("on", True),
     ("0", False), ("false", False), ("No", False), ("OFF", False),
@@ -84,28 +78,24 @@ def test_boolean_flags_read_words(monkeypatch: pytest.MonkeyPatch,
     assert applied().parse_args([]).invert is value
 
 
-@_PENDING_HELPER
 def test_command_line_beats_environment(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TOOL_BOX_SIZE", "12")
     assert applied().parse_args(["--box-size", "99"]).box_size == 99
 
 
-@_PENDING_HELPER
 def test_command_line_means_a_bad_environment_value_is_never_read(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TOOL_BOX_SIZE", "not a number")
     assert applied().parse_args(["--box-size", "99"]).box_size == 99
 
 
-@_PENDING_HELPER
 def test_store_true_on_the_command_line_beats_a_false_environment(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TOOL_INVERT", "0")
     assert applied().parse_args(["--invert"]).invert is True
 
 
-@_PENDING_HELPER
 @pytest.mark.parametrize("variable, text", [
     ("TOOL_BOX_SIZE", "not a number"),
     ("TOOL_DPI", "wide"),
@@ -123,7 +113,6 @@ def test_bad_value_exits_2_and_names_the_variable(
     assert variable in capsys.readouterr().err
 
 
-@_PENDING_HELPER
 def test_empty_value_counts_as_unset(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """So that ``TOOL_BOX_SIZE= tool`` turns a setting off for one run."""
@@ -131,7 +120,6 @@ def test_empty_value_counts_as_unset(
     assert applied().parse_args([]).box_size == 400
 
 
-@_PENDING_HELPER
 def test_positionals_and_help_are_left_alone(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TOOL_FRAME", "from env")
@@ -139,7 +127,6 @@ def test_positionals_and_help_are_left_alone(
     assert applied().parse_args([]).frame is None
 
 
-@_PENDING_HELPER
 def test_environment_satisfies_a_required_flag(
         monkeypatch: pytest.MonkeyPatch) -> None:
     ap = argparse.ArgumentParser()
@@ -149,7 +136,6 @@ def test_environment_satisfies_a_required_flag(
     assert ap.parse_args([]).dest == "there"
 
 
-@_PENDING_HELPER
 def test_required_flag_is_still_required_without_the_environment() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dest", required=True)
@@ -158,7 +144,6 @@ def test_required_flag_is_still_required_without_the_environment() -> None:
         ap.parse_args([])
 
 
-@_PENDING_HELPER
 def test_subcommand_flags_are_covered(
         monkeypatch: pytest.MonkeyPatch) -> None:
     ap = argparse.ArgumentParser()
@@ -169,7 +154,6 @@ def test_subcommand_flags_are_covered(
     assert ap.parse_args(["check"]).keyd_dir == "/tmp/keyd"
 
 
-@_PENDING_HELPER
 @pytest.mark.parametrize("kwargs", [
     {"action": "append"},
     {"nargs": "+"},
@@ -183,7 +167,6 @@ def test_unsupported_flag_must_be_exempted_by_name(
         apply_env(ap, "TOOL")
 
 
-@_PENDING_HELPER
 def test_exempt_flags_ignore_the_environment(
         monkeypatch: pytest.MonkeyPatch) -> None:
     ap = argparse.ArgumentParser()
@@ -197,7 +180,6 @@ def test_exempt_flags_ignore_the_environment(
     assert args.dry_run is False
 
 
-@_PENDING_HELPER
 def test_exempting_a_flag_that_does_not_exist_is_an_error() -> None:
     """A typo here would quietly un-exempt the real flag."""
     with pytest.raises(ValueError, match="dry_rn"):
