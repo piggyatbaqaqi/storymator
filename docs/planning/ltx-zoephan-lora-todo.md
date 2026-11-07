@@ -87,7 +87,14 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   Vandervell a young man in blue-tinted jeans, and **Zoet a
   featureless mannequin** — the least prior. A second seed (7) for
   Zoet and Cellauf held the pattern: Zoet again a faint generic
-  figure, Cellauf again the same boy with hair. Awaiting the choice.
+  figure, Cellauf again the same boy with hair. **Chosen 2026-11-07:
+  `lora_trigger: "Zoet"`**, in the lab repo's
+  `spikes/ltx-lora-2026-11-07/configs/mixed.yaml`.
+- [ ] **Rename after the test pipeline.** Once the whole pipeline has
+  run end to end, change "Zoephan" to "Zoet" throughout the
+  documentation (operator, 2026-11-07), **except** experiment records
+  — the spike directory and its write-up keep the history as it
+  happened.
 - [ ] **Preprocess** latents and text embeddings with the trainer's
   dataset step.
 - [ ] **Smoke run** on a small subset: does it fit in 24 GB? In order,
