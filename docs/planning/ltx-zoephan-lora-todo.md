@@ -52,10 +52,12 @@ weights if needed; a rented GPU is acceptable — the art is not to be
 - [x] **Line weight.** At 1184×832 the lines average to a pale grey
   (drawing 1: median 190/255, darkest 88). Decided 2026-11-07: train on
   the light pencil as is; revisit with automatic clean-up of roughs.
-- [ ] **Captions drafted** 2026-11-07 (`dataset.jsonl` beside the
-  clips, from `captions_draft.json` in the spike directory), awaiting
-  review. Pose per drawing read by eye; identity left to the trigger,
-  hat and cane described because they change.
+- [x] **Captions** approved 2026-11-07 (`dataset.jsonl` beside the
+  clips, from `captions_draft.json` in the spike directory). Each pose
+  names its phase (contact 4/10, down 5/11, passing 6/12, up 1–3 and
+  7–9), the feet and hands by side, the hat, cane, coat tails and
+  trouser cuffs; identity is left to the trigger. Stills 81–108 Gemma
+  tokens, clips 719, limit 1024.
 - [ ] **Captions.** One metadata JSONL. Each caption says what varies
   (pose, hat lifting on 5 and 11, cane swing); style words once.
   Trigger `Zoephan` via `training_strategy.data.lora_trigger`, not in
