@@ -49,9 +49,13 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   number from the manifest. Every clip decoded and matched frame by
   frame against the stills: order correct in all 12, worst mean error
   0.02/255.
-- [ ] **Line weight.** At 1184×832 the lines average to a pale grey
-  (drawing 1: median 190/255, darkest 88). Decide whether to train on
-  that, which is faithful to pencil, or darken first.
+- [x] **Line weight.** At 1184×832 the lines average to a pale grey
+  (drawing 1: median 190/255, darkest 88). Decided 2026-11-07: train on
+  the light pencil as is; revisit with automatic clean-up of roughs.
+- [ ] **Captions drafted** 2026-11-07 (`dataset.jsonl` beside the
+  clips, from `captions_draft.json` in the spike directory), awaiting
+  review. Pose per drawing read by eye; identity left to the trigger,
+  hat and cane described because they change.
 - [ ] **Captions.** One metadata JSONL. Each caption says what varies
   (pose, hat lifting on 5 and 11, cane swing); style words once.
   Trigger `Zoephan` via `training_strategy.data.lora_trigger`, not in
