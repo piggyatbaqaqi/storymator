@@ -214,7 +214,7 @@ different class and were never OpenRAIL questions:
 | FrameFusion | **CC BY-NC 4.0** | **blocker**, verified 2026-10-16 |
 | RIFE (Practical-RIFE) | MIT code and weights | **clean**; one open question on training-data terms |
 | LTX-2 / 2.3 (Lightricks) | **LTX-2 Community License Agreement**; trainer code Apache-2.0 | **accepted** 2026-11-07 — see below |
-| LTX-2.5 (Lightricks) | **LTX-2.x Community License Agreement** (2026-08-11, amended 2026-10-29) | **awaiting decision** — see below |
+| LTX-2.5 (Lightricks) | **LTX-2.x Community License Agreement** (2026-08-11, amended 2026-10-29) | **accepted** 2026-11-07 — see below |
 
 ### Trace the chain, and record the chain
 
@@ -269,7 +269,7 @@ without a separate commercial licence. Lightricks sells LTX Studio; an
 automated animation desk could be argued to compete with it. It is in
 both agreements.
 
-### LTX-2.5 is under a different agreement — not yet accepted
+### LTX-2.5 is under a different agreement — accepted 2026-11-07
 
 Found 2026-11-07 in the `Lightricks/LTX-2` checkout at `4f52161`: the
 README's model table puts **LTX-2.3 under the LTX-2 Community License**
@@ -296,8 +296,15 @@ and the use restrictions, and adds:
   Lightricks may update, the version in force at the time of use
   governing.
 
-**Status: awaiting Monte's decision.** Until then, LTX-2.3 (under the
-accepted agreement) is the model this decision covers.
+**Accepted 2026-11-07.** Monte:
+
+> I accept the LTX-2.x Community License on behalf of Wiki Wiki Cartoons.
+
+**Standing consequence for the pipeline:** no step may strip a
+watermark, provenance metadata or latent disclosure from LTX-2.5
+output (§6, Attachment A item 19). Whether 2.5 output carries any is
+not yet known; check the first generated file before any
+post-processing touches it.
 
 The first use is a proof-of-concept LoRA of the run-cycle character
 (working name *Zoephan*). The LoRA and its outputs derive from Wiki Wiki
