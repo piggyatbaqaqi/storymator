@@ -85,7 +85,9 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   seed each (lab repo, `spikes/ltx-lora-2026-11-07/triggers/`):
   Phenak gave a big-headed cartoon kid, Cellauf a generic boy,
   Vandervell a young man in blue-tinted jeans, and **Zoet a
-  featureless mannequin** — the least prior. Awaiting the choice.
+  featureless mannequin** — the least prior. A second seed (7) for
+  Zoet and Cellauf held the pattern: Zoet again a faint generic
+  figure, Cellauf again the same boy with hair. Awaiting the choice.
 - [ ] **Preprocess** latents and text embeddings with the trainer's
   dataset step.
 - [ ] **Smoke run** on a small subset: does it fit in 24 GB? In order,
