@@ -213,7 +213,8 @@ different class and were never OpenRAIL questions:
 | GIMM-VFI | unverified | **verify on adoption** |
 | FrameFusion | **CC BY-NC 4.0** | **blocker**, verified 2026-10-16 |
 | RIFE (Practical-RIFE) | MIT code and weights | **clean**; one open question on training-data terms |
-| LTX-2 / 2.3 / 2.5 (Lightricks) | **LTX-2 Community License Agreement**; trainer code Apache-2.0 | **accepted** 2026-11-07 — see below |
+| LTX-2 / 2.3 (Lightricks) | **LTX-2 Community License Agreement**; trainer code Apache-2.0 | **accepted** 2026-11-07 — see below |
+| LTX-2.5 (Lightricks) | **LTX-2.x Community License Agreement** (2026-08-11, amended 2026-10-29) | **awaiting decision** — see below |
 
 ### Trace the chain, and record the chain
 
@@ -261,11 +262,42 @@ What the agreement asks, as read for this decision (not legal advice):
 * breach terminates the licence and requires deleting the weights;
   suing Lightricks over IP in the model ends it too.
 
-**Still to verify on download:** the agreement shipped with the gated
-LTX-2.5 weights themselves. The text above was read for LTX-2; one
-secondary listing calls the weights non-commercial, which conflicts
-with the primary text. If the 2.5 page says non-commercial, that is a
-blocker under the standing rule and this acceptance does not reach it.
+**Omitted from the summary put to Monte:** Attachment A item 20, which
+bars using the model in "any product, service, or application that
+directly competes with Licensor's commercial products or services"
+without a separate commercial licence. Lightricks sells LTX Studio; an
+automated animation desk could be argued to compete with it. It is in
+both agreements.
+
+### LTX-2.5 is under a different agreement — not yet accepted
+
+Found 2026-11-07 in the `Lightricks/LTX-2` checkout at `4f52161`: the
+README's model table puts **LTX-2.3 under the LTX-2 Community License**
+(`LICENSE-2`, the one accepted above) and **LTX-2.5 under the
+LTX-2.x Community License Agreement** (`LICENSE-2_x`, dated
+2026-08-11, amended 2026-10-29; its §1.9: "applicable to all LTX-2.5
+versions released since August 11, 2026"). It is not non-commercial.
+Against `LICENSE-2`, it keeps the $10M threshold, the derivative terms
+and the use restrictions, and adds:
+
+* **§2.2:** a Non-Commercial Purpose carve-out that lets entities over
+  $10M test and evaluate without paying (a relaxation; it does not
+  touch entities below the threshold);
+* **§2.1:** a Commercial Entity in breach owes back licence fees;
+* **§3.5:** a LoRA may not be transferred to an entity over $10M unless
+  that entity already holds a paid licence, and the transferee must be
+  told so in writing;
+* **§6:** comply with AI regulations (EU AI Act, California AI
+  Transparency Act); **do not remove or circumvent watermarking,
+  provenance metadata or latent disclosure** in the model or its
+  Outputs; Lightricks may restrict use remotely; indemnity for
+  regulatory breach;
+* **Attachment A** incorporates an Acceptable Use Policy by URL, which
+  Lightricks may update, the version in force at the time of use
+  governing.
+
+**Status: awaiting Monte's decision.** Until then, LTX-2.3 (under the
+accepted agreement) is the model this decision covers.
 
 The first use is a proof-of-concept LoRA of the run-cycle character
 (working name *Zoephan*). The LoRA and its outputs derive from Wiki Wiki
