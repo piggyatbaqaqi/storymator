@@ -13,14 +13,22 @@ weights if needed; a rented GPU is acceptable — the art is not to be
 
 ## Prepare
 
-- [ ] **Trainer.** Clone `Lightricks/LTX-2` and set up
-  `packages/ltx-trainer` in its own environment. Not the old
+- [x] **Trainer.** Cloned `Lightricks/LTX-2` to
+  `~/src/github.com/Lightricks/LTX-2` at `4f52161` (2026-11-04), not
+  forked: nothing found so far needs a code change. Not the old
   `LTX-Video-Trainer` checkout, which targets LTXV 0.9.x.
-- [ ] **Checkpoint.** Find out whether the trainer accepts the 22B
-  *distilled* 2.5 transformer LTX Desktop already has, or needs a
-  dev/full checkpoint. Monte accepts the gated 2.5 terms on Hugging
-  Face; record the 2.5 licence text in `LICENSES.md` (a non-commercial
-  term would still block).
+- [ ] **Environment.** Set up `packages/ltx-trainer` in its own
+  environment (it uses `uv`).
+- [ ] **Checkpoint.** The trainer's docs accept a 2.5 split pack
+  (transformer, packed Gemma 4 encoder, VAEs), which matches the files
+  LTX Desktop already has, but never say whether the *distilled*
+  transformer can be trained or a dev one is expected. They do warn to
+  match the training base to the inference base, and Desktop runs the
+  distilled one. Settle it in the smoke run. Monte accepts the gated
+  2.5 terms on Hugging Face; record the 2.5 licence text in
+  `LICENSES.md` (a non-commercial term would still block).
+- [ ] **Video only.** The shipped configs train audio too; our clips
+  are silent, so set `audio.is_generated: false`.
 - [ ] **Clean the frames.** White out the top-right number-box edge and
   the scan-edge strips (frames 5, 11 and 12 most visibly); convert
   mode L to RGB. Keep registration: no per-frame cropping.
@@ -42,8 +50,8 @@ weights if needed; a rented GPU is acceptable — the art is not to be
 - [ ] **Preprocess** latents and text embeddings with the trainer's
   dataset step.
 - [ ] **Smoke run** on a small subset: does it fit in 24 GB? In order,
-  try the INT8 low-VRAM config, 4-bit weights, a smaller bucket, then a
-  rented GPU.
+  try the INT8 low-VRAM config, `quantization: "int4-quanto"` (already
+  a config option, no patch), a smaller bucket, then a rented GPU.
 - [ ] **Three short runs:** stills only, clips only, mixed
   (`batch_size: 1`). Same prompts, same seeds.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
