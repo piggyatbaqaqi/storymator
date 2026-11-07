@@ -79,9 +79,13 @@ weights if needed; a rented GPU is acceptable — the art is not to be
     upright, the coat tails barely move, and frames 17–21 ghost
     between poses. This is the result the LoRA must beat.
   - Not run: the reference-sheet ("ingredients") route.
-- [ ] **Trigger word.** Decide whether to keep `Zoephan` as the
-  trigger given its elephant prior, or train on a trigger with no
-  prior and keep Zoephan as the character's name.
+- [ ] **Trigger word.** `Zoephan` has an elephant prior, so it stays
+  the character's name and the trigger is chosen separately. The
+  operator's candidates were tested on the stock model 2026-11-07, one
+  seed each (lab repo, `spikes/ltx-lora-2026-11-07/triggers/`):
+  Phenak gave a big-headed cartoon kid, Cellauf a generic boy,
+  Vandervell a young man in blue-tinted jeans, and **Zoet a
+  featureless mannequin** — the least prior. Awaiting the choice.
 - [ ] **Preprocess** latents and text embeddings with the trainer's
   dataset step.
 - [ ] **Smoke run** on a small subset: does it fit in 24 GB? In order,
