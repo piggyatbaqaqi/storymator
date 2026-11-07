@@ -17,8 +17,11 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   `~/src/github.com/Lightricks/LTX-2` at `4f52161` (2026-11-04), not
   forked: nothing found so far needs a code change. Not the old
   `LTX-Video-Trainer` checkout, which targets LTXV 0.9.x.
-- [ ] **Environment.** Set up `packages/ltx-trainer` in its own
-  environment (it uses `uv`).
+- [x] **Environment.** `uv sync` at the repo root, 2026-11-07, into
+  `LTX-2/.venv`: torch 2.13.0+cu132, sees the RTX 5090 Laptop (sm_120);
+  `ltx_trainer` and `optimum.quanto` import. The snap `uv` is broken
+  on this machine; the one in the `storymator` conda env (0.12.2) was
+  used.
 - [ ] **Checkpoint.** The trainer's docs accept a 2.5 split pack
   (transformer, packed Gemma 4 encoder, VAEs), which matches the files
   LTX Desktop already has, but never say whether the *distilled*
