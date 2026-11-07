@@ -7,7 +7,8 @@
     "created": "2001",
     "supplied_by": "Dr. Daniel Boulos",
     "captured": "2026-09-20",
-    "rights": "Wiki Wiki Cartoons owns these images outright. Not published: the artwork is deliberately kept out of this repository, which publishes. Monte, 2026-10-13."
+    "rights": "Wiki Wiki Cartoons owns these images outright. Not published: the artwork is deliberately kept out of this repository, which publishes. Monte, 2026-10-13.",
+    "training": "Dr. Boulos gave explicit permission to train on this art when he sent it (confirmed by Monte, 2026-11-07). Permission to train is not permission to publish: LoRAs and generated frames derive from the art and stay unpublished too."
   },
   "location": {
     "note": "Out of tree by decision. Set STORYMATOR_CORPORA or pass the path explicitly; tests skip when it is absent.",
@@ -40,7 +41,7 @@
     "structure": "Two passes of one 12-drawing run cycle. Twelve graphite cleanups numbered 1-12; twelve blue roughs numbered 1..10 with 1.5 and 6.5 inserted, so the cleanup pass renumbered. Pairing confirmed by overlay, not arithmetic.",
     "asterisks": "Rough 1, 6 and 10 only; no cleanup carries one. Hypothesis: they mark keys or extremes -- 1 and 6 are half a cycle apart. PUT TO DANIEL 2026-10-13, ANSWER OUTSTANDING.",
     "ground_lines": "Faint lines at lower left of the roughs are ground lines, perhaps with a hint of shadow (Monte, 2026-10-13).",
-    "absent": "No timing chart on any sheet, and no exposure sheet. Numbers and asterisks are the only annotation.",
+    "absent": "No timing chart on any sheet, and no exposure sheet. Numbers and asterisks are the only annotation. Timing is recorded under reading.timing from the artist, not from the sheets.",
     "sheet_sizes": {
       "note": "Stored sizes are NOT uniform, so absolute pixel coordinates do not transfer between sheets. Anchor to an edge instead. One sheet is 64 px narrower than the rest.",
       "counts": {
@@ -50,7 +51,9 @@
         "2313x3281": 2
       }
     },
-    "scan_edges": "Three sheets carry a thin dark scan-edge strip along one edge (frames 11, 15, 16 by file order), and one has an edge strip at the right (frame 5). Harmless, but an ink detector will find them."
+    "scan_edges": "Three sheets carry a thin dark scan-edge strip along one edge (frames 11, 15, 16 by file order), and one has an edge strip at the right (frame 5). Harmless, but an ink detector will find them.",
+    "timing": "On twos at 24 fps: each of the 12 cleanups is held for two frames, one cycle is 24 frames = 1 s. Not on any sheet; Monte confirmed it with Dr. Boulos, 2026-11-07.",
+    "character": "Working name Zoephan (Monte, 2026-11-07): a nod to the zoetrope this cycle was drawn for, and to The Illusion of Life. Used as the LoRA trigger word."
   },
   "measurements": {
     "px_per_inch": 200,

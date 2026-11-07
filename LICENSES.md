@@ -213,6 +213,7 @@ different class and were never OpenRAIL questions:
 | GIMM-VFI | unverified | **verify on adoption** |
 | FrameFusion | **CC BY-NC 4.0** | **blocker**, verified 2026-10-16 |
 | RIFE (Practical-RIFE) | MIT code and weights | **clean**; one open question on training-data terms |
+| LTX-2 / 2.3 / 2.5 (Lightricks) | **LTX-2 Community License Agreement**; trainer code Apache-2.0 | **accepted** 2026-11-07 — see below |
 
 ### Trace the chain, and record the chain
 
@@ -236,6 +237,41 @@ that states its own terms, and record the *chain* here rather than the
 conclusion, so the next reader can check it instead of trusting it. A
 model card's licence tag is a claim about the last link only.
 
+## LTX-2 Community License accepted, 2026-11-07
+
+**A new class, asked before anything downloaded.** Lightricks licenses
+the LTX-2 *code* (including `packages/ltx-trainer`) under Apache-2.0,
+but the *weights* under the **LTX-2 Community License Agreement**
+(January 5, 2026; text per LTX Desktop's `NOTICES.md` and the ScanCode
+copy `ltx-2-cla-2026`). It is neither FOSS nor OpenRAIL-M, so the
+2026-10-13 decision did not cover it. Monte, accepting on behalf of
+Wiki Wiki Cartoons:
+
+> I accept the LTX-2 Community License on behalf of Wiki Wiki Cartoons.
+
+What the agreement asks, as read for this decision (not legal advice):
+
+* free below **$10M annual revenue**, counted across affiliates;
+* fine-tuned or adapted weights — a LoRA trained on LTX-2 — are
+  **Derivatives**, and may be distributed only under the same terms
+  with a copy of the agreement; there is **no duty to publish** them;
+* **no claim on Outputs**;
+* an Attachment A of use restrictions (twenty items, military use among
+  them), carried downstream;
+* breach terminates the licence and requires deleting the weights;
+  suing Lightricks over IP in the model ends it too.
+
+**Still to verify on download:** the agreement shipped with the gated
+LTX-2.5 weights themselves. The text above was read for LTX-2; one
+secondary listing calls the weights non-commercial, which conflicts
+with the primary text. If the 2.5 page says non-commercial, that is a
+blocker under the standing rule and this acceptance does not reach it.
+
+The first use is a proof-of-concept LoRA of the run-cycle character
+(working name *Zoephan*). The LoRA and its outputs derive from Wiki Wiki
+Cartoons' art, so they stay unpublished under the section below whatever
+the LTX licence would permit.
+
 ## Reference artwork — Wiki Wiki Cartoons, held out of tree
 
 **Settled 2026-10-13.** The `ManRunCycle_Rough_CleanUp_2001_WWC` corpus —
@@ -244,6 +280,11 @@ model card's licence tag is a claim about the last link only.
 
 > WikiWikiCartoons owns these images outright and we don't plan to
 > publish the original art at this time.
+
+**Training is permitted; publication still is not.** Dr. Boulos said
+explicitly, when he sent the art, that it may be used for training
+(Monte, 2026-11-07). Models trained on it and frames generated from them
+derive from the art and are held out of tree the same way.
 
 **So it is not in this repository, and that is deliberate rather than
 incidental.** This repository publishes; committing the artwork would
