@@ -302,9 +302,18 @@ and the use restrictions, and adds:
 
 **Standing consequence for the pipeline:** no step may strip a
 watermark, provenance metadata or latent disclosure from LTX-2.5
-output (§6, Attachment A item 19). Whether 2.5 output carries any is
-not yet known; check the first generated file before any
-post-processing touches it.
+output (§6, Attachment A item 19).
+
+**What 2.5 output carries (checked 2026-11-07, `ltx-pipelines` at
+`4f52161`):** watermarking is **opt-in**. `--marker-root-path` points
+the pipelines at a separately supplied VideoSeal / AudioSeal pack; its
+help says "Default: no marking", and `markers_from_args` returns no
+markers when it is absent. So output generated here without that flag
+carries no pipeline watermark to preserve. If a marking pack is ever
+used — or output comes from LTX Desktop, which this check does not
+cover — the rule above applies to it. Attachment A item 5 (disclose
+machine-generated content when disseminating) applies regardless if
+output is ever shown outside the project.
 
 The first use is a proof-of-concept LoRA of the run-cycle character
 (working name *Zoephan*). The LoRA and its outputs derive from Wiki Wiki
