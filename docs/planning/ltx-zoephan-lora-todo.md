@@ -32,14 +32,26 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   `LICENSES.md` (a non-commercial term would still block).
 - [ ] **Video only.** The shipped configs train audio too; our clips
   are silent, so set `audio.is_generated: false`.
-- [ ] **Clean the frames.** White out the top-right number-box edge and
-  the scan-edge strips (frames 5, 11 and 12 most visibly); convert
-  mode L to RGB. Keep registration: no per-frame cropping.
-- [ ] **Build the dataset.** 12 clips of 25 frames — the 12 drawings on
-  twos, starting at each drawing in turn, closing on the first again —
-  plus the 12 drawings as stills. Bucket 1184×832 (paper aspect
-  1.4232), falling back to 960×672 or 640×448. Index by drawing number
-  from the manifest, never by glob.
+- [x] **Clean the frames.** Done 2026-11-07. Rather than a fixed
+  corner box, the cleaner keeps the figure and drops everything else:
+  dark components touching the sheet edge go (the number-box edge on
+  every sheet, the right-edge strip on 5, the bar on 11), and so does
+  anything not within 40 px of a stroke of 500 px or more (number
+  ghosts, dust). 31–3123 px whitened per drawing. Checked by eye on a
+  red overlay of every removal: none touches the figure; the 23
+  removals within 150 px of it are 1–10 px dust dots, the two largest
+  and one inside an ear confirmed against the colour scan. Converted
+  to RGB; nothing cropped or moved.
+- [x] **Build the clips and stills.** Done 2026-11-07: 12 clips of 25
+  frames at 1184×832, 24 fps, H.264 CRF 4 — the 12 drawings on twos,
+  starting at each drawing in turn, closing on the first again — plus
+  the 12 stills, box-filtered from full resolution. Indexed by drawing
+  number from the manifest. Every clip decoded and matched frame by
+  frame against the stills: order correct in all 12, worst mean error
+  0.02/255.
+- [ ] **Line weight.** At 1184×832 the lines average to a pale grey
+  (drawing 1: median 190/255, darkest 88). Decide whether to train on
+  that, which is faithful to pencil, or darken first.
 - [ ] **Captions.** One metadata JSONL. Each caption says what varies
   (pose, hat lifting on 5 and 11, cane swing); style words once.
   Trigger `Zoephan` via `training_strategy.data.lora_trigger`, not in
