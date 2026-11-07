@@ -65,9 +65,23 @@ weights if needed; a rented GPU is acceptable — the art is not to be
 
 ## Train
 
-- [ ] **Baseline before training.** The fixed prompt set on stock LTX
-  with no LoRA, and the reference-sheet ("ingredients") route if it
-  runs locally. This is what the LoRA must beat.
+- [x] **Baseline before training.** Run 2026-11-07 on stock LTX-2.5
+  22B distilled, no LoRA (`ltx_pipelines.distilled`, fp8-cast weights,
+  CPU offload; 1088×768, 49 frames, seed 42; ~4 min each, fits 24 GB).
+  Evidence in the lab repo, `spikes/ltx-lora-2026-11-07/baseline/`.
+  - Short text prompt: pencil style and an alternating-leg run are
+    right, but the figure is a cartoon **elephant** — the stock model
+    reads "Zoephan" as elephant.
+  - Full 719-token training caption: an incoherent hat-and-cane
+    creature with a snout, dissolving into scribble in many frames.
+  - Drawing 1 as first frame: stays on model; the legs cycle through
+    intermediate positions, but the hat never lifts, the cane stays
+    upright, the coat tails barely move, and frames 17–21 ghost
+    between poses. This is the result the LoRA must beat.
+  - Not run: the reference-sheet ("ingredients") route.
+- [ ] **Trigger word.** Decide whether to keep `Zoephan` as the
+  trigger given its elephant prior, or train on a trigger with no
+  prior and keep Zoephan as the character's name.
 - [ ] **Preprocess** latents and text embeddings with the trainer's
   dataset step.
 - [ ] **Smoke run** on a small subset: does it fit in 24 GB? In order,
