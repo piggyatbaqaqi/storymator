@@ -135,8 +135,25 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   launches: upstream has no `uv.lock` (vendored the local one), and
   Modal's mount paths break the preprocess fingerprint
   (`allow_stale_preprocessed` for the bench only).
-- [ ] **Three short runs:** stills only, clips only, mixed
-  (`batch_size: 1`). Same prompts, same seeds.
+- [x] **Three short runs:** stills only, clips only, mixed
+  (`batch_size: 1`). Same prompts, same seeds. Run 2026-11-07 on
+  Modal H100s, 2000 steps each, checkpoints every 250 on the
+  `zoet-runs` volume; $9.10 for the three. Evidence in the lab repo,
+  `spikes/ltx-lora-2026-11-07/compare/`. Read from the trainer's
+  validation, which can only approximate the distilled sampler (8
+  steps, no guidance), so this ranks the arms; it does not judge
+  them:
+  - Drawing 1 as first frame: **stills-only holds the model best**
+    (darker, coherent lines; hat, ears, nose, cane, coat in nearly
+    every frame). Mixed ghosts more; clips-only is faintest and
+    smears mid-clip.
+  - Text only: mixed draws a top-hatted runner from step 1250 with no
+    props; stills-only gets the hat by 1500 but holds a sheet of paper
+    in almost every sample (the style sentence's "on white paper");
+    clips-only never learns the hat.
+  - Not yet done: re-rendering chosen checkpoints in
+    `ltx_pipelines.distilled`, and judging motion with foot band crops
+    against the drawings.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
   confirm a visible difference with the LoRA on and off.
 
