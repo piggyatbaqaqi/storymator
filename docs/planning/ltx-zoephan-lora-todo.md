@@ -95,11 +95,23 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   documentation (operator, 2026-11-07), **except** experiment records
   — the spike directory and its write-up keep the history as it
   happened.
-- [ ] **Preprocess** latents and text embeddings with the trainer's
-  dataset step.
-- [ ] **Smoke run** on a small subset: does it fit in 24 GB? In order,
-  try the INT8 low-VRAM config, `quantization: "int4-quanto"` (already
-  a config option, no patch), a smaller bucket, then a rented GPU.
+- [x] **Preprocess** latents and text embeddings, 2026-11-07, third
+  attempt: the 8-bit text encoder plus embeddings processor peak at
+  20.8 of 23.4 GiB, so it only fits with other GPU processes closed.
+- [ ] **Smoke run** (10 steps): does it fit in 24 GB? Evidence in the
+  lab repo, `spikes/ltx-lora-2026-11-07/runs/`.
+  - Validation prompt caching loads the text encoder at startup and
+    OOMs; the smoke config has no validation samples.
+  - int8: OOM on the first forward pass (22B int8 ≈ 22 GB).
+  - int4: needs the venv's ninja, CUDA 13.2 and a `libcudart.so`
+    link on the path (`train.sh`), and two patches applied by a
+    launcher (`train_patched.py`) without touching the trainer: root
+    `*adaln_single` modules left unquantized (an upstream exclusion
+    bug), and int4 layers run in bf16 inside the fp32 pass.
+  - **Trains: all 10 steps ran, peak 21.7 GB, about 2.4 min/step**
+    (~40 h per 1000 steps). The final checkpoint save then OOMed,
+    unpacking every int4 weight on the GPU to build the full state
+    dict.
 - [ ] **Three short runs:** stills only, clips only, mixed
   (`batch_size: 1`). Same prompts, same seeds.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
