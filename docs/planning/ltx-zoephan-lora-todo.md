@@ -112,14 +112,29 @@ weights if needed; a rented GPU is acceptable — the art is not to be
     (~40 h per 1000 steps). The final checkpoint save then OOMed,
     unpacking every int4 weight on the GPU to build the full state
     dict.
-- [ ] **Rented-GPU benchmark.** At 40 h per 1000 steps locally, price
-  a rented run on a measurement: lab repo,
-  `spikes/ltx-lora-2026-11-07/modal/bench.py` times 30 steps of the
-  same recipe in bf16 (no quantization, no launcher patches) on H100
-  and A100 80GB, plus H100 without gradient checkpointing, stills and
-  clips timed separately. Modal GPU rates read 2026-11-07: H100
-  $3.95/h, A100 80GB $2.50/h, plus about $1.14/h for 8 cores and
-  96 GiB. Built, not yet run.
+- [x] **Rented-GPU benchmark**, run 2026-11-07 on Modal: lab repo,
+  `spikes/ltx-lora-2026-11-07/modal/bench.py`, summary in
+  `runs/modal_bench_summary.json`. 30 steps of the same recipe in bf16
+  (no quantization, no launcher patches); stills and clips timed
+  separately, weighted equally as the dataset is.
+
+  | Arm | Still | Clip | Peak | 1000 steps |
+  |---|---|---|---|---|
+  | H100, checkpointing on | 0.62 s | 1.17 s | 44 GB | ~16 min, ~$1.35 |
+  | A100 80GB, checkpointing on | 0.98 s | 3.01 s | 44 GB | ~34 min, ~$2.10 |
+  | H100, checkpointing off | 0.38 s | OOM | 80 GB | — |
+
+  Rates read 2026-11-07: H100 $3.95/h, A100 80GB $2.50/h, plus about
+  $1.14/h for 8 cores and 96 GiB. Launch to first step ~50 s; Modal
+  billed about $0.60 for all three arms, so container start adds a
+  few minutes per run. The final LoRA save works in bf16 (214 MB).
+  Checkpointing must stay on: the first clip OOMs without it. Not
+  measured: validation (text encoder plus 49-frame samples), which
+  real runs will add. Locally the same recipe in int4 ran ~2.4
+  min/step, ~150× slower than the H100. Getting there took three
+  launches: upstream has no `uv.lock` (vendored the local one), and
+  Modal's mount paths break the preprocess fingerprint
+  (`allow_stale_preprocessed` for the bench only).
 - [ ] **Three short runs:** stills only, clips only, mixed
   (`batch_size: 1`). Same prompts, same seeds.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
