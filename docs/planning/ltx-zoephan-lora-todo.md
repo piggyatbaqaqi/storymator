@@ -112,6 +112,14 @@ weights if needed; a rented GPU is acceptable — the art is not to be
     (~40 h per 1000 steps). The final checkpoint save then OOMed,
     unpacking every int4 weight on the GPU to build the full state
     dict.
+- [ ] **Rented-GPU benchmark.** At 40 h per 1000 steps locally, price
+  a rented run on a measurement: lab repo,
+  `spikes/ltx-lora-2026-11-07/modal/bench.py` times 30 steps of the
+  same recipe in bf16 (no quantization, no launcher patches) on H100
+  and A100 80GB, plus H100 without gradient checkpointing, stills and
+  clips timed separately. Modal GPU rates read 2026-11-07: H100
+  $3.95/h, A100 80GB $2.50/h, plus about $1.14/h for 8 cores and
+  96 GiB. Built, not yet run.
 - [ ] **Three short runs:** stills only, clips only, mixed
   (`batch_size: 1`). Same prompts, same seeds.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
