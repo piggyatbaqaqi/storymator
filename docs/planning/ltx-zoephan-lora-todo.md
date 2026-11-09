@@ -151,9 +151,39 @@ weights if needed; a rented GPU is acceptable — the art is not to be
     props; stills-only gets the hat by 1500 but holds a sheet of paper
     in almost every sample (the style sentence's "on white paper");
     clips-only never learns the hat.
-  - Not yet done: re-rendering chosen checkpoints in
-    `ltx_pipelines.distilled`, and judging motion with foot band crops
-    against the drawings.
+  - Operator, 2026-11-09: stills `step_001750_2` is the best sample
+    (likes the pony-tail); the floating hat and the mid-step crouch are
+    lost; more steps not obviously better.
+- [x] **Renders through the real pipeline**, 2026-11-09 on Modal H100s:
+  `ltx_pipelines.distilled` with the baseline's settings (fp8-cast,
+  1088×768, 49 frames, seed 42), no offload, ~1.5 min each. Stock (same
+  Zoet prompt), stills at 1000/1750/2000, mixed at 1750/2000, text-only
+  and drawing-1 first frame. Evidence in the lab repo,
+  `spikes/ltx-lora-2026-11-07/renders/`: figure, feet and hat montages
+  (drawings on twos above frames 0–23 and 24–47, identical crops) from
+  `montage_render.sh`, and `overview_{i2v,t2v}.png`.
+  - The LoRA loads: with the same prompt, stock draws a bald generic
+    man; every stills checkpoint draws the top-hatted character.
+  - Drawing 1 as first frame: stills stays on model through all 48
+    frames at every checkpoint, and the three are hard to rank. Stock
+    breaks into scribble in some frames. Mixed goes faint and smeary
+    after frame 0, so it is worse in the real pipeline too.
+  - Text only: stills draws hat, coat and fists, faint, with no cane
+    and **no paper prop** at any checkpoint.
+  - Motion (feet band): feet travel through contact, passing and up in
+    order, with smears in a few frames. A step every ~9.6 frames
+    against the drawings' 12, the same rhythm as stock. No crouch on
+    the down poses (d5, d11), no hat lift, and the cane stays upright.
+    **The LoRA has learned the look, not this cycle's acting.**
+- [x] **Drop "on white paper"** from the style sentence (operator,
+  2026-11-09): `captions_nopaper.json`, `dataset_nopaper.jsonl`;
+  stills-only retrained 2000 steps. **It did not remove the prop**: the
+  trainer's text-only samples still hold a sheet from step 750. In the
+  real pipeline there is still no prop, and the hat is lost at
+  1000/1750. Hypothesis, untested: the prompt's "each drawing held for
+  two frames" comes only from the clip captions, which stills-only
+  never saw; mixed saw it and never drew the prop. Modal for the day:
+  $5.60.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
   confirm a visible difference with the LoRA on and off.
 
