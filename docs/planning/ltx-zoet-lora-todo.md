@@ -213,6 +213,10 @@ weights if needed; a rented GPU is acceptable — the art is not to be
     frames", which may invite holds.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
   confirm a visible difference with the LoRA on and off.
+  The step-1750 stills LoRA is installed at
+  `~/.local/share/LTXDesktop/models/loras/zoet/zoet-stills-1750-lora.safetensors`
+  (2026-11-10). Desktop's API needs the Electron app's token, so the
+  with/without pair is run from the UI by the operator.
 
 ## Pencil test
 
@@ -220,7 +224,7 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   motion: does a foot travel through intermediate positions, in order,
   without jumping or holding, and stay on model? Band crops of the foot,
   generated frames and Dr. Boulos's drawings in two rows of one montage.
-- [ ] Write up `docs/planning/ltx-lora-poc.md`; update
+- [x] Write up [ltx-lora-poc.md](ltx-lora-poc.md) (2026-11-10); update
   `pencil-test-architecture.md` §3, `inking-and-tween-plugins.md` §7a
   and `bibliography.bib`. Archive frames, montages and logs to
   `~/lab/storymator/spikes/ltx-lora-<date>`; none of it is published.

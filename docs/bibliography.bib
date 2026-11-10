@@ -283,3 +283,43 @@
                   this; their weights carry CreativeML OpenRAIL-M,
                   accepted for this project 2026-10-13.},
 }
+
+@misc{ltx2,
+  title        = {{LTX-2}: model code, trainer and inference pipelines},
+  author       = {{Lightricks}},
+  howpublished = {\url{https://github.com/Lightricks/LTX-2}},
+  note         = {Monorepo of \texttt{ltx-core}, \texttt{ltx-pipelines}
+                  and \texttt{ltx-trainer}; used at commit
+                  \texttt{4f52161} for the 2026-11 LoRA proof of concept
+                  (ltx-lora-poc.md).  **Code Apache-2.0; weights under
+                  the LTX-2 Community License Agreement** -- traced and
+                  accepted 2026-11-07, see LICENSES.md.},
+}
+
+@misc{ltx25,
+  title        = {{LTX-2.5}: 22B distilled video model weights},
+  author       = {{Lightricks}},
+  howpublished = {\url{https://huggingface.co/Lightricks/LTX-2.5}},
+  note         = {Gated repository; the split pack (distilled
+                  transformer, Gemma 4 12B text encoder, video VAE)
+                  matches the files LTX Desktop ships.  **LTX-2.x
+                  Community License Agreement** (2026-08-11, amended
+                  2026-10-29), not the LTX-2 one -- traced and accepted
+                  2026-11-07, see LICENSES.md.  A LoRA trained on it is
+                  a Derivative under that agreement.},
+}
+
+@article{hu2021lora,
+  title        = {{LoRA}: Low-Rank Adaptation of Large Language Models},
+  author       = {Hu, Edward J. and Shen, Yelong and Wallis, Phillip and
+                  Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and
+                  Wang, Lu and Chen, Weizhu},
+  journal      = {arXiv preprint arXiv:2106.09685},
+  year         = {2021},
+  eprint       = {2106.09685},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CL},
+  note         = {The adapter method behind the character LoRA of
+                  ltx-lora-poc.md (rank 16 on the attention
+                  projections).},
+}

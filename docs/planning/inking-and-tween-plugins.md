@@ -932,6 +932,19 @@ on inbetweening yet: the drawn poses land only in the destroyed
 latents. Full record in
 [docs/experiments/2026-10-30-tooncomposer-runningman-first-color-run.md](../experiments/2026-10-30-tooncomposer-runningman-first-color-run.md).
 
+### 7a.10 Pass ten, 2026-11-10 — LTX-2.5 with a character LoRA
+
+A different route to the same question: teach a video model the
+character, then pin Dr. Boulos's drawings as keyframes. A LoRA trained
+on the twelve cleanups (stills beat clips and mixed; 23 min on a
+rented H100) holds the character's look through 48 frames, a clear
+gain over stock. It carries none of the cycle's acting: no crouch, no
+hat lift, the cane upright, and the stride at stock's rhythm. With
+drawings 1, 5 and 11 pinned at frames 0, 8 and 20, the keys appear on
+time but are reached through scribble and left by a dissolve. Keys
+every cycle give jump and hold. The LoRA is no better at this than the
+stock model. Full record in [ltx-lora-poc.md](ltx-lora-poc.md).
+
 ## 7b. Specification: how this project uses ToonComposer
 
 Written 2026-10-16, after the spike. Supersedes the loose treatment in
