@@ -53,7 +53,7 @@
     },
     "scan_edges": "Three sheets carry a thin dark scan-edge strip along one edge (frames 11, 15, 16 by file order), and one has an edge strip at the right (frame 5). Harmless, but an ink detector will find them.",
     "timing": "On twos at 24 fps: each of the 12 cleanups is held for two frames, one cycle is 24 frames = 1 s. Not on any sheet; Monte confirmed it with Dr. Boulos, 2026-11-07.",
-    "character": "Working name Zoephan (Monte, 2026-11-07): a nod to the zoetrope this cycle was drawn for, and to The Illusion of Life. Used as the LoRA trigger word."
+    "character": "Zoet (Monte, 2026-11-10), also the LoRA trigger word. Working name Zoephan from 2026-11-07, a nod to the zoetrope this cycle was drawn for and to The Illusion of Life; it was never used as the trigger, because stock LTX-2.5 draws an elephant for it, and Zoet, tested as the trigger with the least prior, became the name."
   },
   "measurements": {
     "px_per_inch": 200,

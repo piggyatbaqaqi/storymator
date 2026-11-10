@@ -316,9 +316,9 @@ machine-generated content when disseminating) applies regardless if
 output is ever shown outside the project.
 
 The first use is a proof-of-concept LoRA of the run-cycle character
-(working name *Zoephan*). The LoRA and its outputs derive from Wiki Wiki
-Cartoons' art, so they stay unpublished under the section below whatever
-the LTX licence would permit.
+(*Zoet*; working name Zoephan until 2026-11-10). The LoRA and its
+outputs derive from Wiki Wiki Cartoons' art, so they stay unpublished
+under the section below whatever the LTX licence would permit.
 
 ## Reference artwork — Wiki Wiki Cartoons, held out of tree
 

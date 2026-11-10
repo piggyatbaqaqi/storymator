@@ -1,7 +1,8 @@
-# LTX LoRA of Zoephan — to-do
+# LTX LoRA of Zoet — to-do
 
 Started 2026-11-07. A proof of concept: teach LTX-2.x the run-cycle
-character, working name **Zoephan**, from the 12 dropped-out cleanups of
+character, **Zoet** (working name Zoephan until 2026-11-10), from the
+12 dropped-out cleanups of
 `manrun_cycle_2001_wwc`. If the result is good, more drawings of the
 character come from Dr. Boulos.
 
@@ -22,7 +23,7 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   `ltx_trainer` and `optimum.quanto` import. The snap `uv` is broken
   on this machine; the one in the `storymator` conda env (0.12.2) was
   used.
-- [ ] **Checkpoint.** The trainer's docs accept a 2.5 split pack
+- [x] **Checkpoint.** The trainer's docs accept a 2.5 split pack
   (transformer, packed Gemma 4 encoder, VAEs), which matches the files
   LTX Desktop already has, but never say whether the *distilled*
   transformer can be trained or a dev one is expected. They do warn to
@@ -30,8 +31,13 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   distilled one. Settle it in the smoke run. Monte accepts the gated
   2.5 terms on Hugging Face; record the 2.5 licence text in
   `LICENSES.md` (a non-commercial term would still block).
-- [ ] **Video only.** The shipped configs train audio too; our clips
-  are silent, so set `audio.is_generated: false`.
+  Settled: the *distilled* transformer trains (smoke run, then the
+  Modal runs) and its LoRAs load in `ltx_pipelines.distilled`; the 2.5
+  agreement is recorded in `LICENSES.md`, accepted 2026-11-07.
+- [x] **Video only.** The shipped configs train audio too; our clips
+  are silent, so set `audio.is_generated: false`. Done by leaving audio
+  out of the config altogether: `audio_vae_path: null` and no audio
+  modality block in `configs/mixed.yaml`.
 - [x] **Clean the frames.** Done 2026-11-07. Rather than a fixed
   corner box, the cleaner keeps the figure and drops everything else:
   dark components touching the sheet edge go (the number-box edge on
@@ -58,10 +64,11 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   7–9), the feet and hands by side, the hat, cane, coat tails and
   trouser cuffs; identity is left to the trigger. Stills 81–108 Gemma
   tokens, clips 719, limit 1024.
-- [ ] **Captions.** One metadata JSONL. Each caption says what varies
+- [x] ~~**Captions.** One metadata JSONL. Each caption says what varies
   (pose, hat lifting on 5 and 11, cane swing); style words once.
   Trigger `Zoephan` via `training_strategy.data.lora_trigger`, not in
-  the captions.
+  the captions.~~ Superseded by the approved captions above and the
+  trigger choice below.
 
 ## Train
 
@@ -79,7 +86,7 @@ weights if needed; a rented GPU is acceptable — the art is not to be
     upright, the coat tails barely move, and frames 17–21 ghost
     between poses. This is the result the LoRA must beat.
   - Not run: the reference-sheet ("ingredients") route.
-- [ ] **Trigger word.** `Zoephan` has an elephant prior, so it stays
+- [x] **Trigger word.** `Zoephan` has an elephant prior, so it stays
   the character's name and the trigger is chosen separately. The
   operator's candidates were tested on the stock model 2026-11-07, one
   seed each (lab repo, `spikes/ltx-lora-2026-11-07/triggers/`):
@@ -89,12 +96,16 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   Zoet and Cellauf held the pattern: Zoet again a faint generic
   figure, Cellauf again the same boy with hair. **Chosen 2026-11-07:
   `lora_trigger: "Zoet"`**, in the lab repo's
-  `spikes/ltx-lora-2026-11-07/configs/mixed.yaml`.
-- [ ] **Rename after the test pipeline.** Once the whole pipeline has
+  `spikes/ltx-lora-2026-11-07/configs/mixed.yaml`. The character took
+  the trigger's name too, 2026-11-10 (next item).
+- [x] **Rename after the test pipeline.** Once the whole pipeline has
   run end to end, change "Zoephan" to "Zoet" throughout the
   documentation (operator, 2026-11-07), **except** experiment records
   — the spike directory and its write-up keep the history as it
-  happened.
+  happened. Done 2026-11-10: this file (was `ltx-zoephan-lora-todo.md`),
+  the corpus manifest's `character` note and `LICENSES.md`. Lines that
+  record what happened under the old name (the elephant, the original
+  trigger plan) keep it.
 - [x] **Preprocess** latents and text embeddings, 2026-11-07, third
   attempt: the 8-bit text encoder plus embeddings processor peak at
   20.8 of 23.4 GiB, so it only fits with other GPU processes closed.
@@ -205,7 +216,7 @@ weights if needed; a rented GPU is acceptable — the art is not to be
 
 ## Pencil test
 
-- [ ] Generate a run of Zoephan with the trained LoRA and judge it by
+- [x] Generate a run of Zoet with the trained LoRA and judge it by
   motion: does a foot travel through intermediate positions, in order,
   without jumping or holding, and stay on model? Band crops of the foot,
   generated frames and Dr. Boulos's drawings in two rows of one montage.
