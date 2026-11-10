@@ -184,6 +184,22 @@ weights if needed; a rented GPU is acceptable — the art is not to be
   two frames" comes only from the clip captions, which stills-only
   never saw; mixed saw it and never drew the prop. Modal for the day:
   $5.60.
+- [x] **The LoRA as an inbetweener**, 2026-11-10 (operator-approved
+  placement). Drawings pinned as keyframes at their on-twos frame
+  times: k3 = d01@0, d05@8, d11@20; k6 = k3 plus the same keys one
+  cycle later. Stills step 1750 against stock; seed 42, guide strength
+  1.0. Evidence in the lab repo, `renders/montages/*_k3_*`, `*_k6_*`.
+  - The key drawings do appear at their frames, crouch and floating
+    hat included. But they are **reached through scribble and left by
+    dissolving**, not by travel. Between keys the figure returns to a
+    d01-like pose instead of running on through d06–d10.
+  - With keys every cycle (k6) both models **jump and hold**. Stock
+    holds every pose for three frames; the LoRA holds d11 for seven
+    frames and brings the second crouch in eight frames early.
+  - **The LoRA does not help here.** It hits the keys no better than
+    stock, and stock's approach into d05 is cleaner. Not varied: guide
+    strength, the seed, and the prompt's "each drawing held for two
+    frames", which may invite holds.
 - [ ] **Load check.** LTX Desktop skips a mismatched LoRA silently:
   confirm a visible difference with the LoRA on and off.
 
