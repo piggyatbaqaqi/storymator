@@ -88,10 +88,12 @@ slot_ctr_y        = peg_line_y;   // centred, as measured
 //
 // The bar is removed whenever the acrylic comes out, so it is held by M2
 // flat-head machine screws (90 deg, metric) in brass inserts, not wood screws.
-// Its holes are 2.0 mm and countersunk (operator, 2026-11-20): an M2 thread is
-// 1.86-1.98 mm, so the screw has almost no float in the bar.  The inserts are
-// therefore set in EPOXY in an oversize pocket, with the bar screwed down on
-// them while it cures, so the bar locates them.  Wax the screws first.
+// Its holes are 2.42 mm (inside calipers, operator, 2026-11-20; an earlier
+// 2.0 mm reading was rough) and countersunk: a standard M2 clearance, leaving
+// the 1.86-1.98 mm thread 0.2-0.28 mm of float per side.  A hand-drilled
+// insert can easily be off by more than that, so the inserts are still set in
+// EPOXY in an oversize pocket, with the bar screwed down on them while it
+// cures, so the bar locates them.  Wax the screws first.
 bar_pilot_d       = 4.0 / 25.4;     // pocket for a ~3.2-3.5 mm OD M2 knurled insert,
                                     // leaving ~0.3 mm all round for epoxy and float
 bar_pilot_depth   = 6.0 / 25.4;     // below the channel floor; M2 x 6 screws
