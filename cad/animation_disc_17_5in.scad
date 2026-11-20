@@ -42,25 +42,32 @@ sheet_h           = 10.5;     // 12F sheet, into the sheet from the punched edge
 image_lo          = 1.00;     // image area start, from the punched edge
 image_hi          = 10.00;    // image area end, from the punched edge
 optical_ctr       = (image_lo + image_hi) / 2;   // 5.50"
-// Punched edge to peg line.  NOMINAL, never measured: SheetModel.punch_offset_mm
-// in comfyui/comfyui_acme/acme/model.py is 12.0 mm, and the camera fits in
-// docs/planning/landmark-detection.md read 5.0-6.4 mm.  Measure a sheet and
-// put the number here: it moves the whole bar.
-punch_offset      = 12.0 / 25.4;
-peg_line_y        = -(optical_ctr - punch_offset);   // -5.028" with the nominal
+// Punched edge to peg line.  Operator, ruler, 2026-11-20, on a 12F sheet on
+// honbay_0001: 11/32" (8.73 mm), +/- 1/64" reading.  It replaces the 12 mm
+// nominal SheetModel.punch_offset_mm still carries.
+punch_offset      = 11 / 32;
+peg_line_y        = -(optical_ctr - punch_offset);   // -5.15625"
 
 // Peg bar channel, cut 1.5 mm into the top face.  Bar outline from
-// acme_12f_disc-3.scad (mm there, inches here).  ASSUMED, as in rev 3: the
-// bar is centred across its width on the peg line.
+// acme_12f_disc-3.scad (mm there, inches here); its 31.5 mm width has no
+// recorded measurement.  The bar is NOT centred on the peg line: its south
+// edge sits 1/32" south of the punched edge (operator, same date), so the
+// peg line is 12/32" (9.53 mm) from that edge and 21.98 mm from the other.
 slot_len          = 234.0 / 25.4;
 slot_w            = 31.5 / 25.4;
 slot_depth        = 1.5 / 25.4;
 slot_corner_r     = 3.0 / 25.4;   // router bit radius; bar corners must be >= this
-// The bar is 31.5 mm wide, so on these numbers it overlaps the 9" window by
-// 2.35 mm and the acrylic recess by 12.3 mm.  The channel is therefore cut
+bar_edge_to_peg   = 12 / 32;      // bar's south (punched-side) edge to the peg line
+slot_ctr_y        = peg_line_y - bar_edge_to_peg + slot_w / 2;   // -4.911"
+// The bar reaches 21.98 mm north of the peg line, so it overlaps the 9" window
+// by 5.3 mm and the acrylic recess by 15.2 mm.  The channel is therefore cut
 // across the acrylic's south strip as well as the wood, in one pass with the
 // acrylic screwed in, so the bar beds flat across the seam.
-bar_hole_sp       = 133.55 / 25.4;  // centre-to-centre, on the peg line (rev 3)
+// ASSUMED, from rev 3: the screw holes are on the peg line.  The bar photo
+// (data/calibration/distortion/v4k_01/bar_reference.jpg) suggests they sit
+// nearer the south edge than the pegs do.  Transfer-punch them through the
+// bar seated in the channel rather than drilling to these coordinates.
+bar_hole_sp       = 133.55 / 25.4;  // centre-to-centre (rev 3)
 bar_pilot_d       = 1 / 16;         // pilot for M2 / #2 wood screws; the holes land in wood
 bar_pilot_depth   = 0.5;            // below the channel floor
 
@@ -101,7 +108,7 @@ module screw_positions() {
 
 // Peg bar channel, for a part whose top face is at local z = top_z.
 module peg_channel(top_z) {
-    translate([0, peg_line_y, top_z - slot_depth])
+    translate([0, slot_ctr_y, top_z - slot_depth])
         linear_extrude(height = slot_depth + 0.05)
             rounded_rect_2d(slot_len, slot_w, slot_corner_r);
 }
@@ -121,8 +128,8 @@ module grab_holes(h) {
 // Derived layout, in disc coordinates (origin = optical centre).
 sheet_far_y   = peg_line_y - punch_offset + sheet_h;   // +5.00"
 sheet_edge_y  = peg_line_y - punch_offset;             // -5.50"
-slot_lo_y     = peg_line_y - slot_w / 2;
-slot_hi_y     = peg_line_y + slot_w / 2;
+slot_lo_y     = slot_ctr_y - slot_w / 2;
+slot_hi_y     = slot_ctr_y + slot_w / 2;
 target_centres = [
     [ target_dx_ns, sheet_far_y + target_gap + target_piece / 2],      // N
     [ sheet_w / 2 + target_gap + target_piece / 2, 0],                 // E
@@ -258,6 +265,12 @@ assert(screw_x_offset + csink_top_d / 2 < acrylic_w / 2 - 0.25,
 assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_h + expansion_gap) / 2 > 2 / 25.4,
        str("Bar pilot leaves under 2 mm of wood to the acrylic recess"));
 assert(top_ply_thick - slot_depth > 3 / 25.4, "Channel leaves under 3 mm of top ply");
+// The bar's south edge overhangs the punched edge, as measured (1/32").
+assert(abs(slot_lo_y - (sheet_edge_y - 1 / 32)) < 1e-6,
+       "Channel south edge is not 1/32 in south of the punched edge");
+// The round peg (6.44 mm, honbay_0001) must lie inside the bar.
+assert(bar_edge_to_peg > 6.44 / 2 / 25.4 && slot_w - bar_edge_to_peg > 6.44 / 2 / 25.4,
+       "Peg line puts the round peg off the bar");
 assert(norm([slot_len / 2, slot_lo_y]) < step_dia / 2 - 0.25,
        "Channel corner is too close to the step");
 
