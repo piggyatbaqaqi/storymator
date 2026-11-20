@@ -605,9 +605,12 @@ tilted jaws do (`d / cos θ`, as in the slip-test section above), and
 reaching over a 6 mm peg is where they tilt. So the widths are the
 better figures, and the centring is good regardless.
 
-**Length is not yet read end to end.** Rev 3 of the acrylic disc
-recorded a 133.55 mm hole spacing, and 133.55 + 2 × 58.05 gives
-**249.65 mm**. `bar_reference.jpg` puts it at roughly 250 mm. Rev 3's
+**Length 9 7/8 in = 250.8 mm**, ordinary ruler, operator, same day.
+Rev 3 of the acrylic disc recorded a 133.55 mm hole spacing, which with
+58.05 mm to each end implies 249.65 mm, 1.2 mm short, about one ruler
+graduation. The ruler length puts the holes **134.7 mm** apart. Which
+of the two is right is open, and the disc's build guide transfer-punches
+the holes through the seated bar so it does not matter there. Rev 3's
 234 × 31.5 mm slot does not fit this bar.
 
 **The thickness re-measure** is the one the section above asked for:

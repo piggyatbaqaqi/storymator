@@ -54,13 +54,21 @@ peg_line_y        = -(optical_ctr - punch_offset);   // -5.15625"
 // its own numbers.  Calipers, operator, 2026-11-20 (pegs/honbay_0001/README.md):
 //   width 19.92 / 19.99 mm (nominal 20); pegs centred across it to 0.13-0.21 mm,
 //   so it is symmetric and has no orientation; screw holes 58.05 mm from each end.
-// rev 3's 234 x 31.5 mm outline was not this bar, but its 133.55 mm hole
-// spacing agrees: 133.55 + 2 x 58.05 = 249.65 mm long, and bar_reference.jpg
-// puts it at roughly 250.  Derived, not read end to end: measure before routing.
-bar_hole_sp       = 133.55 / 25.4;  // rev 3
+// Length 9 7/8" (250.8 mm), ordinary ruler, operator, 2026-11-20.  rev 3's
+// 234 x 31.5 mm outline was not this bar; its 133.55 mm hole spacing implies
+// 249.65 mm, 1.2 mm short of the ruler, about one graduation.
+bar_len           = 9.875;
 bar_hole_from_end = 58.05 / 25.4;   // operator, 2026-11-20
-slot_len          = bar_hole_sp + 2 * bar_hole_from_end;   // 249.65 mm
-slot_w            = 20.0 / 25.4;
+bar_hole_sp       = bar_len - 2 * bar_hole_from_end;   // 134.7 mm (rev 3: 133.55)
+// Channel clearance over the bar.  Length: 1.5 mm total (operator), so
+// 0.75 mm at each end for router error.  Width: none yet, against a bar
+// measured at 19.92-19.99 mm.  If the bar's corners are sharper than
+// slot_corner_r, they foul the channel's rounded corners whatever the
+// clearance: square them out with a chisel.
+slot_len_clear    = 1.5 / 25.4;
+slot_w_clear      = 0.0 / 25.4;
+slot_len          = bar_len + slot_len_clear;   // 252.3 mm
+slot_w            = 20.0 / 25.4 + slot_w_clear;
 slot_depth        = 1.5 / 25.4;
 slot_corner_r     = 3.0 / 25.4;   // router bit radius; bar corners must be >= this
 slot_ctr_y        = peg_line_y;   // centred, as measured
@@ -278,7 +286,7 @@ assert(abs((sheet_edge_y - slot_lo_y) - 1 / 32) < 0.04,
            " in; measured 1/32 in"));
 // The rect pegs must clear the bar's ends: outer ends at 102.722 mm spacing
 // plus half a 12.75 mm peg.
-assert(slot_len / 2 > (102.722 + 12.75 / 2) / 25.4,
+assert(bar_len / 2 > (102.722 + 12.75 / 2) / 25.4,
        "Bar is shorter than its own rect pegs");
 assert(norm([slot_len / 2, slot_lo_y]) < step_dia / 2 - 0.25,
        "Channel corner is too close to the step");
