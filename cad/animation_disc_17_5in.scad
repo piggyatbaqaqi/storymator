@@ -61,16 +61,19 @@ bar_len           = 9.875;
 bar_hole_from_end = 58.05 / 25.4;   // operator, 2026-11-20
 bar_hole_sp       = bar_len - 2 * bar_hole_from_end;   // 134.7 mm (rev 3: 133.55)
 // Channel clearance over the bar.  Length: 1.5 mm total (operator), so
-// 0.75 mm at each end for router error.  Width: none yet, against a bar
-// measured at 19.92-19.99 mm.  If the bar's corners are sharper than
-// slot_corner_r, they foul the channel's rounded corners whatever the
-// clearance: square them out with a chisel.
+// 0.75 mm at each end for router error.  Width: 0.3 mm total (operator),
+// against a bar measured at 19.92-19.99 mm.
 slot_len_clear    = 1.5 / 25.4;
-slot_w_clear      = 0.0 / 25.4;
+slot_w_clear      = 0.3 / 25.4;
 slot_len          = bar_len + slot_len_clear;   // 252.3 mm
-slot_w            = 20.0 / 25.4 + slot_w_clear;
+slot_w            = 20.0 / 25.4 + slot_w_clear; // 20.3 mm
 slot_depth        = 1.5 / 25.4;
-slot_corner_r     = 3.0 / 25.4;   // router bit radius; bar corners must be >= this
+slot_corner_r     = 1 / 8;        // the 1/4" bit's radius, 3.175 mm
+// The bar's corners are R2.0 mm (operator), tighter than the channel's.  It
+// still seats if its corner arc fits inside the channel's corner arc, which
+// the clearances make possible: see the assert.  The margin is under 0.1 mm,
+// so if a corner binds, pare it square with a chisel.
+bar_corner_r      = 2.0 / 25.4;
 slot_ctr_y        = peg_line_y;   // centred, as measured
 // The bar's punched-side edge then lands 10.0 - 8.73 = 1.27 mm past the paper
 // edge, against the 1/32" (0.79 mm) read with a ruler: 0.48 mm apart, inside
@@ -286,6 +289,12 @@ assert(abs((sheet_edge_y - slot_lo_y) - 1 / 32) < 0.04,
            " in; measured 1/32 in"));
 // The rect pegs must clear the bar's ends: outer ends at 102.722 mm spacing
 // plus half a 12.75 mm peg.
+// A centred bar's R2 corner arc must sit inside the channel's corner arc.
+bar_corner_gap = slot_corner_r - bar_corner_r
+                 - norm([(slot_len - bar_len) / 2 - (slot_corner_r - bar_corner_r),
+                         (slot_w - 20.0 / 25.4) / 2 - (slot_corner_r - bar_corner_r)]);
+assert(bar_corner_gap >= 0,
+       str("Bar's corners foul the channel's by ", -bar_corner_gap * 25.4, " mm"));
 assert(bar_len / 2 > (102.722 + 12.75 / 2) / 25.4,
        "Bar is shorter than its own rect pegs");
 assert(norm([slot_len / 2, slot_lo_y]) < step_dia / 2 - 0.25,
