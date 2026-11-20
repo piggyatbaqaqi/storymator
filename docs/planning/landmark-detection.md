@@ -1109,6 +1109,12 @@ threshold. The two near-normal frames accept.
 
 ### Two mistakes, and what each one was
 
+**Superseded reading below**, in part: `rect_long` *had* been measured
+directly (12.700 / 12.740 mm, 2026-09-19), and was read again as
+12.72 / 12.75 on 2026-11-20. The 11.79 mm inference is ruled out, and
+the 102.722 mm spacing stands only conditionally. See *Revisited
+2026-11-20* at the end.
+
 **The first derivation assumed the peg sizes and one of them is
 wrong.** `spacing = gap + rect_long/2 + round_dia/2` gave 103.185
 because `rect_long` was taken as 12.72. The new readings put
@@ -1175,3 +1181,34 @@ original — catches none of this. A reflection is its own inverse, so
 the round trip returns the original whether or not one was applied.
 The test has to look at **chirality**: three points that turn one way
 in the frame must still turn that way in the output.
+
+---
+
+# Revisited 2026-11-20: the rect pegs are 12.7 mm after all, so the spacing rests on equal errors
+
+The operator re-measured the rect pegs: 12.72 and 12.75 mm long, 3.00
+thick. The earlier table in `data/calibration/pegs/honbay_0001/README.md`
+already had 12.700 / 12.740, so the claim above that `rect_long` "has
+never been measured directly" was wrong when it was written. It is now
+measured twice.
+
+That rules out the **11.79 mm** inferred from `outer − gap`. The
+2026-09-25 gap and outer-span readings fall 0.83 mm (left) and 1.06 mm
+(right) short of the directly measured peg sizes. **102.722 mm** is
+their mean, and it is right only if the gap read short and the outer
+span read long by the same amount. Tilted outside jaws do read long,
+so this is plausible but untested. The bounds are 102.15 mm (all the
+error in the gap) and 103.21 mm (all in the outer span). The residual
+table above tried 101.616, 102.722 and 103.185, so it has tested the
+high side but not the low.
+
+**The cheapest test**: rerun that table at 102.25. A higher residual
+there makes 102.722 the measured minimum rather than an average of two
+readings that disagree.
+
+**Not changed**: `PegModel.rect_long_mm` (12.700, which the direct
+readings support), `centre_spacing_mm`, and the `peg_rect_long_SUSPECT`
+note in `v4k_01*.json`. Correcting that note is a calibration-data
+change, and it belongs with the calibration-files restructuring.
+Details in `data/calibration/pegs/honbay_0001/README.md`, *The bar's
+outline, and a second pass on the rect pegs*.

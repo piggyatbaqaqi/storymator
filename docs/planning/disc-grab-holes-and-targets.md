@@ -187,6 +187,9 @@ The reading is good to about ±1/64 in (0.4 mm). That is coarse against the
 
 ## The pegs sit 6.2 mm off the bar's centreline
 
+**Superseded reading below**: the bar is 20 mm wide, not 31.5, and its
+pegs are centred to 0.2 mm. See *Revisited 2026-11-20 (later)*.
+
 Checked against what is known about the bar:
 
 | check | result |
@@ -263,3 +266,86 @@ across-bar position of its screw holes.
 **The cheapest test**: calipers across the bar at both ends and at the
 round peg, plus edge to centre of each screw hole. Five readings settle
 the channel and the pilots.
+
+---
+
+# Revisited 2026-11-20 (later): the bar is 20 mm wide and centred, so the off-centre finding is retracted
+
+Calipers on `honbay_0001`, operator: width **19.92 / 19.99 mm**, pegs
+centred across it to **0.13–0.21 mm**. Details and the readings are in
+`data/calibration/pegs/honbay_0001/README.md`, *The bar's outline*.
+
+## What failed
+
+The 6.2 mm offset above was arithmetic on a 31.5 mm width that had come
+in with the first disc CAD and was never measured. The two ruler
+readings were fine. **The only unmeasured number in the chain was the
+one that produced the finding**, and the earlier section named it as
+unmeasured and concluded anyway. A finding that rests on a width should
+wait for the width.
+
+## The punch offset, three ways
+
+| source | punched edge to peg line |
+|---|---:|
+| ruler, directly (operator) | 11/32 in = **8.73 mm** |
+| caliper half-width 9.98 − the 1/32 in overhang (ruler) | **9.19 mm** |
+| "standard" 3/8 in, from a web summary the operator pasted | 9.525 mm |
+
+The two readings on this paper agree to 0.46 mm, inside two ruler
+readings of ±1/64 in each. The quoted standard is 0.3–0.8 mm above them.
+The same summary allows ±1/32 in between paper brands, which covers
+this. The CAD keeps the direct 8.73. The bar's edge then lands 1.27 mm
+past the paper edge, and an assert holds that within 0.04 in of the
+1/32 in reading.
+
+## The pasted summary contradicts itself, and the operator's image area
+
+It gives peg line to Academy centre **5.75 in** and centre to top edge
+**4.375 in**. A 9 in image reaches 4.5 in above centre, so it would run
+**1/8 in off the top** of a 10.5 in sheet. The summary says "inside the
+top edge with 1/8 in to spare". Its own numbers say otherwise.
+
+It also disagrees with the operator's image area, 1.00–10.00 in from the
+punched edge. That puts the centre 5.50 − 0.34 = **5.16 in** above the
+peg line, against the summary's 5.75. **The 0.59 in (15 mm) difference
+moves the whole window relative to the pegs.** The CAD follows the
+operator. If a printed 12F field guide or the paper's own field marks
+say otherwise, they should decide, not the summary.
+
+## What it does to this disc
+
+| | 31.5 mm bar, off-centre | **20 mm bar, centred** |
+|---|---:|---:|
+| channel, south of centre | 108.99–140.49 mm | **120.97–140.97 mm** |
+| bar over the 9 in window | 5.31 mm | **none, 6.7 mm clear** |
+| bar into the acrylic recess | 15.23 mm | **3.25 mm** |
+| channel length | 234 mm | **249.65 mm** (derived) |
+| window screws | ±5.3 in | **±5.5 in** (5.3 now meets the longer bar) |
+| S target outer corner (flat top ends 219.1) | 215.2 mm | 215.7 mm |
+| S hole to bar | 21.8 mm | 21.3 mm |
+| camera height for all four targets | 422 mm | 423 mm |
+
+The bar no longer covers any of the image area. It still enters the
+acrylic recess by 3.25 mm, so the channel crosses the seam. Trimming
+the acrylic's south ledge to clear it would leave 0.7 mm of wood
+between recess and channel, which is worse than crossing. The
+grab-hole verdict stands.
+
+**Retracted from the previous section**: the bar covering 5.3 mm of the
+image area; rev 3's slot "misplacing its pegs by 6.2 mm" (it is still
+wrong, 11.5 mm too wide and probably 16 mm too short for this bar, as
+the honbay README records).
+
+## Status
+
+**Measured**: bar width, peg centring, hole-to-end distance (calipers);
+peg-line offset and bar overhang (ruler).
+
+**Derived**: bar length 249.65 mm, from rev 3's hole spacing.
+
+**Unresolved**: where the image area sits relative to the pegs. The
+operator's 1.00–10.00 in and the pasted summary differ by 0.59 in.
+
+**The cheapest test**: measure the bar end to end, and read the image
+area off a printed 12F field guide pegged on the bar.
