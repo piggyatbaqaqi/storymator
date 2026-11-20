@@ -71,6 +71,10 @@ targets. Clearances as drawn:
 
 ## The south target is the tight one, and it hangs on an unmeasured number
 
+**Superseded reading below**: the punch offset is now measured, and
+"the camera fits read 5.0–6.4 mm" misread a correction magnitude as an
+offset. See *Revisited 2026-11-20* at the end.
+
 The bar's position comes from the punched-edge-to-peg-line distance.
 That distance is **nominal, never measured**: `SheetModel.punch_offset_mm`
 is 12.0, and the camera fits in `landmark-detection.md` read
@@ -165,3 +169,97 @@ paper or bar.
 **The cheapest test**: one 12F sheet on the bar, a ruler from the
 punched edge to the round peg's centre. That one reading settles where
 the bar, the S target and the S hole go.
+
+---
+
+# Revisited 2026-11-20: the bar is not centred on its pegs, and the punch offset is 8.73 mm
+
+The operator measured on a 12F sheet seated on `honbay_0001`, with a ruler:
+
+| | measured | was |
+|---|---:|---:|
+| punched edge to peg centres | **11/32 in = 8.73 mm** | 12.0 mm, nominal |
+| bar's punched-side edge beyond the paper edge | **1/32 in = 0.79 mm** | — |
+| peg line to the bar's punched-side edge | **12/32 in = 9.53 mm** (derived) | 15.75 mm, assumed |
+
+The reading is good to about ±1/64 in (0.4 mm). That is coarse against the
+0.268 mm punch tolerance, but the 12 mm nominal was 3.3 mm off.
+
+## The pegs sit 6.2 mm off the bar's centreline
+
+Checked against what is known about the bar:
+
+| check | result |
+|---|---|
+| round peg (6.440 mm, slip test) inside the bar | its flank is 6.30 mm from the edge: fits |
+| rect pegs (3.197 / 3.087 mm thick) | flanks 7.9 mm from the edge: fits |
+| **bar centred on the peg line, 31.5 mm wide** | **no**: 9.53 mm on one side, 21.98 mm on the other |
+| `bar_reference.jpg`, eyeballed from an oblique view | pegs about a third of the way across; agrees in direction |
+
+Nothing in the measurements contradicts itself. What fails is the
+assumption, carried since the first disc CAD (`1dfeeda`), that the bar is
+centred across its width on the pegs. **The 31.5 mm width itself has no
+recorded measurement**, so the 21.98 mm figure is only as good as it.
+The same photo suggests **the screw holes are not on the peg line** but
+nearer the punched-side edge, which rev 3 also assumed away. Both want
+a caliper reading.
+
+**This also misplaces rev 3's slot.** `acme_12f_disc-3.scad` centres its
+31.5 mm slot on `peg_offset`, so a bar seated in it puts the pegs 6.2 mm
+toward the bar's punched-side edge, not at `peg_offset`. On that disc the
+offset matters only for where the sheet lands, not for registration,
+which reads the pegs. Not changed here.
+
+## The camera-fit "punch offset" was never an offset
+
+`Pose.punch_offset_mm` in `acme/fit.py` is
+`norm(correction[:2, 2])`: the length of the rigid correction from the
+outline fit to the pegs. It is not a distance from the edge. The
+5.0–6.4 mm in `landmark-detection.md`, quoted above as a rival offset,
+is how far the 12 mm model was off on the 8.5 × 11 Canson corpus. If
+all of that were perpendicular, the Canson offset would be about
+5.6–7.0 mm. That is a different paper and punch from this 12F sheet,
+so the two readings neither confirm nor contradict each other.
+
+## What it does to this disc
+
+| | nominal 12 mm, bar centred | **measured** |
+|---|---:|---:|
+| peg line, south of centre | 127.70 mm | **130.97 mm (5 5/32 in)** |
+| bar, south edge | 143.45 mm | **140.49 mm (5 17/32 in)** |
+| bar over the 9 in window | 2.35 mm | **5.31 mm** |
+| bar over the acrylic recess | 12.27 mm | **15.23 mm** |
+| bar pilot (if on the peg line) to recess wall | 3.48 mm | 6.75 mm |
+| S target outer corner (flat top ends 219.1) | 218.0 mm | **215.2 mm** |
+| S hole to bar | 18.9 mm | 21.8 mm |
+| camera height to frame all four targets | 429 mm | 422 mm |
+
+**The S target's squeeze is gone**: it now has 3.9 mm to the round-over,
+not 1.1. The verdict above stands unchanged: holes at 12 and 6, N and S
+targets 60 mm off the axis.
+
+The bar now covers 5.3 mm of the image area's punched-side edge. It lies
+under the paper and is opaque, so that strip cannot be backlit by any
+disc. It is a property of this sheet on this bar.
+
+## What follows from this
+
+1. **Caliper the bar's width and where its screw holes sit across it.**
+   Until then, rout the channel from a template checked against the bar,
+   and transfer-punch the holes through the seated bar.
+2. **`SheetModel.punch_offset_mm` should become 8.73 for 12F paper.** That
+   is a code change and needs its own TDD cycle. Not done here.
+
+## Status
+
+**Measured**: the peg offset and the bar-edge overhang, with a ruler, on
+one 12F sheet (operator, 2026-11-20).
+
+**Not measured**: the bar's 31.5 mm width and 234 mm length, and the
+across-bar position of its screw holes.
+
+**Computed**: the table above, from the CAD as of `af7ea38`.
+
+**The cheapest test**: calipers across the bar at both ends and at the
+round peg, plus edge to centre of each screw hole. Five readings settle
+the channel and the pilots.
