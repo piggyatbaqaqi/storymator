@@ -85,8 +85,16 @@ slot_ctr_y        = peg_line_y;   // centred, as measured
 // ASSUMED: the holes are on the bar's centreline, which is the peg line.
 // Transfer-punch them through the seated bar rather than drilling to these
 // coordinates.
-bar_pilot_d       = 1 / 16;         // pilot for M2 / #2 wood screws; the holes land in wood
-bar_pilot_depth   = 0.5;            // below the channel floor
+//
+// The bar is removed whenever the acrylic comes out, so it is held by M2
+// flat-head machine screws (90 deg, metric) in brass inserts, not wood screws.
+// Its holes are 2.0 mm and countersunk (operator, 2026-11-20): an M2 thread is
+// 1.86-1.98 mm, so the screw has almost no float in the bar.  The inserts are
+// therefore set in EPOXY in an oversize pocket, with the bar screwed down on
+// them while it cures, so the bar locates them.  Wax the screws first.
+bar_pilot_d       = 4.0 / 25.4;     // pocket for a ~3.2-3.5 mm OD M2 knurled insert,
+                                    // leaving ~0.3 mm all round for epoxy and float
+bar_pilot_depth   = 6.0 / 25.4;     // below the channel floor; M2 x 6 screws
 
 // --- Grab holes, for turning the disc (Inches) ---
 // On the 12 and 6 o'clock axis.  The N and S ChArUco targets slide sideways to
@@ -279,8 +287,8 @@ assert(screw_x_offset + csink_top_d / 2 < acrylic_w / 2 - 0.25,
        "Window screws too close to the acrylic's side edge");
 
 // Bar screw pilots land in wood, south of the acrylic recess.
-assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_h + expansion_gap) / 2 > 2 / 25.4,
-       str("Bar pilot leaves under 2 mm of wood to the acrylic recess"));
+assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_h + expansion_gap) / 2 > 3 / 25.4,
+       str("Bar insert pocket leaves under 3 mm of wood to the acrylic recess"));
 assert(top_ply_thick - slot_depth > 3 / 25.4, "Channel leaves under 3 mm of top ply");
 // The bar's edge overhangs the punched edge by the measured 1/32", to within
 // two ruler readings (+/- 1/64" each, so 0.04" combined).

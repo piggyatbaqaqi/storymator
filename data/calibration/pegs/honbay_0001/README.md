@@ -589,6 +589,7 @@ outline below transfers to another bar.
 | bar width | 19.92 | 19.99 | nominal 20 |
 | bar corner radius | 2.0 | 2.0 | operator, 2026-11-20 |
 | screw hole centre from the bar's end | 58.05 | 58.05 | "reliably" |
+| screw hole | 2.0, countersunk | 2.0, countersunk | operator, 2026-11-20 |
 | rect peg thickness | 3.00 | 3.00 | supersedes 3.197 / 3.087 above |
 | rect peg length | 12.72 | 12.75 | agrees with 12.700 / 12.740 above |
 | rect peg's far side to the bar's near edge | 11.48 | 11.50 | |

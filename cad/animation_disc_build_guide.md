@@ -69,7 +69,9 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
 5. **Rout the Peg Bar Channel (after the inserts, with the acrylic screwed in):**
    * The bar overlaps the acrylic's south strip by ~3.3 mm, so the channel must cross the seam. Screw the acrylic in place first so wood and acrylic are cut flush in one pass.
    * Clamp MDF template strips around a 252.3 × 20.3 mm opening whose south side is **5.556"** south of centre (north side 4.757"), and rout 1.5 mm deep with the 1/4" bit (R1/8" corners). Use Speed 1–2 where the bit crosses into the acrylic. Check the template against the bar itself before routing: the bar is 19.92–19.99 mm wide in a 20.3 mm channel.
-   * Seat the bar in the channel and transfer-punch its two screw holes; the holes are 58.05 mm from each end, but their position across the bar has not been measured. Pilot 1/2" below the channel floor. On the peg line they land in wood ~6.7 mm south of the acrylic recess.
+   * Seat the bar in the channel and transfer-punch its two screw holes; the holes are 58.05 mm from each end, but their position across the bar has not been measured.
+   * **Set M2 brass inserts in epoxy, located by the bar.** The bar's holes are 2.0 mm and countersunk, which leaves an M2 screw (1.86–1.98 mm thread) almost no float, so the inserts must land exactly on the holes' axes. Drill a **4.0 mm pocket 6 mm deep** below the channel floor at each punch mark (about 4.7 mm of wood remains to the acrylic recess). Wax two M2 × 6 flat-head screws. Put a ~3.2–3.5 mm OD knurled brass insert on each, part-fill the pockets with slow-set epoxy, seat the bar in the channel and screw it down through the inserts so they hang in the pockets on the screws' axes. Let it cure fully, then back the screws out.
+   * Use **metric 90° flat heads**: a countersink for 2 mm screws is most likely 90°, though the bar's has not been measured; #2-56 flat heads are 82°. Check that the heads sit flush or below the bar's surface, because the sheet lies on it.
    * The acrylic now comes out only after the bar is unscrewed.
 6. **Drill the Grab Holes:** 1" Forstner bit at 6.50" north and 6.89" south of centre on the centre line, through both plies over a backer (or 1/2" deep for blind finger cups, which also keeps light from leaking through).
 
@@ -109,6 +111,8 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
 ### Fasteners, Adhesives & Shop Consumables
 * **#6-32 Brass Knife-Thread Inserts (Pack of 25):** e.g., E-Z Lok 400-006 (install 4 inserts flush into the top and bottom 3/8-inch plywood ledges).
 * **#6-32 × 1/2" Stainless Steel Flat-Head Machine Screws (4+ screws):** For removable, flush mounting of the acrylic window.
+* **M2 × 6 mm Stainless Flat-Head (90°) Machine Screws (2+) and M2 Knurled Brass Inserts, ~3.2–3.5 mm OD (2+):** for the removable peg bar. The bar comes off whenever the acrylic does, and wood screws would strip the plywood after a few removals.
+* **Slow-Set Epoxy and Paste Wax:** epoxy sets the bar's inserts; wax on the screws keeps them from being glued in.
 * **82-Degree Countersink Drill Bit:** For recessing the #6-32 screw heads flush into the acrylic.
 * **1-Inch Coarse-Thread Wood or Drywall Screws (1 small box):** For fastening the 1/2-inch MDF backer up into the waste center of the 3/4-inch desk without poking through the top veneer.
 * **5/8-Inch Brad Nails (or small alignment screws):** Driven into the outer waste corners of the plywood blanks to prevent sliding during glue-up.
