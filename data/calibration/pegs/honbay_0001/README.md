@@ -576,3 +576,70 @@ The rect landmarks need no correction at all, which is the opposite of
 what the design assumed. They want their *model* position understood as
 the hole centre rather than the peg centre — the same point, since the
 round peg pins the sheet, but a different thing being detected.
+
+## The bar's outline, and a second pass on the rect pegs
+
+Calipers, operator, 2026-11-20. This is a **Honbay** stainless bar,
+https://www.amazon.com/dp/B0721MR5TM. Peg bars are not standardised
+in width or length, beyond the ACME peg pattern itself, so none of the
+outline below transfers to another bar.
+
+| feature | left | right | note |
+|---|---:|---:|---|
+| bar width | 19.92 | 19.99 | nominal 20 |
+| screw hole centre from the bar's end | 58.05 | 58.05 | "reliably" |
+| rect peg thickness | 3.00 | 3.00 | supersedes 3.197 / 3.087 above |
+| rect peg length | 12.72 | 12.75 | agrees with 12.700 / 12.740 above |
+| rect peg's far side to the bar's near edge | 11.48 | 11.50 | |
+| rect peg's near side to the bar's far edge | 11.74 | 11.91 | |
+
+**The bar is symmetric and has no orientation.** Take each edge-to-peg
+reading less half the peg's thickness. Half their difference is how far
+the peg sits off the bar's centreline: **0.13 mm** on the left peg and
+**0.21 mm** on the right, both toward the same edge. An equal bias in
+both readings cancels out of that difference.
+
+There is a bias. The two readings per peg sum to width + thickness +
+**0.30 mm** (left) and **0.42 mm** (right). Reading long is what
+tilted jaws do (`d / cos θ`, as in the slip-test section above), and
+reaching over a 6 mm peg is where they tilt. So the widths are the
+better figures, and the centring is good regardless.
+
+**Length is not yet read end to end.** Rev 3 of the acrylic disc
+recorded a 133.55 mm hole spacing, and 133.55 + 2 × 58.05 gives
+**249.65 mm**. `bar_reference.jpg` puts it at roughly 250 mm. Rev 3's
+234 × 31.5 mm slot does not fit this bar.
+
+**The thickness re-measure** is the one the section above asked for:
+3.197 and 3.087 had sd 0.09 and differed by 1.5σ. Both now read 3.00,
+so the earlier spread was jaw seating.
+
+### The rect length reopens the centre spacing
+
+The 2026-09-25 spacing came from two readings per pair, a clear gap and
+an outer span. Their difference is `rect_long + round_dia`:
+
+| pair | outer − gap | rect_long + round_dia, measured directly | shortfall |
+|---|---:|---:|---:|
+| left | 18.333 | 12.72 + 6.44 = **19.16** | 0.83 |
+| right | 18.133 | 12.75 + 6.44 = **19.19** | 1.06 |
+
+The direct rect lengths have now been read twice (12.700 / 12.740 on
+2026-09-19, and 12.72 / 12.75 here). That rules out the **~11.79 mm**
+inferred from the outer-minus-gap difference, which `v4k_01*.json` still
+carry as `peg_rect_long_SUSPECT`. So the gap and outer readings disagree
+with the pegs by about 0.9 mm, and the spacing depends on which of them
+absorbed it:
+
+| if the error is in | spacing |
+|---|---:|
+| the outer span | gap + sizes/2 = **103.18 / 103.21** |
+| the gap | outer − sizes/2 = **102.35 / 102.15** |
+| both, equally (the adopted value) | **102.722** |
+
+102.722 is right only if the gap read short and the outer span read long
+by the same amount. Tilted jaws read outer spans long, so that is
+plausible, and the registration fits preferred 102.722 to 103.185
+(`landmark-detection.md`). But nothing has tested the low side.
+**The cheapest test** is computational: rerun that residual table at
+102.25. If the residual rises again, 102.722 is the minimum and stands.
