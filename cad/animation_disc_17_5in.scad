@@ -28,8 +28,56 @@ csink_top_d       = 0.28;     // 82-degree countersink top diameter for #6 flat-
 csink_depth       = 0.085;    // Countersink depth
 insert_pilot_d    = 0.1875;   // 3/16" pilot hole for #6-32 brass knife-thread insert
 insert_depth      = 0.375;    // 3/8" insert depth
-screw_x_offset    = 4.5;      // Horizontal spacing from center (+/- 4.5" -> 9" apart)
+screw_x_offset    = 5.3;      // +/- 5.3" -> 10.6" apart. Was 4.5", which put the two south
+                              // screws under the peg bar; 5.3" clears the bar's ends (see asserts).
 screw_y_offset    = 4.6875;   // Centered in the 3/8" top/bottom ledge (4.5" + 0.1875" = 4.6875")
+
+// --- 12F sheet & ACME peg bar (Inches) ---
+// The window is centred on the sheet's 12" x 9" IMAGE AREA, not on the sheet.
+// Operator's figures, 2026-11-20: the image area runs 1.00" to 10.00" from the
+// punched edge, so its optical centre is 5.50" from that edge.  The disc
+// origin is that optical centre; the punched edge, and so the bar, is south (-Y).
+sheet_w           = 12.5;     // 12F sheet, along the bar
+sheet_h           = 10.5;     // 12F sheet, into the sheet from the punched edge
+image_lo          = 1.00;     // image area start, from the punched edge
+image_hi          = 10.00;    // image area end, from the punched edge
+optical_ctr       = (image_lo + image_hi) / 2;   // 5.50"
+// Punched edge to peg line.  NOMINAL, never measured: SheetModel.punch_offset_mm
+// in comfyui/comfyui_acme/acme/model.py is 12.0 mm, and the camera fits in
+// docs/planning/landmark-detection.md read 5.0-6.4 mm.  Measure a sheet and
+// put the number here: it moves the whole bar.
+punch_offset      = 12.0 / 25.4;
+peg_line_y        = -(optical_ctr - punch_offset);   // -5.028" with the nominal
+
+// Peg bar channel, cut 1.5 mm into the top face.  Bar outline from
+// acme_12f_disc-3.scad (mm there, inches here).  ASSUMED, as in rev 3: the
+// bar is centred across its width on the peg line.
+slot_len          = 234.0 / 25.4;
+slot_w            = 31.5 / 25.4;
+slot_depth        = 1.5 / 25.4;
+slot_corner_r     = 3.0 / 25.4;   // router bit radius; bar corners must be >= this
+// The bar is 31.5 mm wide, so on these numbers it overlaps the 9" window by
+// 2.35 mm and the acrylic recess by 12.3 mm.  The channel is therefore cut
+// across the acrylic's south strip as well as the wood, in one pass with the
+// acrylic screwed in, so the bar beds flat across the seam.
+bar_hole_sp       = 133.55 / 25.4;  // centre-to-centre, on the peg line (rev 3)
+bar_pilot_d       = 1 / 16;         // pilot for M2 / #2 wood screws; the holes land in wood
+bar_pilot_depth   = 0.5;            // below the channel floor
+
+// --- Grab holes, for turning the disc (Inches) ---
+// On the 12 and 6 o'clock axis.  The N and S ChArUco targets slide sideways to
+// make room; see docs/planning/disc-grab-holes-and-targets.md.
+grab_d            = 1.0;            // ASSUMED finger-hole size; change to taste
+grab_y            = [165.0 / 25.4, -175.0 / 25.4];   // N, S
+grab_through      = true;           // false = 1/2" deep finger cups, no light leak
+
+// --- ChArUco target keep-outs (Inches) ---
+// ref 2 pieces: 3x3 boards cut 53.5 mm square (data/calibration/targets/).
+// Not cut into the disc: these are layout ghosts and clearance checks only.
+target_piece      = 53.5 / 25.4;
+target_gap        = 3.0 / 25.4;     // to paper or bar edge
+target_dx_ns      = 60.0 / 25.4;    // N target sits +X of the hole, S target -X
+show_layout       = false;          // ghost the sheet, bar footprint and targets
 
 // --- Display Mode Selector ---
 // Options: "assembled", "exploded", "parts_grid", "top_ply", "bot_ply", "acrylic", "desk_ring"
@@ -50,6 +98,37 @@ module screw_positions() {
             children();
     }
 }
+
+// Peg bar channel, for a part whose top face is at local z = top_z.
+module peg_channel(top_z) {
+    translate([0, peg_line_y, top_z - slot_depth])
+        linear_extrude(height = slot_depth + 0.05)
+            rounded_rect_2d(slot_len, slot_w, slot_corner_r);
+}
+
+// Bar screw pilots, from the channel floor of a part whose top is at top_z.
+module bar_pilots(top_z, depth) {
+    for (sx = [-1, 1])
+        translate([sx * bar_hole_sp / 2, peg_line_y, top_z - slot_depth - depth])
+            cylinder(d = bar_pilot_d, h = depth + 0.05, $fn = 32);
+}
+
+module grab_holes(h) {
+    for (gy = grab_y)
+        translate([0, gy, 0]) cylinder(d = grab_d, h = h, $fn = 96);
+}
+
+// Derived layout, in disc coordinates (origin = optical centre).
+sheet_far_y   = peg_line_y - punch_offset + sheet_h;   // +5.00"
+sheet_edge_y  = peg_line_y - punch_offset;             // -5.50"
+slot_lo_y     = peg_line_y - slot_w / 2;
+slot_hi_y     = peg_line_y + slot_w / 2;
+target_centres = [
+    [ target_dx_ns, sheet_far_y + target_gap + target_piece / 2],      // N
+    [ sheet_w / 2 + target_gap + target_piece / 2, 0],                 // E
+    [-target_dx_ns, slot_lo_y - target_gap - target_piece / 2],        // S
+    [-(sheet_w / 2 + target_gap + target_piece / 2), 0],               // W
+];
 
 // ============================================================================
 // Individual Part Modules
@@ -72,6 +151,15 @@ module part_top_plywood() {
         translate([0, 0, -0.05])
             linear_extrude(height = top_ply_thick + 0.1)
                 rounded_rect_2d(acrylic_w + expansion_gap, acrylic_h + expansion_gap, corner_r);
+
+        // ACME peg bar channel and the bar's screw pilots
+        peg_channel(top_ply_thick);
+        bar_pilots(top_ply_thick, top_ply_thick);
+
+        // Grab holes.  A 1/2" cup is deeper than this ply, so it goes
+        // through here either way; grab_through decides the bottom ply.
+        translate([0, 0, -0.05])
+            grab_holes(top_ply_thick + 0.1);
     }
 }
 
@@ -98,6 +186,16 @@ module part_bottom_plywood() {
             translate([0, 0, bot_ply_thick - insert_depth])
                 cylinder(d = insert_pilot_d, h = insert_depth + 0.05);
         }
+
+        // Rest of the bar screw pilots, continuing down from the top ply.
+        // The channel floor is in the top ply, so this layer carries
+        // bar_pilot_depth - (top_ply_thick - slot_depth) of the hole.
+        bar_pilots(bot_ply_thick + top_ply_thick, bar_pilot_depth);
+
+        // Grab holes: through, or the lower part of a 1/2" cup
+        translate([0, 0, grab_through ? -0.05
+                                      : bot_ply_thick + top_ply_thick - 0.5])
+            grab_holes(bot_ply_thick + 0.1);
     }
 }
 
@@ -117,7 +215,73 @@ module part_acrylic_window() {
             translate([0, 0, acrylic_thick - csink_depth])
                 cylinder(d1 = screw_clearance_d, d2 = csink_top_d, h = csink_depth + 0.01);
         }
+
+        // The peg bar overlaps the acrylic's south strip, so the channel
+        // continues across it (rout it with the acrylic screwed in place).
+        peg_channel(acrylic_thick);
     }
+}
+
+// 5. Layout ghosts: sheet, image area and target pieces, on the top face.
+module layout_ghosts(z) {
+    translate([0, 0, z + 0.01]) {
+        color([1, 1, 1, 0.35])
+            translate([-sheet_w / 2, sheet_edge_y, 0])
+                cube([sheet_w, sheet_h, 0.005]);
+        color([0.2, 0.6, 1.0, 0.35])
+            translate([-view_w / 2, -view_h / 2, 0.005])
+                cube([view_w, view_h, 0.005]);
+        for (c = target_centres)
+            color([0.1, 0.1, 0.1, 0.6])
+                translate([c[0] - target_piece / 2, c[1] - target_piece / 2, 0])
+                    cube([target_piece, target_piece, 0.01]);
+    }
+}
+
+// ============================================================================
+// Clearance checks
+// ============================================================================
+
+assert(abs((image_hi - image_lo) - view_h) < 1e-6,
+       str("Image area is ", image_hi - image_lo, " in tall; the window is ", view_h));
+assert(image_lo >= 0 && image_hi <= sheet_h, "Image area falls off the sheet");
+
+// The south screws must clear the bar: either beyond its ends or off its width.
+assert(screw_x_offset - csink_top_d / 2 > slot_len / 2 + 0.25
+       || screw_y_offset - csink_top_d / 2 > -slot_lo_y
+       || screw_y_offset + csink_top_d / 2 < -slot_hi_y,
+       str("A #6 countersink at x=", screw_x_offset, " lands under the peg bar"));
+assert(screw_x_offset + csink_top_d / 2 < acrylic_w / 2 - 0.25,
+       "Window screws too close to the acrylic's side edge");
+
+// Bar screw pilots land in wood, south of the acrylic recess.
+assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_h + expansion_gap) / 2 > 2 / 25.4,
+       str("Bar pilot leaves under 2 mm of wood to the acrylic recess"));
+assert(top_ply_thick - slot_depth > 3 / 25.4, "Channel leaves under 3 mm of top ply");
+assert(norm([slot_len / 2, slot_lo_y]) < step_dia / 2 - 0.25,
+       "Channel corner is too close to the step");
+
+// Grab holes: inside the step (so a through hole opens into the desk hole,
+// not onto the desk), and clear of the sheet, the bar and every target.
+function sq_dist(p, c, half) =
+    norm([max(abs(p[0] - c[0]) - half, 0), max(abs(p[1] - c[1]) - half, 0)]);
+for (gy = grab_y) {
+    assert(abs(gy) + grab_d / 2 < step_dia / 2 - 0.25,
+           str("Grab hole at y=", gy, " reaches the step"));
+    assert(gy > 0 ? gy - grab_d / 2 > sheet_far_y + 0.5
+                  : gy + grab_d / 2 < slot_lo_y - 0.5,
+           str("Grab hole at y=", gy, " is within 1/2 in of the paper or bar"));
+    for (c = target_centres)
+        assert(sq_dist([0, gy], c, target_piece / 2) - grab_d / 2 > 0.5,
+               str("Grab hole at y=", gy, " is within 1/2 in of a target"));
+}
+
+// Targets: on the top face, and clear of the paper's corners.
+for (c = target_centres) {
+    far = max([for (sx = [-1, 1], sy = [-1, 1])
+               norm([c[0] + sx * target_piece / 2, c[1] + sy * target_piece / 2])]);
+    assert(far < outer_dia / 2 - top_round_r,
+           str("Target at ", c, " runs onto the round-over"));
 }
 
 // 4. Reference Section of 3/4" Desk Top with 16 1/2" Cutout Hole
@@ -152,6 +316,10 @@ module assembly_complete(include_desk = false) {
     // Optional reference desk section showing flush fit
     if (include_desk) {
         part_desk_section();
+    }
+
+    if (show_layout) {
+        layout_ghosts(bot_ply_thick + top_ply_thick);
     }
 }
 
