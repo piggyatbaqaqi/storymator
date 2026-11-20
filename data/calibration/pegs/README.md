@@ -7,6 +7,8 @@ directory and its own pass through
 [../../../docs/measuring-punch-tolerance.md](../../../docs/measuring-punch-tolerance.md)
 part C.
 
+I purchased this bar from Amazon at https://www.amazon.com/dp/B0721MR5TM.
+
 | bar | model | where |
 |---|---|---|
 | [honbay_0001](honbay_0001/) | Honbay stainless comic/animation peg bar | Monte's office desk, Ashland Haus |
