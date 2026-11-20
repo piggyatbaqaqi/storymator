@@ -28,8 +28,8 @@ csink_top_d       = 0.28;     // 82-degree countersink top diameter for #6 flat-
 csink_depth       = 0.085;    // Countersink depth
 insert_pilot_d    = 0.1875;   // 3/16" pilot hole for #6-32 brass knife-thread insert
 insert_depth      = 0.375;    // 3/8" insert depth
-screw_x_offset    = 5.3;      // +/- 5.3" -> 10.6" apart. Was 4.5", which put the two south
-                              // screws under the peg bar; 5.3" clears the bar's ends (see asserts).
+screw_x_offset    = 5.5;      // +/- 5.5" -> 11" apart. Was 4.5", which put the two south
+                              // screws under the peg bar; 5.5" clears its ends (see asserts).
 screw_y_offset    = 4.6875;   // Centered in the 3/8" top/bottom ledge (4.5" + 0.1875" = 4.6875")
 
 // --- 12F sheet & ACME peg bar (Inches) ---
@@ -48,26 +48,32 @@ optical_ctr       = (image_lo + image_hi) / 2;   // 5.50"
 punch_offset      = 11 / 32;
 peg_line_y        = -(optical_ctr - punch_offset);   // -5.15625"
 
-// Peg bar channel, cut 1.5 mm into the top face.  Bar outline from
-// acme_12f_disc-3.scad (mm there, inches here); its 31.5 mm width has no
-// recorded measurement.  The bar is NOT centred on the peg line: its south
-// edge sits 1/32" south of the punched edge (operator, same date), so the
-// peg line is 12/32" (9.53 mm) from that edge and 21.98 mm from the other.
-slot_len          = 234.0 / 25.4;
-slot_w            = 31.5 / 25.4;
+// Peg bar channel, cut 1.5 mm into the top face.  Peg bars are not
+// standardised in width or length: this channel is for honbay_0001, a Honbay
+// stainless bar (https://www.amazon.com/dp/B0721MR5TM), and another bar needs
+// its own numbers.  Calipers, operator, 2026-11-20 (pegs/honbay_0001/README.md):
+//   width 19.92 / 19.99 mm (nominal 20); pegs centred across it to 0.13-0.21 mm,
+//   so it is symmetric and has no orientation; screw holes 58.05 mm from each end.
+// rev 3's 234 x 31.5 mm outline was not this bar, but its 133.55 mm hole
+// spacing agrees: 133.55 + 2 x 58.05 = 249.65 mm long, and bar_reference.jpg
+// puts it at roughly 250.  Derived, not read end to end: measure before routing.
+bar_hole_sp       = 133.55 / 25.4;  // rev 3
+bar_hole_from_end = 58.05 / 25.4;   // operator, 2026-11-20
+slot_len          = bar_hole_sp + 2 * bar_hole_from_end;   // 249.65 mm
+slot_w            = 20.0 / 25.4;
 slot_depth        = 1.5 / 25.4;
 slot_corner_r     = 3.0 / 25.4;   // router bit radius; bar corners must be >= this
-bar_edge_to_peg   = 12 / 32;      // bar's south (punched-side) edge to the peg line
-slot_ctr_y        = peg_line_y - bar_edge_to_peg + slot_w / 2;   // -4.911"
-// The bar reaches 21.98 mm north of the peg line, so it overlaps the 9" window
-// by 5.3 mm and the acrylic recess by 15.2 mm.  The channel is therefore cut
-// across the acrylic's south strip as well as the wood, in one pass with the
-// acrylic screwed in, so the bar beds flat across the seam.
-// ASSUMED, from rev 3: the screw holes are on the peg line.  The bar photo
-// (data/calibration/distortion/v4k_01/bar_reference.jpg) suggests they sit
-// nearer the south edge than the pegs do.  Transfer-punch them through the
-// bar seated in the channel rather than drilling to these coordinates.
-bar_hole_sp       = 133.55 / 25.4;  // centre-to-centre (rev 3)
+slot_ctr_y        = peg_line_y;   // centred, as measured
+// The bar's punched-side edge then lands 10.0 - 8.73 = 1.27 mm past the paper
+// edge, against the 1/32" (0.79 mm) read with a ruler: 0.48 mm apart, inside
+// two ruler readings of +/- 1/64" each.
+// The bar reaches 10 mm north of the peg line: clear of the 9" window by
+// 6.7 mm, but 3.3 mm into the acrylic recess.  The channel is therefore still
+// cut across the acrylic's south strip as well as the wood, in one pass with
+// the acrylic screwed in, so the bar beds flat across the seam.
+// ASSUMED: the holes are on the bar's centreline, which is the peg line.
+// Transfer-punch them through the seated bar rather than drilling to these
+// coordinates.
 bar_pilot_d       = 1 / 16;         // pilot for M2 / #2 wood screws; the holes land in wood
 bar_pilot_depth   = 0.5;            // below the channel floor
 
@@ -265,12 +271,15 @@ assert(screw_x_offset + csink_top_d / 2 < acrylic_w / 2 - 0.25,
 assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_h + expansion_gap) / 2 > 2 / 25.4,
        str("Bar pilot leaves under 2 mm of wood to the acrylic recess"));
 assert(top_ply_thick - slot_depth > 3 / 25.4, "Channel leaves under 3 mm of top ply");
-// The bar's south edge overhangs the punched edge, as measured (1/32").
-assert(abs(slot_lo_y - (sheet_edge_y - 1 / 32)) < 1e-6,
-       "Channel south edge is not 1/32 in south of the punched edge");
-// The round peg (6.44 mm, honbay_0001) must lie inside the bar.
-assert(bar_edge_to_peg > 6.44 / 2 / 25.4 && slot_w - bar_edge_to_peg > 6.44 / 2 / 25.4,
-       "Peg line puts the round peg off the bar");
+// The bar's edge overhangs the punched edge by the measured 1/32", to within
+// two ruler readings (+/- 1/64" each, so 0.04" combined).
+assert(abs((sheet_edge_y - slot_lo_y) - 1 / 32) < 0.04,
+       str("Bar overhangs the punched edge by ", sheet_edge_y - slot_lo_y,
+           " in; measured 1/32 in"));
+// The rect pegs must clear the bar's ends: outer ends at 102.722 mm spacing
+// plus half a 12.75 mm peg.
+assert(slot_len / 2 > (102.722 + 12.75 / 2) / 25.4,
+       "Bar is shorter than its own rect pegs");
 assert(norm([slot_len / 2, slot_lo_y]) < step_dia / 2 - 0.25,
        "Channel corner is too close to the step");
 
