@@ -7,6 +7,9 @@
 * **Removable Acrylic Window:** 1/4-inch thick clear cast acrylic cut to **12 inches × 9 3/4 inches** (provides a 3/8-inch supporting ledge at the top and bottom, 0-inch overlap on the left/right edges, and 1/8-inch radius rounded corners)
 * **Top Layer Window Recess:** **12 1/32 inches × 9 25/32 inches** (provides a 1/32-inch total expansion gap)
 * **Corner Clearance:** Outermost window corners sit 7.73 inches from the disc center, leaving **1.02 inches** of solid wood rim at the narrowest points
+* **Window Centring:** the window is centred on the 12F sheet's **12" × 9" image area**, which runs 1.00"–10.00" from the punched edge (optical centre 5.50" from it) — not on the 12 1/2" × 10 1/2" sheet
+* **ACME Peg Bar Channel:** 234 mm × 31.5 mm × 1.5 mm deep, R3 mm corners, centred on the peg line **5.028" south of the disc centre** (assumes the nominal 12 mm punched-edge-to-peg-line distance — measure a sheet and correct `punch_offset` in the SCAD first). Two M2 pilots 133.55 mm apart on the peg line
+* **Grab Holes:** two 1" holes on the 12 and 6 o'clock axis, 6.50" north and 6.89" south of centre; ChArUco targets sit beside them, not on them — see `docs/planning/disc-grab-holes-and-targets.md`
 * **Primary Router:** Bosch 1617EVSPK (1/4-inch collet, 12-Amp, 2.25-HP variable speed combo fixed/plunge router) with Milescraft Circle Guide Kit
 
 ---
@@ -34,7 +37,7 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
    * Attach the **R1/8" aluminum corner radius jig** to one corner using double-sided woodworking/carpet tape.
    * Set your Bosch router to **Speed 1–2 (8,000–12,000 RPM)** with a **top-bearing flush-trim bit** and make one smooth, continuous pass around the corner. Repeat for all four corners.
 3. **Drill & Countersink Mounting Holes:**
-   * Mark 4 fastener locations centered along the top and bottom 3/8-inch overlap margins (3/16" from the top and bottom edges).
+   * Mark 4 fastener locations centered along the top and bottom 3/8-inch overlap margins (3/16" from the top and bottom edges), **5.3" either side of centre** (10.6" apart). At 4.5" the two south screws would sit under the peg bar.
    * Drill oversized **5/32-inch** clearance holes (to allow thermal expansion without cracking) and recess each hole with an **82-degree countersink bit** so #6-32 flat-head screws sit dead flush.
 
 ### Phase B: Cut the Window Openings & Laminate the Plywood Disc
@@ -62,6 +65,13 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
 4. **Install Brass Threaded Inserts:**
    * Align the acrylic window in the top recess and mark the 4 screw centers onto the 3/8-inch top and bottom ledges of the 3/4-inch plywood layer.
    * Drill pilot holes per the insert manufacturer's spec and thread **#6-32 brass knife-thread inserts** flush into the plywood (sand ~1/16" off the tip of each insert first if needed so they cannot poke through the underside).
+
+5. **Rout the Peg Bar Channel (after the inserts, with the acrylic screwed in):**
+   * The bar overlaps the acrylic's south strip by ~12 mm, so the channel must cross the seam. Screw the acrylic in place first so wood and acrylic are cut flush in one pass.
+   * Clamp MDF template strips around a 234 × 31.5 mm opening centred on the peg line, 5.028" south of centre, and rout 1.5 mm deep with the 1/4" bit (R1/8" ≈ R3 mm corners). Use Speed 1–2 where the bit crosses into the acrylic.
+   * Drill the two M2 pilots on the peg line, 133.55 mm apart, 1/2" below the channel floor. They land in wood, ~2.7 mm south of the acrylic recess.
+   * The acrylic now comes out only after the bar is unscrewed.
+6. **Drill the Grab Holes:** 1" Forstner bit at 6.50" north and 6.89" south of centre on the centre line, through both plies over a backer (or 1/2" deep for blind finger cups, which also keeps light from leaking through).
 
 ### Phase D: Cut the 16 1/2-Inch Hole in the Desk (Router Safety & Tab Method)
 1. **Secure the Sacrificial MDF Backer Board:**
