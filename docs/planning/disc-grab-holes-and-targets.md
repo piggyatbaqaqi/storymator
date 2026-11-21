@@ -94,6 +94,10 @@ asserts will refuse a layout that no longer fits.
 
 ## Keep ref 2's 3 × 3 pieces; this disc caps target size
 
+**Superseded in part below**: the cap applies to *square* pieces. Pieces cut
+to the free surface's shape are about twice the size. See *Revisited
+2026-11-20 (target design space)* at the end.
+
 Target size is the strong lever (`σ_z ∝ 1/L`, `nsew-disc-plane.md`),
 and this disc caps it:
 
@@ -349,3 +353,162 @@ operator's 1.00–10.00 in and the pasted summary differ by 0.59 in.
 
 **The cheapest test**: measure the bar end to end, and read the image
 area off a printed 12F field guide pegged on the bar.
+
+---
+
+# Revisited 2026-11-20 (target design space): four big lobe-shaped boards get almost everything paving would
+
+*Analysis only. Short version: **flanking the grab holes with pairs is a
+modest gain (35 % to 28 % of budget per frame), paving is a large one (to
+14 %), and four boards each cut to fill one free area get 15 %, nearly all
+of paving's gain, with four poses and no inter-tile survey.** All figures
+are the plane-fit model evaluated at this disc's CAD as of 95f9ec2.
+Nothing is measured on this disc.*
+
+The operator asked for pros and cons of two layouts: a target on either
+side of each grab hole, and continuous ChArUco paving outside the window.
+
+## The model, and its one input that is not measured here
+
+As in `nsew-disc-plane.md`: worst-axis normal error = σ_z / (√N · rms
+spread), with σ_z ∝ 1/L for a board of size L. σ_z = 0.90 mm is that doc's
+projection for a camera centred at 433 mm. It is computed, not measured,
+and it sets the absolute column. **The ratios between rows do not depend
+on it.** Paper-corner error uses that doc's 0.296 mm per 0.236°, against
+the 0.804 mm budget. Scoring script: a scratch file, not in the repo; every
+input it used is listed here.
+
+## The free surface is four lobes, not a ring
+
+The flat top ends at 219.1 mm. Taking out the sheet plus a plain band, the
+bar channel plus 3 mm, each grab hole plus 12.7 mm, and the last 3 mm
+before the round-over leaves:
+
+| lobe | 3 mm band | 10 mm band | extent (3 mm band) |
+|---|---:|---:|---|
+| N | 18 960 mm² | 16 575 mm² | x ±174, y 128 to 216 |
+| S | 14 041 mm² | 12 316 mm² | x ±164, y −140 to −216 |
+| E, W each | 10 628 mm² | 8 766 mm² | 54 mm deep, y −139 to 127 |
+| total | 54 257 mm² = 19.0 ref-2 pieces | 46 423 mm² = 16.2 pieces | |
+
+The lobes join only at the far corners, through 9.8 mm (3 mm band) or
+2.8 mm (10 mm band). At the punched corners there is 1.6 mm, or nothing.
+**"Continuous" paving is four crescents** with a thin bridge across the
+north corners.
+
+## Scores
+
+| layout | N | rms spread X / Y | worst-axis normal | paper corner | of budget |
+|---|---:|---:|---:|---:|---:|
+| **now**: N, S 60 mm off axis; E, W | 4 | 139.9 / 115.9 mm | 0.222° | 0.279 mm | **35 %** |
+| **A**: a pair flanking each hole; E, W | 6 | 116.9 / 133.8 | 0.180° | 0.226 mm | **28 %** |
+| A without E, W | 4 | 52.1 / 163.8 | 0.494° | 0.620 mm | **77 %** |
+| **B**: paving, 3 mm band, as 19.0 independent pieces | 19.0 | 132.0 / 137.8 | 0.090° | 0.113 mm | **14 %** |
+| B, 10 mm band | 16.2 | 131.6 / 141.4 | 0.097° | 0.122 mm | 15 % |
+| **C**: four lobe boards, one pose each, L_eff 116 mm | 4 | 129.9 / 119.4 | 0.099° | 0.124 mm | **15 %** |
+| C, 10 mm band, L_eff 108 mm | 4 | 132.8 / 122.3 | 0.105° | 0.131 mm | 16 % |
+
+For A, each piece's inner edge is 12.7 mm from its hole, so the piece
+centres sit at x = ±52.1 mm. Outer corners: 199.7 mm (N) and 212.8 mm (S).
+That is inside the E and W pieces' 216.9 mm, so A needs **no extra camera
+height**. B and C reach the 216 mm edge of the free area. That too is
+inside the 217 mm already framed, but with no slack.
+
+B is scored as if its area were that many independent ref-2 pieces. A
+single rigid model over the whole paving would do better, but only if the
+position of every tile is known. C extrapolates σ_z ∝ 1/L from square
+boards to crescents, taking L = √area. A crescent's tilt about its long
+axis is weaker than a square's, which this ignores.
+
+## A: pairs flanking the grab holes
+
+* **For:** 1.24× better than now. Six targets means losing one to a hand
+  or a cable still leaves five and a residual. Three targets fit a plane
+  exactly and give no warning when one is wrong. The holes stay on the
+  12–6 axis. No extra camera height, and it is ref 2's piece, already
+  understood.
+* **Against:** fingers land 12.7 mm from four targets every time the disc
+  turns. That means smudges, edge wear, and a hand resting in the hole
+  during a capture. Two more pieces to cut and measure. **Do not drop E
+  and W to pay for it**: four targets at the poles is the
+  NNE-NNW-SSE-SSW trap again, at 77 %.
+
+## B: continuous paving
+
+* **For:** the best number, 2.5× better than now. It degrades gracefully:
+  a hand, tape, a cable or a bigger sheet hides squares, not targets. It
+  works at any rotation, and with partial framing. It gives a dense
+  out-of-plane map of the disc right up to the paper edge, an independent
+  measurement of lamination warp.
+* **Against:**
+  * **It isn't continuous** (above).
+  * **It can't be printed as one piece on anything here.** The N lobe
+    alone is 348 mm wide. Large-format prints have unmeasured scale, the
+    lesson of the 4.0624 in bar. Tiles avoid that, but then each tile is
+    either its own board, which is what the score assumes, or its
+    position has to be surveyed. A bundle adjustment across many
+    rotations could do the survey, but that is software nobody has
+    written.
+  * **About 190 markers** at ref 2's 11.905 mm square. That needs a
+    4×4_250 or 5×5 dictionary and an id block well clear of
+    `charuco_0001`'s 0–30. Larger dictionaries have smaller minimum
+    Hamming distance, so they produce more false detections.
+  * **The pattern runs right up to the sheet's edge**, where the outline
+    detection needs contrast. A 10 mm plain band costs one point of
+    budget (14 % to 15 %) and should be kept.
+  * **It's under the animator's hands everywhere.** It needs a matte
+    laminate, because gloss throws glare into the camera. It is also a
+    busy field around the drawing at the desk.
+
+## C, the suggestion: one board per lobe
+
+Cut four boards to the lobe shapes, with the grab holes as cut-outs (a
+ChArUco board tolerates missing squares). That keeps **15 % of budget
+against paving's 14 %**: almost all of the gain comes from size, not
+from covering every scrap. Each board has its own pose, so no inter-board
+survey is needed. Each fits one sheet of paper: N 348 × 88 mm and S
+328 × 76 mm fit legal (356 mm); E and W, 266 × 54 mm, fit letter. Each
+board still tolerates partial occlusion within itself.
+
+Against: N and S are longer than a letter flatbed (297 mm). Measuring
+their printed scale needs a legal flatbed, or the board split in two. An
+E or W board is only 54 mm deep, so it gains little over a square in that
+direction; its gain is mostly length.
+
+## And the option that costs nothing
+
+`nsew-disc-plane.md` measured the plane **not moving with rotation**, so it
+can be averaged over frames. Eight frames of the current layout give
+35 % / √8 ≈ **12 %**, better than any layout per frame. **Layout only
+matters if the plane has to be fitted per frame.** That was measured on
+test_rig01's foam disc, not this one, which will ride on a 1/16 in step
+clearance in the desk hole and may rock.
+
+## What follows
+
+1. **First, measure whether this disc's plane holds across rotations.**
+   Nine frames, the same procedure as `nsew-disc-plane.md`, with the four
+   current pieces. If it holds, keep the current layout and average:
+   nothing to build.
+2. **If it rocks, go to C**, four lobe boards with a 10 mm plain band
+   round the sheet. That is the same gain as paving with four poses, four
+   prints and no survey software.
+3. **A is the fallback** if C's prints can't be measured: six ref-2-style
+   pieces, keeping E and W.
+4. **Don't pave tile-by-tile** unless survey-by-bundle-adjustment is
+   written for some other reason.
+
+## Status
+
+**Measured** (elsewhere, not on this disc): the model's agreement with
+0.399° observed on test_rig01; the plane's stability under rotation, on
+the foam disc.
+
+**Computed**: every row above, from the CAD and σ_z = 0.90 mm.
+
+**Extrapolated**: C's σ_z ∝ 1/√area for non-square boards.
+
+**The cheapest experiment**: nine rotations of this disc in the desk with
+the current four pieces. If the normal scatters by noise alone, layout is
+moot.
+
