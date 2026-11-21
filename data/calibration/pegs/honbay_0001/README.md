@@ -588,6 +588,7 @@ outline below transfers to another bar.
 |---|---:|---:|---|
 | bar width | 19.92 | 19.99 | nominal 20 |
 | bar corner radius | 2.0 | 2.0 | operator, 2026-11-20 |
+| bar thickness | ≈1.40 | | "approximately", operator, 2026-11-20; sets the disc channel's depth and its M2 screw length |
 | screw hole centre from the bar's end | 58.05 | 58.05 | "reliably" |
 | screw hole | **2.42**, countersunk | **2.42**, countersunk | inside calipers, operator, 2026-11-20; supersedes a rough 2.0 the same day. Standard M2 clearance, and rev 3's 2.4 |
 | rect peg thickness | 3.00 | 3.00 | supersedes 3.197 / 3.087 above |

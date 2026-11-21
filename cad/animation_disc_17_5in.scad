@@ -73,7 +73,7 @@ optical_ctr       = (image_lo + image_hi) / 2;   // 5.50"
 punch_offset      = 11 / 32;
 peg_line_y        = -(optical_ctr - punch_offset);   // -5.15625"
 
-// Peg bar channel, cut 1.5 mm into the top face.  Peg bars are not
+// Peg bar channel, cut 1.4 mm into the top face.  Peg bars are not
 // standardised in width or length: this channel is for honbay_0001, a Honbay
 // stainless bar (https://www.amazon.com/dp/B0721MR5TM), and another bar needs
 // its own numbers.  Calipers, operator, 2026-11-20 (pegs/honbay_0001/README.md):
@@ -92,7 +92,9 @@ slot_len_clear    = 1.5 / 25.4;
 slot_w_clear      = 0.3 / 25.4;
 slot_len          = bar_len + slot_len_clear;   // 252.3 mm
 slot_w            = 20.0 / 25.4 + slot_w_clear; // 20.3 mm
-slot_depth        = 1.5 / 25.4;
+bar_thick         = 1.40 / 25.4;    // "approximately", operator, 2026-11-20
+slot_depth        = bar_thick;      // flush: the sheet's punched strip lies on the bar.
+                                    // Set the router's depth from the bar itself.
 slot_corner_r     = 1 / 8;        // the 1/4" bit's radius, 3.175 mm
 // The bar's corners are R2.0 mm (operator), tighter than the channel's.  It
 // still seats if its corner arc fits inside the channel's corner arc, which
@@ -132,7 +134,10 @@ bar_pilot_depth   = 6.5 / 25.4;     // below the channel floor: 6 mm insert +
                                     // 0.5 mm for the wax plug and epoxy
 // Screw length L (flat head, overall) must satisfy bar_thick + 3 mm <= L <=
 // bar_thick + 6 mm: at least 3 mm (1.5 d) of thread engaged, and no deeper
-// than the insert.  bar_thick is unmeasured, so M2 x 6 is provisional.
+// than the insert.  At 1.40 mm that is 4.4-7.4 mm, so M2 x 6 (4.6 mm
+// engaged, tip 1.4 mm short of the insert's end).  M2 x 8 would reach 6.6 mm
+// below the bar, past the 6.5 mm pocket floor, and bottom out before
+// clamping the bar.
 
 // --- Grab holes, for turning the disc (Inches) ---
 // On the 12 and 6 o'clock axis.  The N and S ChArUco targets slide sideways to
