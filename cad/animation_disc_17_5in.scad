@@ -94,9 +94,20 @@ slot_ctr_y        = peg_line_y;   // centred, as measured
 // insert can easily be off by more than that, so the inserts are still set in
 // EPOXY in an oversize pocket, with the bar screwed down on them while it
 // cures, so the bar locates them.  Wax the screws first.
-bar_pilot_d       = 4.0 / 25.4;     // pocket for a ~3.2-3.5 mm OD M2 knurled insert,
-                                    // leaving ~0.3 mm all round for epoxy and float
-bar_pilot_depth   = 6.0 / 25.4;     // below the channel floor; M2 x 6 screws
+//
+// Chosen insert (operator, 2026-11-20): "Knurled Insert Nuts, M2 x 6 mm
+// Length x 4 mm OD" brass heat-set inserts for 3D printing.  Wood won't
+// melt round them, so they are epoxied, not heat-set.  They are threaded
+// through, so plug the bottom with wax before setting.  The screw pulls each
+// insert up against the bar's underside, so its top finishes flush with the
+// channel floor; wax the bar's underside as well as the screws.
+bar_pilot_d       = 4.5 / 25.4;     // 4 mm OD insert + 0.25 mm per side for
+                                    // epoxy and the bar-located float
+bar_pilot_depth   = 6.5 / 25.4;     // below the channel floor: 6 mm insert +
+                                    // 0.5 mm for the wax plug and epoxy
+// Screw length L (flat head, overall) must satisfy bar_thick + 3 mm <= L <=
+// bar_thick + 6 mm: at least 3 mm (1.5 d) of thread engaged, and no deeper
+// than the insert.  bar_thick is unmeasured, so M2 x 6 is provisional.
 
 // --- Grab holes, for turning the disc (Inches) ---
 // On the 12 and 6 o'clock axis.  The N and S ChArUco targets slide sideways to
