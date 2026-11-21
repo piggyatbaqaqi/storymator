@@ -30,18 +30,28 @@ acrylic_thick     = 0.25;     // 1/4" clear cast acrylic thickness
 expansion_gap     = 0.03125;  // 1/32" total play in top plywood recess
 corner_r          = 0.125;    // 1/8" corner radius (matches 1/4" diameter router bit)
 
-// --- Fastener Dimensions (#6-32 Flat-Head Screws & Brass Inserts) ---
-screw_clearance_d = 0.15625;  // 5/32" clearance hole in acrylic
-csink_top_d       = 0.28;     // 82-degree countersink top diameter for #6 flat-head
-csink_depth       = 0.085;    // Countersink depth
-insert_pilot_d    = 0.1875;   // 3/16" pilot hole for #6-32 brass knife-thread insert
-insert_depth      = 0.375;    // 3/8" insert depth
+// --- Fastener Dimensions (M3 Flat-Head Screws & Epoxied Brass Inserts) ---
+// Chosen 2026-11-20 (operator): "Knurled Insert Nuts, M3 x 7 mm Length x 5 mm
+// OD" brass heat-set inserts, epoxied rather than heat-set, as for the bar.
+// They replace #6-32 hardwood knife-thread inserts, which are sold as "not
+// recommended for plywood".  Their threads cut across cross-grain plies and
+// glue lines, and they cut wider than their pilot, 5-6 mm from the opening.
+// M4 "furniture nuts" were also rejected.  Barbed press-in nuts wedge the
+// hole open, which splits a thin wall, and their ~6.5 mm body and ~10 mm
+// flange fill the 10.7 mm south ledge.  An M4 tee nut's 15-19 mm flange would
+// reach 2-4 mm into the opening, which is the image area.  An epoxied
+// knurled insert puts no radial force on the wall at all.
+screw_clearance_d = 4.0 / 25.4;   // M3 in 4.0 mm: 0.5 mm/side float; the acrylic
+                                  // moves ~0.18 mm/side against the ply over 20 K
+csink_top_d       = 6.7 / 25.4;   // 90 deg, to ISO 10642 M3's 6.72 mm max head
+csink_depth       = (csink_top_d - screw_clearance_d) / 2;   // 90 deg cone
+insert_pilot_d    = 5.5 / 25.4;   // 5 mm OD insert + 0.25 mm/side for epoxy
+insert_depth      = 7.5 / 25.4;   // 7 mm insert + 0.5 mm for the wax plug
 // Each insert is centred on its ledge, 6.15 mm (N) or 5.36 mm (S) from the
-// 9" window opening's edge, so a 3/16" pilot leaves 3.8 / 3.0 mm of wood to
-// that edge (2.4 mm on the old 3/8" ledges), and the knife threads cut beyond
-// the pilot.  Hardwood knife inserts are also sold as "not
-// recommended for plywood", so the build guide sets them in epoxy.  The
-// insert's outside diameter is unmeasured, so no wall-thickness assert yet.
+// 9" window opening's edge, so its pocket leaves 3.4 / 2.6 mm of wood to that
+// edge (see the assert).  Screws: M3 x 12 flat head, so 5.65 mm of thread
+// engages after the 6.35 mm acrylic, and the tip stops 1.35 mm short of the
+// insert's far end.
 screw_x_offset    = 5.5;      // +/- 5.5" -> 11" apart. Was 4.5", which put the two south
                               // screws under the peg bar; 5.5" clears its ends (see asserts).
 screw_y_n         = (view_h / 2 + acrylic_n) / 2;   // centred on the north ledge
@@ -242,7 +252,7 @@ module part_bottom_plywood() {
             linear_extrude(height = bot_ply_thick + 0.1)
                 rounded_rect_2d(view_w, view_h, corner_r);
 
-        // Pilot holes for #6-32 brass knife-thread inserts on top face of the N and S ledges
+        // Epoxy pockets for the M3 knurled inserts, on the N and S ledges
         screw_positions() {
             translate([0, 0, bot_ply_thick - insert_depth])
                 cylinder(d = insert_pilot_d, h = insert_depth + 0.05);
@@ -268,7 +278,7 @@ module part_acrylic_window() {
             translate([0, acrylic_ctr_y])
                 rounded_rect_2d(acrylic_w, acrylic_h, corner_r);
 
-        // 4 oversized clearance holes + 82-degree countersinks
+        // 4 oversized clearance holes + 90-degree countersinks
         screw_positions() {
             // Clearance hole
             translate([0, 0, -0.05])
@@ -312,7 +322,7 @@ assert(image_lo >= 0 && image_hi <= sheet_h, "Image area falls off the sheet");
 assert(screw_x_offset - csink_top_d / 2 > slot_len / 2 + 0.25
        || screw_y_s - csink_top_d / 2 > -slot_lo_y
        || screw_y_s + csink_top_d / 2 < -slot_hi_y,
-       str("A #6 countersink at x=", screw_x_offset, " lands under the peg bar"));
+       str("A window countersink at x=", screw_x_offset, " lands under the peg bar"));
 assert(screw_x_offset + csink_top_d / 2 < acrylic_w / 2 - 0.25,
        "Window screws too close to the acrylic's side edge");
 
@@ -324,6 +334,9 @@ assert(top_ply_thick - slot_depth > 3 / 25.4, "Channel leaves under 3 mm of top 
 assert(target_centres[0][1] - target_piece / 2 - (acrylic_n + expansion_gap / 2)
        >= 3 / 25.4 - 1e-6,
        "Acrylic recess leaves under 3 mm of wood before the N target");
+// Each window insert's pocket leaves 2.5 mm of wood to the window opening.
+assert(min(screw_y_n, screw_y_s) - view_h / 2 - insert_pilot_d / 2 >= 2.5 / 25.4,
+       "A window insert pocket leaves under 2.5 mm of wood to the opening");
 // Each window screw's countersink stays on the acrylic, with 1 mm to spare.
 assert(min(acrylic_n - screw_y_n, acrylic_s - screw_y_s) - csink_top_d / 2 > 1 / 25.4,
        "A window countersink is within 1 mm of the acrylic's edge");

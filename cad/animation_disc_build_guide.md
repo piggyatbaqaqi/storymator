@@ -5,8 +5,8 @@
 * **Bottom Step-Down Diameter:** 16 1/2 inches (~16 7/16 inches target for smooth rotation) to fit a 16 1/2-inch hole in a 3/4-inch nominal (0.7585-inch actual) desk
 * **Clear Viewing Opening (Bottom Layer):** 12 inches × 9 inches
 * **Removable Acrylic Window:** 1/4-inch thick clear cast acrylic cut to **12 inches × 9 29/32 inches** (0-inch overlap on the left/right edges, 1/8-inch radius rounded corners). It sits off-centre: it runs **4 63/64 in north** and **4 59/64 in south** of the optical centre, giving supporting ledges of **12.3 mm (north) and 10.7 mm (south)** beyond the 9 in opening. The ledges are as wide as the N ChArUco target and the peg bar's insert pockets allow; see docs/planning/disc-acrylic-ledge.md. Put back the wrong way up, its screw holes won't line up with the inserts.
-* **Top Layer Window Recess:** **12 1/32 inches × 9 25/32 inches** (provides a 1/32-inch total expansion gap)
-* **Corner Clearance:** Outermost window corners sit 7.73 inches from the disc center, leaving **1.02 inches** of solid wood rim at the narrowest points
+* **Top Layer Window Recess:** **12 1/32 inches × 9 15/16 inches** (a 1/32-inch total expansion gap), running **5.000 in north** and **4 15/16 in south** of the disc centre, so it is centred 1/32 in north
+* **Corner Clearance:** The recess's north corners (R1/8") sit 7.77 inches from the disc center, leaving **0.98 inches** of solid wood rim at the narrowest points
 * **Window Centring:** the window is centred on the 12F sheet's **12" × 9" image area**, which runs 1.00"–10.00" from the punched edge (optical centre 5.50" from it) — not on the 12 1/2" × 10 1/2" sheet
 * **ACME Peg Bar Channel:** for the **Honbay** bar this project uses (`honbay_0001`, https://www.amazon.com/dp/B0721MR5TM). Peg bars are not standardised in width or length, so another bar needs its own numbers. **252.3 mm × 20.3 mm × 1.5 mm deep** (the 9 7/8" × 20 mm bar plus 1.5 mm of end and 0.3 mm of side clearance), R1/8" (3.175 mm) corners, centred on the peg line **5 5/32" south** of the disc centre (pegs 11/32" from the punched edge), so running from **5.556" to 4.757" south**. The bar is symmetric: its pegs are centred across it to 0.2 mm. The bar's own corners are R2.0 mm; the clearances let them sit inside the channel's R1/8" corners with under 0.1 mm to spare, so pare a corner with a chisel if it binds
 * **Grab Holes:** two 1" holes on the 12 and 6 o'clock axis, 6.50" north and 6.89" south of centre; ChArUco targets sit beside them, not on them — see `docs/planning/disc-grab-holes-and-targets.md`
@@ -38,12 +38,12 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
    * Set your Bosch router to **Speed 1–2 (8,000–12,000 RPM)** with a **top-bearing flush-trim bit** and make one smooth, continuous pass around the corner. Repeat for all four corners.
 3. **Drill & Countersink Mounting Holes:**
    * Mark 4 fastener locations **5.5" either side of centre** (11" apart), each centred on its ledge: **31/128 in (6.15 mm) in from the north edge** and **27/128 in (5.36 mm) in from the south edge**. They are not the same, because the ledges differ. At 4.5" the two south screws would sit under the peg bar.
-   * Drill oversized **5/32-inch** clearance holes (to allow thermal expansion without cracking) and recess each hole with an **82-degree countersink bit** so #6-32 flat-head screws sit dead flush.
+   * Drill **3.2 mm** holes only for now. They locate the inserts in Phase C step 4, and are opened to 4.0 mm and countersunk after that.
 
 ### Phase B: Cut the Window Openings & Laminate the Plywood Disc
 1. **Prepare MDF Spoilboard & Template Strips:** Cut a **20" × 20" sacrificial spoilboard** from your 2' × 4' sheet of 1/2-inch MDF, and cut the remaining MDF into four straight strips for your rectangular window template frame.
 2. **Rout the Top 1/4-Inch Layer Cutout:**
-   * Clamp/tape the four MDF template strips around a **12 1/32" × 9 25/32"** opening onto your 1/4-inch plywood blank (resting on the MDF spoilboard).
+   * Clamp/tape the four MDF template strips around a **12 1/32" × 9 15/16"** opening onto your 1/4-inch plywood blank, its north side **5.000"** and its south side **4 15/16"** from the disc centre (resting on the MDF spoilboard).
    * Using a **1/4-inch solid carbide downcut spiral bit** at **Speed 4–5 (18,000–21,000 RPM)**, rout the through-hole in **2 shallow passes**, vacuuming the kerf between passes.
 3. **Rout the Bottom 3/4-Inch Layer Cutout:**
    * Reconfigure the MDF template strips to **12" × 9"** on your 3/4-inch plywood blank.
@@ -64,11 +64,11 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
    * Flip the disc right-side up. Install the **1/8-inch radius round-over bit** at **Speed 5 (~21,000 RPM)** and feed counter-clockwise around the top perimeter in one smooth pass.
 4. **Install Brass Threaded Inserts:**
    * Align the acrylic window in the top recess and mark the 4 screw centers onto the north and south ledges of the 3/4-inch plywood layer.
-   * Drill pilot holes per the insert manufacturer's spec and thread **#6-32 brass knife-thread inserts** flush into the plywood, **set in epoxy**.
-     * **Why epoxy:** hardwood knife-thread inserts are sold as "not recommended for use in plywood". Their threads have to bite across alternating cross-grain plies, glue lines and, in cabinet-grade core, soft plies or voids. Some plies tear out instead of holding, and the insert can spin or pull out after repeated removal of the window screws.
-     * **Why epoxy matters more here:** each insert is centred 6.15 mm (north) or 5.36 mm (south) from the edge of the 9 in window opening. A 3/16 in pilot hole leaves only about 3.8 mm (north) or 3.0 mm (south) of wood to that edge, and the knife threads cut further out than the pilot. Driving one dry can split the ledge into the opening.
-     * **Procedure:** drill the pilot with a brad-point bit, clamping a scrap block against the opening edge as a backer. Wax a #6-32 screw and thread the insert onto it. Coat the pilot hole and the insert's outside with slow-set epoxy and drive it flush. Let it cure, then remove the screw.
-     * Measure the insert's outside (knife-thread) diameter before drilling. These edge distances have only been checked against the pilot hole, not against the insert itself.
+   * **Set M3 brass inserts in epoxy, located by the acrylic.** The inserts are M3 × 7 mm long × 5 mm OD knurled brass heat-set inserts for 3D printing. Don't heat-set them, since wood won't melt round them; epoxy them.
+     * **Why these:** hardwood #6-32 knife-thread inserts are sold as "not recommended for use in plywood", because their threads cut across cross-grain plies and glue lines. They also cut wider than their pilot, and these inserts sit only 6.15 mm (north) and 5.36 mm (south) from the window opening. Barbed "furniture nuts" wedge the hole open, which is what splits a thin wall, and the smallest are M4 with flanges as wide as the south ledge. An epoxied knurled insert puts no outward force on the wall.
+     * **Drill the pockets:** **5.5 mm, 7.5 mm deep**, using a brad-point bit, with a scrap block clamped against the opening edge as a backer. That leaves 3.4 mm (north) and 2.6 mm (south) of wood to the opening.
+     * **Set them:** press a little wax into the bottom end of each insert, since they are threaded through. Wax four **M3 × 12 flat-head** screws, and wax the underside of the acrylic around its holes. Part-fill the pockets with slow-set epoxy, and put the acrylic in its recess. Put each screw through its 3.2 mm hole, thread an insert on underneath, and tighten. Tightening pulls each insert up against the acrylic, so it ends flush with the ledge, centred on the hole to ±0.1 mm. Let it cure fully, then back the screws out.
+     * **Then finish the acrylic's holes:** open them to **4.0 mm**, for 0.5 mm of float per side; over 20 °C the acrylic moves about 0.18 mm per side against the plywood. Countersink each with a **90° countersink** to 6.7 mm across, so the screw heads sit flush.
 
 5. **Rout the Peg Bar Channel (after the inserts, with the acrylic screwed in):**
    * The bar overlaps the acrylic's south strip by ~4.6 mm, so the channel must cross the seam. Screw the acrylic in place first so wood and acrylic are cut flush in one pass.
@@ -114,11 +114,11 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
 * **Scrap 2×4 Offcut (18–24 inches long):** Cut into two clamping cauls to distribute clamp pressure across the middle of the disc during glue-up.
 
 ### Fasteners, Adhesives & Shop Consumables
-* **#6-32 Brass Knife-Thread Inserts (Pack of 25):** e.g., E-Z Lok 400-006 (install 4 inserts flush into the north and south plywood ledges).
-* **#6-32 × 1/2" Stainless Steel Flat-Head Machine Screws (4+ screws):** For removable, flush mounting of the acrylic window.
+* **M3 × 7 mm × 5 mm OD Knurled Brass Heat-Set Inserts (4+; e.g. "Knurled Insert Nuts, 130pcs M3 x 7mm Length x 5mm OD"):** epoxied into the north and south plywood ledges.
+* **M3 × 12 mm Stainless Flat-Head (90°, ISO 10642 / DIN 7991) Machine Screws (4+):** for removable, flush mounting of the acrylic window.
 * **M2 Stainless Flat-Head (90°) Machine Screws (2+), length per Phase C step 5, and M2 × 6 mm × 4 mm OD Knurled Brass Heat-Set Inserts (2+; e.g. "Knurled Insert Nuts, 130pcs M2 x 6mm Length x 4mm OD"):** for the removable peg bar. The bar comes off whenever the acrylic does, and wood screws would strip the plywood after a few removals.
 * **Slow-Set Epoxy and Paste Wax:** epoxy sets the bar's inserts; wax on the screws keeps them from being glued in.
-* **82-Degree Countersink Drill Bit:** For recessing the #6-32 screw heads flush into the acrylic.
+* **90-Degree Countersink Drill Bit:** for recessing the M3 screw heads flush into the acrylic.
 * **1-Inch Coarse-Thread Wood or Drywall Screws (1 small box):** For fastening the 1/2-inch MDF backer up into the waste center of the 3/4-inch desk without poking through the top veneer.
 * **5/8-Inch Brad Nails (or small alignment screws):** Driven into the outer waste corners of the plywood blanks to prevent sliding during glue-up.
 * **PVA Wood Glue:** e.g., Titebond II or III.

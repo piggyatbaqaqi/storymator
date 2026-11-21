@@ -13,8 +13,9 @@ build guide nor the commit history gives a reason. Only the 12 in width is
 forced: the stock is 12 in and the opening is 12 in, so there is no ledge
 east or west. Height-wise the 12 in stock would allow 1 1/2 in per side.
 
-The ledge matters because the #6-32 window inserts sit centred on it, 3/16 in
-from the opening. A 3/16 in pilot then leaves 2.4 mm of wood to the opening,
+The ledge matters because the window inserts sit centred on it, 3/16 in
+from the opening. They were #6-32 knife-thread inserts then, and have been
+M3 knurled inserts in epoxy since 2026-11-20. A 3/16 in pilot then leaves 2.4 mm of wood to the opening,
 which is a split-out risk; see 67a2d88.
 
 ## What actually bounds it
@@ -52,6 +53,8 @@ when its edge moves to 5.0 in.
 Nothing here is measured on a built disc. The geometry is the SCAD's, and
 the bounds depend on two placements that are design choices: the N target's
 3 mm gap to the sheet, and the bar's insert pockets. The knife insert's
-outside diameter is still unmeasured, so the wall left beside the insert
-itself, as opposed to beside its pilot, is unknown. Calipering one insert
-settles it.
+outside diameter was never measured. That question went away when the window
+moved to 5 mm OD M3 knurled inserts in 5.5 mm epoxy pockets, which leave
+3.4 mm (N) and 2.6 mm (S) of wood to the opening; a SCAD `assert` holds that
+at 2.5 mm or more. The 5 mm figure is the seller's listing, not a caliper
+reading.
