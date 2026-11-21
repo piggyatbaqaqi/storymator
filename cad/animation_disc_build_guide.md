@@ -64,7 +64,11 @@ Building the 1-inch thick disc from **two laminated pieces of plywood (1/4-inch 
    * Flip the disc right-side up. Install the **1/8-inch radius round-over bit** at **Speed 5 (~21,000 RPM)** and feed counter-clockwise around the top perimeter in one smooth pass.
 4. **Install Brass Threaded Inserts:**
    * Align the acrylic window in the top recess and mark the 4 screw centers onto the 3/8-inch top and bottom ledges of the 3/4-inch plywood layer.
-   * Drill pilot holes per the insert manufacturer's spec and thread **#6-32 brass knife-thread inserts** flush into the plywood (sand ~1/16" off the tip of each insert first if needed so they cannot poke through the underside).
+   * Drill pilot holes per the insert manufacturer's spec and thread **#6-32 brass knife-thread inserts** flush into the plywood, **set in epoxy**.
+     * **Why epoxy:** hardwood knife-thread inserts are sold as "not recommended for use in plywood". Their threads have to bite across alternating cross-grain plies, glue lines and, in cabinet-grade core, soft plies or voids. Some plies tear out instead of holding, and the insert can spin or pull out after repeated removal of the window screws.
+     * **Why epoxy matters more here:** each insert is centred 3/16 in (4.8 mm) from the edge of the 9 in window opening, on a 3/8 in ledge. A 3/16 in pilot hole leaves only about 2.4 mm of wood to that edge, and the knife threads cut further out than the pilot. Driving one dry can split the ledge into the opening.
+     * **Procedure:** drill the pilot with a brad-point bit, clamping a scrap block against the opening edge as a backer. Wax a #6-32 screw and thread the insert onto it. Coat the pilot hole and the insert's outside with slow-set epoxy and drive it flush. Let it cure, then remove the screw.
+     * Measure the insert's outside (knife-thread) diameter before drilling. The 4.8 mm edge distance has only been checked against the pilot hole, not against the insert itself.
 
 5. **Rout the Peg Bar Channel (after the inserts, with the acrylic screwed in):**
    * The bar overlaps the acrylic's south strip by ~3.3 mm, so the channel must cross the seam. Screw the acrylic in place first so wood and acrylic are cut flush in one pass.

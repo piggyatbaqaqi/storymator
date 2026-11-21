@@ -28,6 +28,11 @@ csink_top_d       = 0.28;     // 82-degree countersink top diameter for #6 flat-
 csink_depth       = 0.085;    // Countersink depth
 insert_pilot_d    = 0.1875;   // 3/16" pilot hole for #6-32 brass knife-thread insert
 insert_depth      = 0.375;    // 3/8" insert depth
+// The inserts sit at screw_y_offset, 3/16" from the 9" window opening's edge,
+// so a 3/16" pilot leaves only ~2.4 mm of wood to that edge, and the knife
+// threads cut beyond the pilot.  Hardwood knife inserts are also sold as "not
+// recommended for plywood", so the build guide sets them in epoxy.  The
+// insert's outside diameter is unmeasured, so no wall-thickness assert yet.
 screw_x_offset    = 5.5;      // +/- 5.5" -> 11" apart. Was 4.5", which put the two south
                               // screws under the peg bar; 5.5" clears its ends (see asserts).
 screw_y_offset    = 4.6875;   // Centered in the 3/8" top/bottom ledge (4.5" + 0.1875" = 4.6875")
