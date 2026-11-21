@@ -17,7 +17,15 @@ top_round_r       = 0.125;    // 1/8" radius round-over on top outer edge
 view_w            = 12.0;     // 12" clear viewing width (bottom layer cutout)
 view_h            = 9.0;      // 9" clear viewing height (bottom layer cutout)
 acrylic_w         = 12.0;     // 12" acrylic width (0" side overlap)
-acrylic_h         = 9.75;     // 9 3/4" acrylic height (3/8" overlap top & bottom)
+// The acrylic is off-centre: its north and south edges are set by what lies
+// beyond them, not by symmetry (operator chose this, 2026-11-20).  The 3/8"
+// ledges of the original Gemini design had no recorded reason.  North, the
+// recess stops 3 mm short of the N ChArUco target; south, it keeps 3 mm of wood
+// beside the bar's M2 insert pockets.  See docs/planning/disc-acrylic-ledge.md.
+acrylic_n         = 4 + 63/64;  // centre to north edge: 12.30 mm ledge (was 9.53)
+acrylic_s         = 4 + 59/64;  // centre to south edge: 10.72 mm ledge
+acrylic_h         = acrylic_n + acrylic_s;      // 9 29/32" (was 9 3/4")
+acrylic_ctr_y     = (acrylic_n - acrylic_s) / 2; // +1/32": centre sits north of the optical centre
 acrylic_thick     = 0.25;     // 1/4" clear cast acrylic thickness
 expansion_gap     = 0.03125;  // 1/32" total play in top plywood recess
 corner_r          = 0.125;    // 1/8" corner radius (matches 1/4" diameter router bit)
@@ -28,14 +36,16 @@ csink_top_d       = 0.28;     // 82-degree countersink top diameter for #6 flat-
 csink_depth       = 0.085;    // Countersink depth
 insert_pilot_d    = 0.1875;   // 3/16" pilot hole for #6-32 brass knife-thread insert
 insert_depth      = 0.375;    // 3/8" insert depth
-// The inserts sit at screw_y_offset, 3/16" from the 9" window opening's edge,
-// so a 3/16" pilot leaves only ~2.4 mm of wood to that edge, and the knife
-// threads cut beyond the pilot.  Hardwood knife inserts are also sold as "not
+// Each insert is centred on its ledge, 6.15 mm (N) or 5.36 mm (S) from the
+// 9" window opening's edge, so a 3/16" pilot leaves 3.8 / 3.0 mm of wood to
+// that edge (2.4 mm on the old 3/8" ledges), and the knife threads cut beyond
+// the pilot.  Hardwood knife inserts are also sold as "not
 // recommended for plywood", so the build guide sets them in epoxy.  The
 // insert's outside diameter is unmeasured, so no wall-thickness assert yet.
 screw_x_offset    = 5.5;      // +/- 5.5" -> 11" apart. Was 4.5", which put the two south
                               // screws under the peg bar; 5.5" clears its ends (see asserts).
-screw_y_offset    = 4.6875;   // Centered in the 3/8" top/bottom ledge (4.5" + 0.1875" = 4.6875")
+screw_y_n         = (view_h / 2 + acrylic_n) / 2;   // centred on the north ledge
+screw_y_s         = (view_h / 2 + acrylic_s) / 2;   // centred on the south ledge
 
 // --- 12F sheet & ACME peg bar (Inches) ---
 // The window is centred on the sheet's 12" x 9" IMAGE AREA, not on the sheet.
@@ -84,7 +94,7 @@ slot_ctr_y        = peg_line_y;   // centred, as measured
 // edge, against the 1/32" (0.79 mm) read with a ruler: 0.48 mm apart, inside
 // two ruler readings of +/- 1/64" each.
 // The bar reaches 10 mm north of the peg line: clear of the 9" window by
-// 6.7 mm, but 3.3 mm into the acrylic recess.  The channel is therefore still
+// 6.7 mm, but 4.6 mm into the acrylic recess.  The channel is therefore still
 // cut across the acrylic's south strip as well as the wood, in one pass with
 // the acrylic screwed in, so the bar beds flat across the seam.
 // ASSUMED: the holes are on the bar's centreline, which is the peg line.
@@ -144,7 +154,7 @@ module rounded_rect_2d(w, h, r) {
 
 module screw_positions() {
     for (sx = [-1, 1], sy = [-1, 1]) {
-        translate([sx * screw_x_offset, sy * screw_y_offset, 0])
+        translate([sx * screw_x_offset, sy > 0 ? screw_y_n : -screw_y_s, 0])
             children();
     }
 }
@@ -200,7 +210,8 @@ module part_top_plywood() {
         // Through-cutout for acrylic window (includes 1/32" expansion gap)
         translate([0, 0, -0.05])
             linear_extrude(height = top_ply_thick + 0.1)
-                rounded_rect_2d(acrylic_w + expansion_gap, acrylic_h + expansion_gap, corner_r);
+                translate([0, acrylic_ctr_y])
+                    rounded_rect_2d(acrylic_w + expansion_gap, acrylic_h + expansion_gap, corner_r);
 
         // ACME peg bar channel and the bar's screw pilots
         peg_channel(top_ply_thick);
@@ -231,7 +242,7 @@ module part_bottom_plywood() {
             linear_extrude(height = bot_ply_thick + 0.1)
                 rounded_rect_2d(view_w, view_h, corner_r);
 
-        // Pilot holes for #6-32 brass knife-thread inserts on top face of 3/8" ledges
+        // Pilot holes for #6-32 brass knife-thread inserts on top face of the N and S ledges
         screw_positions() {
             translate([0, 0, bot_ply_thick - insert_depth])
                 cylinder(d = insert_pilot_d, h = insert_depth + 0.05);
@@ -254,7 +265,8 @@ module part_acrylic_window() {
     color([0.75, 0.92, 1.0, 0.55])
     difference() {
         linear_extrude(height = acrylic_thick)
-            rounded_rect_2d(acrylic_w, acrylic_h, corner_r);
+            translate([0, acrylic_ctr_y])
+                rounded_rect_2d(acrylic_w, acrylic_h, corner_r);
 
         // 4 oversized clearance holes + 82-degree countersinks
         screw_positions() {
@@ -298,16 +310,23 @@ assert(image_lo >= 0 && image_hi <= sheet_h, "Image area falls off the sheet");
 
 // The south screws must clear the bar: either beyond its ends or off its width.
 assert(screw_x_offset - csink_top_d / 2 > slot_len / 2 + 0.25
-       || screw_y_offset - csink_top_d / 2 > -slot_lo_y
-       || screw_y_offset + csink_top_d / 2 < -slot_hi_y,
+       || screw_y_s - csink_top_d / 2 > -slot_lo_y
+       || screw_y_s + csink_top_d / 2 < -slot_hi_y,
        str("A #6 countersink at x=", screw_x_offset, " lands under the peg bar"));
 assert(screw_x_offset + csink_top_d / 2 < acrylic_w / 2 - 0.25,
        "Window screws too close to the acrylic's side edge");
 
 // Bar screw pilots land in wood, south of the acrylic recess.
-assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_h + expansion_gap) / 2 > 3 / 25.4,
+assert(-peg_line_y - bar_pilot_d / 2 - (acrylic_s + expansion_gap / 2) > 3 / 25.4,
        str("Bar insert pocket leaves under 3 mm of wood to the acrylic recess"));
 assert(top_ply_thick - slot_depth > 3 / 25.4, "Channel leaves under 3 mm of top ply");
+// The N target sits on wood, not straddling the acrylic seam.
+assert(target_centres[0][1] - target_piece / 2 - (acrylic_n + expansion_gap / 2)
+       >= 3 / 25.4 - 1e-6,
+       "Acrylic recess leaves under 3 mm of wood before the N target");
+// Each window screw's countersink stays on the acrylic, with 1 mm to spare.
+assert(min(acrylic_n - screw_y_n, acrylic_s - screw_y_s) - csink_top_d / 2 > 1 / 25.4,
+       "A window countersink is within 1 mm of the acrylic's edge");
 // The bar's edge overhangs the punched edge by the measured 1/32", to within
 // two ruler readings (+/- 1/64" each, so 0.04" combined).
 assert(abs((sheet_edge_y - slot_lo_y) - 1 / 32) < 0.04,
